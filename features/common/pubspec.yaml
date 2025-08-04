@@ -1,0 +1,46 @@
+name: common
+description: "Contains all common code"
+version: 0.0.1
+homepage:
+
+environment:
+  sdk: ^3.6.1
+  flutter: ">=1.17.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  riverpod:
+  # the annotation package containing @riverpod
+  riverpod_annotation:
+  flutter_riverpod:
+  json_annotation: ^4.9.0
+  intl: ^0.20.2
+  
+  hexcolor: ^3.0.1
+  supabase_flutter: ^2.8.4
+  shared_preferences: ^2.5.2
+  uuid: ^4.5.1
+  dartz: ^0.10.1
+  google_fonts: ^6.2.1
+
+  onboarding:
+    path: ../onboarding
+
+  splash:
+    path: ../splash
+
+  main:
+    path: ../main
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  build_runner: ^2.4.9
+  # the code generator
+  riverpod_generator:
+  json_serializable: ^6.8.0
+
+flutter:
