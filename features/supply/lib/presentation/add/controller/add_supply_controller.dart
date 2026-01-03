@@ -23,7 +23,6 @@ class AddSupplyController extends _$AddSupplyController {
 
   @override
   AddSupplyState build(String courseId) {
-    print("build supply");
     supplyRepository = ref.watch(supplyRepositoryProvider);
     return AddSupplyState.initial(courseId);
   }

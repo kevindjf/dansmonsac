@@ -8,15 +8,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../repository/calendar_course_repository.dart';
+import '../../../di/riverpod_di.dart';
 import 'add_calendar_couse_state.dart';
 
 part 'add_calendar_course_controller.g.dart';
 
-// Provider pour la liste des cours existants (à adapter selon votre architecture)
+// Provider pour la liste des cours existants
 final coursesProvider = FutureProvider<List<CourseWithSupplies>>((ref) async {
-  // Récupérer la liste des cours depuis votre repository
   var response = await ref.read(courseRepositoryProvider).fetchCourses();
-  return [];
+  return response.fold(
+    (failure) => [],
+    (courses) => courses,
+  );
 });
 
 // État pour le contrôleur
@@ -25,7 +28,6 @@ final coursesProvider = FutureProvider<List<CourseWithSupplies>>((ref) async {
 @riverpod
 class AddCalendarCourseController extends _$AddCalendarCourseController {
 
-  late CalendarCourseRepository _calendarCourseRepository;
   final _errorStreamController = StreamController<String>.broadcast();
   final _successStreamController = StreamController<CalendarCourse>.broadcast();
 
@@ -39,10 +41,10 @@ class AddCalendarCourseController extends _$AddCalendarCourseController {
     List<CourseWithSupplies> courses = [];
 
     response.fold((failure) {
-     //TODO Manage error
-
-      }, (coursesRemote) {
-       courses = coursesRemote;
+      _errorStreamController.add(failure.message);
+      courses = [];
+    }, (coursesRemote) {
+      courses = coursesRemote;
     });
 
     return AddCalendarCourseState(
@@ -56,82 +58,82 @@ class AddCalendarCourseController extends _$AddCalendarCourseController {
 
 
   void courseChanged(String courseId) {
-   /* state = state.value.copyWith(
+    state = AsyncValue.data(state.value!.copyWith(
       courseId: courseId,
       errorCourseId: null,
-    );*/
+    ));
   }
 
   void roomNameChanged(String roomName) {
-   /* state = state.value?.copyWith(
+    state = AsyncValue.data(state.value!.copyWith(
       roomName: roomName,
       errorRoomName: null,
-    );*/
+    ));
   }
 
   void startTimeChanged(TimeOfDay startTime) {
-   /* state = state.copyWith(
+    state = AsyncValue.data(state.value!.copyWith(
       startTime: startTime,
       errorStartTime: null,
-    );*/
+    ));
   }
 
   void endTimeChanged(TimeOfDay endTime) {
-  /*  state = state.copyWith(
+    state = AsyncValue.data(state.value!.copyWith(
       endTime: endTime,
       errorEndTime: null,
-    );*/
+    ));
   }
 
   bool _validateInputs() {
     bool isValid = true;
+    final currentState = state.value!;
 
     // Validation du cours
-    /*if (state.courseId == null || state.courseId!.isEmpty) {
-      state = state.copyWith(errorCourseId: "Veuillez sélectionner un cours");
+    if (currentState.courseId == null || currentState.courseId!.isEmpty) {
+      state = AsyncValue.data(currentState.copyWith(errorCourseId: "Veuillez sélectionner un cours"));
       isValid = false;
     }
 
     // Validation de la salle
-    if (state.roomName.isEmpty) {
-      state = state.copyWith(errorRoomName: "La salle est obligatoire");
+    if (currentState.roomName.isEmpty) {
+      state = AsyncValue.data(currentState.copyWith(errorRoomName: "La salle est obligatoire"));
       isValid = false;
     }
 
     // Validation de l'heure de fin (doit être après l'heure de début)
-    final startMinutes = state.startTime.hour * 60 + state.startTime.minute;
-    final endMinutes = state.endTime.hour * 60 + state.endTime.minute;
+    final startMinutes = currentState.startTime.hour * 60 + currentState.startTime.minute;
+    final endMinutes = currentState.endTime.hour * 60 + currentState.endTime.minute;
 
     if (endMinutes <= startMinutes) {
-      state = state.copyWith(
-          errorEndTime: "L'heure de fin doit être après l'heure de début");
+      state = AsyncValue.data(currentState.copyWith(
+          errorEndTime: "L'heure de fin doit être après l'heure de début"));
       isValid = false;
-    }*/
+    }
 
     return isValid;
   }
 
   Future<void> store() async {
-   /* if (!_validateInputs()) {
+    if (!_validateInputs()) {
       return;
     }
 
-    try {
-      final calendarCourse = CalendarCourse(
-        id: DateTime.now().millisecondsSinceEpoch.toString(), // ID temporaire
-        courseId: state.courseId!,
-        roomName: state.roomName,
-        startTime: state.startTime,
-        endTime: state.endTime,
-      );
+    final currentState = state.value!;
+    final calendarCourse = CalendarCourse(
+      id: DateTime.now().millisecondsSinceEpoch.toString(), // ID temporaire
+      courseId: currentState.courseId!,
+      roomName: currentState.roomName,
+      startTime: currentState.startTime,
+      endTime: currentState.endTime,
+    );
 
-      //final savedCalendarCourse =
-      //await _calendarCourseRepository.addCalendarCourse(calendarCourse);
-     // _successStreamController.add(savedCalendarCourse);
-    } catch (e) {
-      _errorStreamController.add("Erreur lors de l'enregistrement: ${e.toString()}");
-    }
+    final repository = ref.read(calendarCourseRepositoryProvider);
+    final result = await repository.addCalendarCourse(calendarCourse);
 
-    */
+    result.fold(
+      (failure) => _errorStreamController.add("Erreur lors de l'enregistrement: ${failure.message}"),
+      (savedCalendarCourse) => _successStreamController.add(savedCalendarCourse),
+    );
   }
 }

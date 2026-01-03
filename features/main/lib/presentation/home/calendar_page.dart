@@ -231,9 +231,9 @@ class ListSupply extends StatelessWidget {
                       ),
                       value: item.isChecked,
                       onChanged: (value) {
-                        /*setState(() {
-                                            item.isChecked = value ?? false;
-                                          });*/
+                        setState(() {
+                          item.isChecked = value ?? false;
+                        });
                       },
                     );
                   }
