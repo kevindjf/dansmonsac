@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:common/src/ui/ui.dart';
 import 'package:course/models/cours_with_supplies.dart';
 import 'package:course/presentation/add/add_course_controller.dart';
 import 'package:flutter/cupertino.dart';
@@ -104,9 +105,10 @@ class _AddCalendarCoursePageState extends ConsumerState<AddCalendarCoursePage> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    var state = ref.watch(addCalendarCourseControllerProvider);
+    var asyncState = ref.watch(addCalendarCourseControllerProvider);
 
-    return Container(
+    return asyncState.when(
+      data: (state) => Container(
       width: double.infinity,
       child: Padding(
         padding: EdgeInsets.only(
@@ -148,16 +150,12 @@ class _AddCalendarCoursePageState extends ConsumerState<AddCalendarCoursePage> {
                 labelStyle: const TextStyle(color: Colors.grey),
               ),
               value: state.courseId,
-              items: state.courses.when(
-                data: (data) => data.map((course) {
-                  return DropdownMenuItem<String>(
-                    value: course.id,
-                    child: Text(course.name),
-                  );
-                }).toList(),
-                loading: () => [],
-                error: (_, __) => [],
-              ),
+              items: state.courses.map((course) {
+                return DropdownMenuItem<String>(
+                  value: course.id,
+                  child: Text(course.name),
+                );
+              }).toList(),
               onChanged: (String? courseId) {
                 if (courseId != null) {
                   ref
@@ -359,6 +357,9 @@ class _AddCalendarCoursePageState extends ConsumerState<AddCalendarCoursePage> {
           ],
         ),
       ),
+    ),
+      loading: () => Center(child: CircularProgressIndicator()),
+      error: (error, stack) => Center(child: Text('Erreur: $error')),
     );
   }
 

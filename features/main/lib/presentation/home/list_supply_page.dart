@@ -31,7 +31,12 @@ class SupplyItem implements ListItem {
   SupplyItem({required this.name, this.isChecked = false});
 }
 
-class ListSupply extends StatelessWidget {
+class ListSupply extends StatefulWidget {
+  @override
+  State<ListSupply> createState() => _ListSupplyState();
+}
+
+class _ListSupplyState extends State<ListSupply> {
   final List<ListItem> items = [
     CourseTitleItem(title: 'Math'),
     SupplyItem(name: 'Cahier'),
