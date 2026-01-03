@@ -34,8 +34,7 @@ class _AddCoursePageState extends ConsumerState<AddCoursePage> {
         .errorStream
         .listen((errorMessage) {
       if (mounted) {
-        print("error");
-        // ShowErrorMessage.show(context, errorMessage);
+        ShowErrorMessage.show(context, errorMessage);
       }
     });
 

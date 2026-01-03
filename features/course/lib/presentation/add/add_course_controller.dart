@@ -25,7 +25,6 @@ class AddCourseController extends _$AddCourseController {
 
   @override
   AddCourseState build() {
-    print("build");
     courseRepository = ref.watch(courseRepositoryProvider);
     return AddCourseState.initial();
   }

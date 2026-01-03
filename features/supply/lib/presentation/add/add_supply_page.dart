@@ -46,8 +46,7 @@ class _AddSupplyPageState extends ConsumerState<AddSupplyPage> {
         .errorStream
         .listen((errorMessage) {
       if (mounted) {
-        print("error");
-        // ShowErrorMessage.show(context, errorMessage);
+        ShowErrorMessage.show(context, errorMessage);
       }
     });
 
@@ -56,9 +55,7 @@ class _AddSupplyPageState extends ConsumerState<AddSupplyPage> {
         .successStream
         .listen((supply) {
       if (mounted) {
-        print(supply);
         widget.onAddSupply(supply);
-        // ShowErrorMessage.show(context, errorMessage);
       }
     });
   }

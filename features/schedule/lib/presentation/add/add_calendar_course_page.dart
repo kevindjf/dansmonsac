@@ -41,8 +41,7 @@ class _AddCalendarCoursePageState extends ConsumerState<AddCalendarCoursePage> {
         .errorStream
         .listen((errorMessage) {
       if (mounted) {
-        print("error");
-        // ShowErrorMessage.show(context, errorMessage);
+        ShowErrorMessage.show(context, errorMessage);
       }
     });
 
