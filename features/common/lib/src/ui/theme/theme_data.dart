@@ -34,7 +34,7 @@ class AppTheme {
           centerTitle: true,
           titleTextStyle: AppTextStyles.headline6,
         ),
-        cardTheme: const CardTheme(
+        cardTheme: const CardThemeData(
           color: AppColors.cardBackground,
           elevation: 2,
           margin: EdgeInsets.all(8),
@@ -116,7 +116,7 @@ class AppTheme {
           color: AppColors.textSecondary,
           size: 24,
         ),
-        tabBarTheme: const TabBarTheme(
+        tabBarTheme: const TabBarThemeData(
           labelColor: AppColors.primary,
           unselectedLabelColor: AppColors.textSecondary,
           indicator: UnderlineTabIndicator(
@@ -163,7 +163,7 @@ class AppTheme {
         centerTitle: true,
         titleTextStyle: AppTextStyles.headline6,
       ),
-      cardTheme: const CardTheme(
+      cardTheme: const CardThemeData(
         color: AppColors.grey800, // Fond des cartes pour mode sombre
         elevation: 2,
         margin: EdgeInsets.all(8),
@@ -245,7 +245,7 @@ class AppTheme {
         color: AppColors.primary,
         size: 24,
       ),
-      tabBarTheme: const TabBarTheme(
+      tabBarTheme: const TabBarThemeData(
         labelColor: AppColors.primary,
         unselectedLabelColor: AppColors.textSecondary,
         indicator: UnderlineTabIndicator(
