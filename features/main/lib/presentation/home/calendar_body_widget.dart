@@ -52,7 +52,12 @@ class Event {
 }
 
 class CalendarBodyWidget extends ConsumerWidget {
-  const CalendarBodyWidget({Key? key}) : super(key: key);
+  final DateTime selectedDate;
+
+  const CalendarBodyWidget({
+    Key? key,
+    required this.selectedDate,
+  }) : super(key: key);
 
   List<Event> _getDefaultEvents() {
     // Return empty list by default
@@ -124,7 +129,8 @@ class CalendarBodyWidget extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final calendarState = ref.watch(calendarControllerProvider);
+    // Use provider with selected date
+    final calendarState = ref.watch(calendarControllerProvider(selectedDate));
 
     return calendarState.when(
       data: (calendarEvents) {

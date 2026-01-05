@@ -35,8 +35,8 @@ class WeekInfo {
 @riverpod
 class CalendarController extends _$CalendarController {
   @override
-  Future<List<CalendarEvent>> build() async {
-    return _fetchTodaysCourses();
+  Future<List<CalendarEvent>> build(DateTime selectedDate) async {
+    return _fetchCoursesForDate(selectedDate);
   }
 
   // Get current week info (returns null if no A/B courses exist)
@@ -65,7 +65,7 @@ class CalendarController extends _$CalendarController {
     );
   }
 
-  Future<List<CalendarEvent>> _fetchTodaysCourses() async {
+  Future<List<CalendarEvent>> _fetchCoursesForDate(DateTime targetDate) async {
     final repository = ref.watch(calendarCourseRepositoryProvider);
 
     // Fetch all courses for name lookup
@@ -81,54 +81,50 @@ class CalendarController extends _$CalendarController {
         return [];
       },
       (courses) {
-        // Get today's date and day of week
-        final today = DateTime.now();
-        final todayWeekday = today.weekday; // 1=Monday, 7=Sunday
+        // Get target date's day of week
+        final targetWeekday = targetDate.weekday; // 1=Monday, 7=Sunday
 
         // TODO: Get school year start date from preferences
         // For now, use September 1st of current school year
-        final currentYear = today.month >= 9 ? today.year : today.year - 1;
+        final currentYear = targetDate.month >= 9 ? targetDate.year : targetDate.year - 1;
         final schoolYearStart = DateTime(currentYear, 9, 1);
 
-        // Get current week type (A or B)
-        final currentWeekType = WeekUtils.getCurrentWeekType(schoolYearStart, today);
-
-        // Filter courses for today
-        final todaysCourses = courses.where((course) {
-          // Check if course is for today's day of week
-          if (course.dayOfWeek != todayWeekday) {
+        // Filter courses for target date
+        final dateCourses = courses.where((course) {
+          // Check if course is for target date's day of week
+          if (course.dayOfWeek != targetWeekday) {
             return false;
           }
 
-          // Check if course should be shown for current week (A/B or BOTH)
+          // Check if course should be shown for target date's week (A/B or BOTH)
           return WeekUtils.shouldShowCourseForDate(
             course.weekType.value,
             schoolYearStart,
-            today,
+            targetDate,
           );
         }).toList();
 
         // Convert to CalendarEvent
         final events = <CalendarEvent>[];
 
-        for (final course in todaysCourses) {
+        for (final course in dateCourses) {
           // Look up course name
           final courseData = courseMap[course.courseId];
           final courseName = courseData?.name ?? 'Cours';
 
-          // Create DateTime for today with the course times
+          // Create DateTime for target date with the course times
           final startTime = DateTime(
-            today.year,
-            today.month,
-            today.day,
+            targetDate.year,
+            targetDate.month,
+            targetDate.day,
             course.startTime.hour,
             course.startTime.minute,
           );
 
           final endTime = DateTime(
-            today.year,
-            today.month,
-            today.day,
+            targetDate.year,
+            targetDate.month,
+            targetDate.day,
             course.endTime.hour,
             course.endTime.minute,
           );
