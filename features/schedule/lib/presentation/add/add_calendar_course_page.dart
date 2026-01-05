@@ -13,9 +13,13 @@ import 'package:schedule/presentation/add/controller/add_calendar_course_control
 
 class AddCalendarCoursePage extends ConsumerStatefulWidget {
   final ValueChanged<CalendarCourse?> onAddCalendarCourse;
+  final DateTime selectedDate;
 
-  const AddCalendarCoursePage({Key? key, required this.onAddCalendarCourse})
-      : super(key: key);
+  const AddCalendarCoursePage({
+    Key? key,
+    required this.onAddCalendarCourse,
+    required this.selectedDate,
+  }) : super(key: key);
 
   @override
   ConsumerState<AddCalendarCoursePage> createState() =>
@@ -55,6 +59,13 @@ class _AddCalendarCoursePageState extends ConsumerState<AddCalendarCoursePage> {
         widget.onAddCalendarCourse(calendarCourse);
         Navigator.pop(context);
       }
+    });
+
+    // Set the day of week to the selected date's weekday
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref
+          .read(addCalendarCourseControllerProvider.notifier)
+          .dayOfWeekChanged(widget.selectedDate.weekday);
     });
   }
 
