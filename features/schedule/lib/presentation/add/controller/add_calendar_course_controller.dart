@@ -51,9 +51,8 @@ class AddCalendarCourseController extends _$AddCalendarCourseController {
 
     return AddCalendarCourseState(
       courses: courses,
-      startTime: TimeOfDay.now(),
-      endTime: TimeOfDay(
-          hour: TimeOfDay.now().hour + 1, minute: TimeOfDay.now().minute),
+      startTime: TimeOfDay(hour: TimeOfDay.now().hour, minute: 0),
+      endTime: TimeOfDay(hour: TimeOfDay.now().hour + 1, minute: 0),
     );
   }
 
@@ -154,6 +153,7 @@ class AddCalendarCourseController extends _$AddCalendarCourseController {
         // Refresh calendar and supply list
         ref.invalidate(calendarControllerProvider);
         ref.invalidate(tomorrowSupplyControllerProvider);
+        ref.invalidate(coursesProvider); // Refresh courses to ensure course names are up to date
       },
     );
   }

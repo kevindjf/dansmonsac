@@ -19,8 +19,9 @@ abstract class ListItem {}
 /// Item pour le titre d'un cours
 class CourseTitleItem implements ListItem {
   final String title;
+  final List<String> supplyIds; // IDs of supplies for this course
 
-  CourseTitleItem({required this.title});
+  CourseTitleItem({required this.title, required this.supplyIds});
 }
 
 /// Item pour une fourniture avec checkbox
@@ -41,9 +42,6 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
   // Map to track checked state of supplies by ID
   final Map<String, bool> _checkedState = {};
 
-  // Toggle between today and tomorrow
-  bool _showTomorrow = true; // true = tomorrow (default), false = today
-
   @override
   Widget build(BuildContext context) {
     final tomorrowSuppliesState = ref.watch(tomorrowSupplyControllerProvider);
@@ -57,7 +55,9 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
         int checkedSupplies = 0;
 
         for (final course in coursesWithSupplies) {
-          items.add(CourseTitleItem(title: course.courseName));
+          // Collect supply IDs for this course
+          final supplyIds = course.supplies.map((s) => s.id).toList();
+          items.add(CourseTitleItem(title: course.courseName, supplyIds: supplyIds));
 
           for (final supply in course.supplies) {
             totalSupplies++;
@@ -90,7 +90,7 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
                 child: Padding(
                   padding: const EdgeInsets.all(24.0),
                   child: Text(
-                    _showTomorrow ? 'Aucun cours demain' : 'Aucun cours aujourd\'hui',
+                    'Aucun cours demain',
                     style: GoogleFonts.roboto(
                       fontSize: 16,
                       color: Colors.grey,
@@ -124,16 +124,38 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
                 itemBuilder: (context, index) {
                   final item = items[index];
                   if (item is CourseTitleItem) {
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 8.0, horizontal: 16.0),
-                      child: Text(
+                    // Check if all supplies for this course are checked
+                    final allChecked = item.supplyIds.isNotEmpty &&
+                      item.supplyIds.every((id) => _checkedState[id] ?? false);
+
+                    return CheckboxListTile(
+                      checkboxShape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(4.0),
+                        side: BorderSide(
+                          width: 4.5,
+                          color: AppColors.accent,
+                        ),
+                      ),
+                      contentPadding:
+                          EdgeInsets.symmetric(horizontal: 8.0, vertical: 2.0),
+                      dense: false,
+                      controlAffinity: ListTileControlAffinity.leading,
+                      title: Text(
                         item.title.toUpperCase(),
                         style: GoogleFonts.robotoCondensed(
                             fontSize: 16,
                             color: AppColors.accent,
                             fontWeight: FontWeight.bold),
                       ),
+                      value: allChecked,
+                      onChanged: item.supplyIds.isEmpty ? null : (value) {
+                        setState(() {
+                          // Check or uncheck all supplies for this course
+                          for (final supplyId in item.supplyIds) {
+                            _checkedState[supplyId] = value ?? false;
+                          }
+                        });
+                      },
                     );
                   } else if (item is SupplyItem) {
                     return CheckboxListTile(
@@ -230,29 +252,10 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 8),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  "A mettre dans votre sac",
-                  style: GoogleFonts.robotoCondensed(
-                      color: Colors.white38, fontSize: 14),
-                ),
-                // Day toggle buttons
-                Container(
-                  decoration: BoxDecoration(
-                    color: Colors.black26,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      _buildDayButton("Aujourd'hui", !_showTomorrow),
-                      _buildDayButton("Demain", _showTomorrow),
-                    ],
-                  ),
-                ),
-              ],
+            Text(
+              "A mettre dans votre sac",
+              style: GoogleFonts.robotoCondensed(
+                  color: Colors.white38, fontSize: 14),
             ),
             const SizedBox(height: 16),
             Text(
@@ -270,31 +273,6 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
                   fontWeight: FontWeight.w300),
             ),
           ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDayButton(String label, bool isSelected) {
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          _showTomorrow = label == "Demain";
-        });
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        decoration: BoxDecoration(
-          color: isSelected ? AppColors.accent : Colors.transparent,
-          borderRadius: BorderRadius.circular(6),
-        ),
-        child: Text(
-          label,
-          style: GoogleFonts.robotoCondensed(
-            color: isSelected ? Colors.white : Colors.white54,
-            fontSize: 12,
-            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-          ),
         ),
       ),
     );

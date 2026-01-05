@@ -30,9 +30,8 @@ class _AddCalendarCoursePageState extends ConsumerState<AddCalendarCoursePage> {
   final TextEditingController _roomController = TextEditingController();
   StreamSubscription? _errorSubscription;
   StreamSubscription? _successSubscription;
-  TimeOfDay _startTime = TimeOfDay.now();
-  TimeOfDay _endTime = TimeOfDay(
-      hour: TimeOfDay.now().hour + 1, minute: TimeOfDay.now().minute);
+  TimeOfDay _startTime = TimeOfDay(hour: TimeOfDay.now().hour, minute: 0);
+  TimeOfDay _endTime = TimeOfDay(hour: TimeOfDay.now().hour + 1, minute: 0);
 
   @override
   void initState() {

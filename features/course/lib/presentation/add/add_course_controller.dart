@@ -7,6 +7,7 @@ import 'package:course/presentation/add/add_course_state.dart';
 import 'package:course/repository/course_repository.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:common/src/di/riverpod_di.dart';
+import 'package:schedule/presentation/add/controller/add_calendar_course_controller.dart';
 
 
 part 'add_course_controller.g.dart';
@@ -49,6 +50,8 @@ class AddCourseController extends _$AddCourseController {
           .add("Une erreur est survenue, veuillez réessayer ultérieurement !");
     }, (course) {
       _successController.add(course);
+      // Invalidate courses provider to refresh course list everywhere
+      ref.invalidate(coursesProvider);
     });
   }
 
