@@ -22,6 +22,7 @@ class Event {
   final String hour;
   final DateTime startTime;
   final DateTime endTime;
+  final String weekType; // 'A', 'B', or 'BOTH'
 
   Event({
     required this.id,
@@ -30,6 +31,7 @@ class Event {
     required this.hour,
     required this.startTime,
     required this.endTime,
+    required this.weekType,
   });
 
   @override
@@ -46,16 +48,19 @@ class Event {
       hour: calendarEvent.hour,
       startTime: calendarEvent.startTime,
       endTime: calendarEvent.endTime,
+      weekType: calendarEvent.weekType,
     );
   }
 }
 
 class CalendarBodyWidget extends ConsumerWidget {
   final DateTime selectedDate;
+  final WeekFilter weekFilter;
 
   const CalendarBodyWidget({
     Key? key,
     required this.selectedDate,
+    required this.weekFilter,
   }) : super(key: key);
 
   List<Event> _getDefaultEvents() {
@@ -128,8 +133,8 @@ class CalendarBodyWidget extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Use provider with selected date
-    final calendarState = ref.watch(calendarControllerProvider(selectedDate));
+    // Use provider with selected date and week filter
+    final calendarState = ref.watch(calendarControllerProvider(selectedDate, weekFilter));
 
     return calendarState.when(
       data: (calendarEvents) {
@@ -209,33 +214,68 @@ class CalendarBodyWidget extends ConsumerWidget {
               sizeOfQuarter,
           child: GestureDetector(
             onTap: () => _showCourseOptions(context, ref, event),
-            child: Container(
-              decoration: BoxDecoration(
-                  color: Colors.black12,
-                  borderRadius: BorderRadius.circular(8)),
-              margin: EdgeInsets.symmetric(vertical: 4, horizontal: 4),
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Text(
-                        FormatterDate.formatHours(
-                            event.startTime, event.endTime),
-                        style: GoogleFonts.robotoCondensed(
-                            color: Colors.white38, fontSize: 12)),
-                    Text(event.title,
-                        style: GoogleFonts.roboto(
-                            color: Colors.white, fontSize: 14)),
-                    Text(event.room,
-                        style: GoogleFonts.roboto(
+            child: Stack(
+              children: [
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.black12,
+                    borderRadius: BorderRadius.circular(8)
+                  ),
+                  margin: EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Text(
+                          FormatterDate.formatHours(event.startTime, event.endTime),
+                          style: GoogleFonts.robotoCondensed(
+                            color: Colors.white38,
+                            fontSize: 12
+                          )
+                        ),
+                        Text(
+                          event.title,
+                          style: GoogleFonts.roboto(
+                            color: Colors.white,
+                            fontSize: 14
+                          )
+                        ),
+                        Text(
+                          event.room,
+                          style: GoogleFonts.roboto(
                             color: Colors.white38,
                             fontSize: 12,
-                            fontWeight: FontWeight.w300)),
-                  ],
+                            fontWeight: FontWeight.w300
+                          )
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-              ),
+                // Week badge (only show if not BOTH)
+                if (event.weekType != 'BOTH')
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: AppColors.accent,
+                        borderRadius: BorderRadius.circular(3),
+                      ),
+                      child: Text(
+                        event.weekType,
+                        style: GoogleFonts.robotoCondensed(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
             ),
           ),
         ));

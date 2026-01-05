@@ -17,6 +17,7 @@ class CalendarPage extends ConsumerStatefulWidget {
 
 class _CalendarPageState extends ConsumerState<CalendarPage> {
   DateTime _selectedDate = DateTime.now();
+  WeekFilter _weekFilter = WeekFilter.all; // Default to show all courses
 
   @override
   Widget build(BuildContext context) {
@@ -52,44 +53,36 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                   child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
                         "Vos cours de la journée",
                         style: GoogleFonts.robotoCondensed(
                             color: Colors.white38, fontSize: 14),
                       ),
-                      const SizedBox(width: 12),
-                      // Week A/B indicator
-                      FutureBuilder<WeekInfo?>(
-                        future: ref.read(calendarControllerProvider(_selectedDate).notifier).getCurrentWeekInfo(),
-                        builder: (context, snapshot) {
-                          if (snapshot.hasData && snapshot.data != null) {
-                            final weekInfo = snapshot.data!;
-                            return Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: AppColors.accent.withOpacity(0.2),
-                                borderRadius: BorderRadius.circular(4),
-                                border: Border.all(color: AppColors.accent, width: 1),
-                              ),
-                              child: Text(
-                                "Semaine ${weekInfo.weekType}",
-                                style: GoogleFonts.robotoCondensed(
-                                  color: AppColors.accent,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            );
-                          }
-                          return const SizedBox.shrink();
-                        },
+                      // Week filter buttons
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.black26,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            _buildWeekFilterButton("Complet", WeekFilter.all),
+                            _buildWeekFilterButton("Sem. A", WeekFilter.weekA),
+                            _buildWeekFilterButton("Sem. B", WeekFilter.weekB),
+                          ],
+                        ),
                       ),
                     ],
                   ),
                 ),
                 const SizedBox(height: 8),
-                Expanded(child: CalendarBodyWidget(selectedDate: _selectedDate))
+                Expanded(child: CalendarBodyWidget(
+                  selectedDate: _selectedDate,
+                  weekFilter: _weekFilter,
+                ))
               ],
             ),
             Column(
@@ -141,12 +134,39 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       builder: (context) => AddCalendarCoursePage(
+        selectedDate: _selectedDate, // Pass selected date
         onAddCalendarCourse: (calendarCourse) {
           if (calendarCourse != null) {
             // Mettre à jour votre UI ou état avec le nouveau cours
             print("Cours ajouté au calendrier: ${calendarCourse.roomName}");
           }
         },
+      ),
+    );
+  }
+
+  Widget _buildWeekFilterButton(String label, WeekFilter filter) {
+    final isSelected = _weekFilter == filter;
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _weekFilter = filter;
+        });
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.accent : Colors.transparent,
+          borderRadius: BorderRadius.circular(6),
+        ),
+        child: Text(
+          label,
+          style: GoogleFonts.robotoCondensed(
+            color: isSelected ? Colors.white : Colors.white54,
+            fontSize: 11,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+          ),
+        ),
       ),
     );
   }
