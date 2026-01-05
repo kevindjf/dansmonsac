@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:common/src/ui/ui.dart';
+import 'package:common/src/utils/week_utils.dart';
 import 'package:course/models/cours_with_supplies.dart';
 import 'package:course/presentation/add/add_course_controller.dart';
 import 'package:flutter/cupertino.dart';
@@ -206,6 +207,89 @@ class _AddCalendarCoursePageState extends ConsumerState<AddCalendarCoursePage> {
                 const SizedBox(height: 16),
               ],
             ),
+
+            // Jour de la semaine
+            DropdownButtonFormField<int>(
+              decoration: InputDecoration(
+                filled: false,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Colors.grey),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Colors.grey),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: colorScheme.primary),
+                ),
+                labelText: "Jour de la semaine",
+                labelStyle: const TextStyle(color: Colors.grey),
+              ),
+              value: state.dayOfWeek,
+              items: [
+                DropdownMenuItem(value: 1, child: Text('Lundi')),
+                DropdownMenuItem(value: 2, child: Text('Mardi')),
+                DropdownMenuItem(value: 3, child: Text('Mercredi')),
+                DropdownMenuItem(value: 4, child: Text('Jeudi')),
+                DropdownMenuItem(value: 5, child: Text('Vendredi')),
+                DropdownMenuItem(value: 6, child: Text('Samedi')),
+                DropdownMenuItem(value: 7, child: Text('Dimanche')),
+              ],
+              onChanged: (int? value) {
+                if (value != null) {
+                  ref
+                      .read(addCalendarCourseControllerProvider.notifier)
+                      .dayOfWeekChanged(value);
+                }
+              },
+            ),
+            const SizedBox(height: 16),
+
+            // Type de semaine (A, B, ou les deux)
+            DropdownButtonFormField<WeekType>(
+              decoration: InputDecoration(
+                filled: false,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Colors.grey),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Colors.grey),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: colorScheme.primary),
+                ),
+                labelText: "Semaine",
+                labelStyle: const TextStyle(color: Colors.grey),
+              ),
+              value: state.weekType,
+              items: [
+                DropdownMenuItem(
+                  value: WeekType.A,
+                  child: Text('Semaine A uniquement'),
+                ),
+                DropdownMenuItem(
+                  value: WeekType.B,
+                  child: Text('Semaine B uniquement'),
+                ),
+                DropdownMenuItem(
+                  value: WeekType.BOTH,
+                  child: Text('Les deux semaines'),
+                ),
+              ],
+              onChanged: (WeekType? value) {
+                if (value != null) {
+                  ref
+                      .read(addCalendarCourseControllerProvider.notifier)
+                      .weekTypeChanged(value);
+                }
+              },
+            ),
+            const SizedBox(height: 16),
 
             // Heure de début
             InkWell(

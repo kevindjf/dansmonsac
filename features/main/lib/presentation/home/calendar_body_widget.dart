@@ -2,6 +2,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:common/src/utils/hours_util.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:schedule/presentation/calendar/controller/calendar_controller.dart';
 
 class EventUI {
   final Event event;
@@ -19,89 +21,38 @@ class Event {
   final DateTime startTime;
   final DateTime endTime;
 
-  Event(
-      {required this.title,
-      required this.room,
-      required this.hour,
-      required this.startTime,
-      required this.endTime});
+  Event({
+    required this.title,
+    required this.room,
+    required this.hour,
+    required this.startTime,
+    required this.endTime,
+  });
 
   @override
   String toString() {
     return 'Event{title: $title - : $startTime / $endTime}';
   }
+
+  // Factory to create from CalendarEvent
+  factory Event.fromCalendarEvent(CalendarEvent calendarEvent) {
+    return Event(
+      title: calendarEvent.title,
+      room: calendarEvent.room,
+      hour: calendarEvent.hour,
+      startTime: calendarEvent.startTime,
+      endTime: calendarEvent.endTime,
+    );
+  }
 }
 
-class CalendarBodyWidget extends StatelessWidget {
-  List<Event> events = [
-    // 🌅 Matin
-    Event(
-        title: 'Physique',
-        room: "Salle 101",
-        hour: "8h30-9h30",
-        startTime: DateTime(2025, 1, 15, 8, 30),
-        endTime: DateTime(2025, 1, 15, 9, 30)),
-    Event(
-        title: 'Math',
-        room: "Salle 205",
-        hour: "9h15-12h",
-        startTime: DateTime(2025, 1, 15, 9, 15),
-        endTime: DateTime(2025, 1, 15, 12, 00)),
-    // Se chevauche avec EPS et Français
-    Event(
-        title: 'EPS',
-        room: "Salle 205",
-        hour: "9h30-10h",
-        startTime: DateTime(2025, 1, 15, 9, 30),
-        endTime: DateTime(2025, 1, 15, 10, 30)),
-    // Se chevauche avec Math
-    Event(
-        title: 'Français',
-        room: "Salle 301",
-        hour: "10h-11h",
-        startTime: DateTime(2025, 1, 15, 10, 00),
-        endTime: DateTime(2025, 1, 15, 11, 00)),
-    // Se chevauche avec Math
-    Event(
-        title: 'Histoire',
-        room: "Salle 102",
-        hour: "11h-12h30",
-        startTime: DateTime(2025, 1, 15, 10, 30),
-        endTime: DateTime(2025, 1, 15, 12, 30)),
-    // Ne chevauche que la fin de Math
+class CalendarBodyWidget extends ConsumerWidget {
+  const CalendarBodyWidget({Key? key}) : super(key: key);
 
-    // ☕ Pause déjeuner (12h30 - 13h30)
-
-    // 🌇 Après-midi
-    Event(
-        title: 'Anglais',
-        room: "Salle 235",
-        hour: "14h-16h",
-        startTime: DateTime(2025, 1, 15, 14, 00),
-        endTime: DateTime(2025, 1, 15, 16, 00)),
-    // Se chevauche avec Techno
-    Event(
-        title: 'Technologie',
-        room: "Salle 220",
-        hour: "15h-17h",
-        startTime: DateTime(2025, 1, 15, 15, 00),
-        endTime: DateTime(2025, 1, 15, 17, 00)),
-    // Se chevauche avec Anglais
-    Event(
-        title: 'SVT',
-        room: "Salle 215",
-        hour: "16h-17h30",
-        startTime: DateTime(2025, 1, 15, 16, 00),
-        endTime: DateTime(2025, 1, 15, 17, 30)),
-    // Se chevauche avec Techno
-    Event(
-        title: 'Musique',
-        room: "Salle 108",
-        hour: "17h-17h30",
-        startTime: DateTime(2025, 1, 15, 16, 00),
-        endTime: DateTime(2025, 1, 15, 17, 30)),
-    // Se chevauche avec la fin de SVT
-  ];
+  List<Event> _getDefaultEvents() {
+    // Return empty list by default
+    return [];
+  }
 
   bool hasOverlappingEvent(Event event, List<Event> events) {
     for (var other in events) {
@@ -167,7 +118,49 @@ class CalendarBodyWidget extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final calendarState = ref.watch(calendarControllerProvider);
+
+    return calendarState.when(
+      data: (calendarEvents) {
+        // Convert CalendarEvent to Event
+        final events = calendarEvents.map((e) => Event.fromCalendarEvent(e)).toList();
+
+        // If no events, show empty message
+        if (events.isEmpty) {
+          return Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Text(
+                'Aucun cours aujourd\'hui',
+                style: GoogleFonts.roboto(
+                  fontSize: 16,
+                  color: Colors.grey,
+                ),
+              ),
+            ),
+          );
+        }
+
+        return _buildCalendar(context, events);
+      },
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (error, stack) => Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Text(
+            'Erreur lors du chargement des cours',
+            style: GoogleFonts.roboto(
+              fontSize: 16,
+              color: Colors.red,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCalendar(BuildContext context, List<Event> events) {
     var grouped = groupOverlappingEvents(events);
     // 2. Définir notre unité temporelle (pixels par minute)
     final double pixelsPerMinute = 100 / 30; // 100 pixels pour 30 minutes

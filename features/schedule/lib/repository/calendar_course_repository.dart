@@ -32,6 +32,8 @@ class CalendarCourseSupabaseRepository extends CalendarCourseRepository {
             'start_time_minute': calendarCourse.startTime.minute,
             'end_time_hour': calendarCourse.endTime.hour,
             'end_time_minute': calendarCourse.endTime.minute,
+            'week_type': calendarCourse.weekType.value,
+            'day_of_week': calendarCourse.dayOfWeek,
           })
           .select()
           .single();
