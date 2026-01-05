@@ -6,6 +6,7 @@ import 'package:main/presentation/home/controller/home_controller.dart';
 import 'package:main/presentation/home/controller/home_state_ui.dart';
 import 'package:course/presentation/list/courses_page.dart';
 import 'package:main/presentation/home/list_supply_page.dart';
+import 'package:main/presentation/home/settings_page.dart';
 
 class HomePage extends ConsumerWidget {
   static const String routeName = "/home";
@@ -88,7 +89,7 @@ class HomePage extends ConsumerWidget {
       case HomeViewPage.courses:
         return CoursesPage();
       case HomeViewPage.settings:
-        return Text("settings");
+        return SettingsPage();
     }
   }
 }
