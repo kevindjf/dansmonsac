@@ -41,6 +41,9 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
   // Map to track checked state of supplies by ID
   final Map<String, bool> _checkedState = {};
 
+  // Toggle between today and tomorrow
+  bool _showTomorrow = true; // true = tomorrow (default), false = today
+
   @override
   Widget build(BuildContext context) {
     final tomorrowSuppliesState = ref.watch(tomorrowSupplyControllerProvider);
@@ -87,7 +90,7 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
                 child: Padding(
                   padding: const EdgeInsets.all(24.0),
                   child: Text(
-                    'Aucun cours demain',
+                    _showTomorrow ? 'Aucun cours demain' : 'Aucun cours aujourd\'hui',
                     style: GoogleFonts.roboto(
                       fontSize: 16,
                       color: Colors.grey,
@@ -173,10 +176,29 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 8),
-            Text(
-              "A mettre dans votre sac",
-              style: GoogleFonts.robotoCondensed(
-                  color: Colors.white38, fontSize: 14),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  "A mettre dans votre sac",
+                  style: GoogleFonts.robotoCondensed(
+                      color: Colors.white38, fontSize: 14),
+                ),
+                // Day toggle buttons
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.black26,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _buildDayButton("Aujourd'hui", !_showTomorrow),
+                      _buildDayButton("Demain", _showTomorrow),
+                    ],
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 16),
             Text(
@@ -194,6 +216,31 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
                   fontWeight: FontWeight.w300),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDayButton(String label, bool isSelected) {
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _showTomorrow = label == "Demain";
+        });
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.accent : Colors.transparent,
+          borderRadius: BorderRadius.circular(6),
+        ),
+        child: Text(
+          label,
+          style: GoogleFonts.robotoCondensed(
+            color: isSelected ? Colors.white : Colors.white54,
+            fontSize: 12,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+          ),
         ),
       ),
     );
