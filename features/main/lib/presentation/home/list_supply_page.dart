@@ -115,54 +115,55 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
         Column(
           children: [
             _buildHeader(checked, total, packTime),
+            // Show banner when bag is ready
+            if (isBagReady)
+              _buildBagReadyBanner(),
             Expanded(
-              child: isBagReady
-                  ? _buildBagReadyPlaceholder()
-                  : ListView.builder(
-                      itemCount: items.length,
-                      itemBuilder: (context, index) {
-                        final item = items[index];
-                        if (item is CourseTitleItem) {
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(
-                                vertical: 8.0, horizontal: 16.0),
-                            child: Text(
-                              item.title.toUpperCase(),
-                              style: GoogleFonts.robotoCondensed(
-                                  fontSize: 16,
-                                  color: AppColors.accent,
-                                  fontWeight: FontWeight.bold),
-                            ),
-                          );
-                        } else if (item is SupplyItem) {
-                          return CheckboxListTile(
-                            checkboxShape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(4.0),
-                              side: BorderSide(
-                                width: 4.5,
-                                color: Colors.grey,
-                              ),
-                            ),
-                            secondary: SizedBox(width: 10),
-                            contentPadding:
-                                EdgeInsets.symmetric(horizontal: 8.0, vertical: 2.0),
-                            dense: false,
-                            controlAffinity: ListTileControlAffinity.leading,
-                            title: Text(
-                              item.name,
-                              style: GoogleFonts.roboto(color: Colors.white70),
-                            ),
-                            value: item.isChecked,
-                            onChanged: (value) {
-                              setState(() {
-                                _checkedState[item.id] = value ?? false;
-                              });
-                            },
-                          );
-                        }
-                        return Container();
+              child: ListView.builder(
+                itemCount: items.length,
+                itemBuilder: (context, index) {
+                  final item = items[index];
+                  if (item is CourseTitleItem) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 8.0, horizontal: 16.0),
+                      child: Text(
+                        item.title.toUpperCase(),
+                        style: GoogleFonts.robotoCondensed(
+                            fontSize: 16,
+                            color: AppColors.accent,
+                            fontWeight: FontWeight.bold),
+                      ),
+                    );
+                  } else if (item is SupplyItem) {
+                    return CheckboxListTile(
+                      checkboxShape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(4.0),
+                        side: BorderSide(
+                          width: 4.5,
+                          color: Colors.grey,
+                        ),
+                      ),
+                      secondary: SizedBox(width: 10),
+                      contentPadding:
+                          EdgeInsets.symmetric(horizontal: 8.0, vertical: 2.0),
+                      dense: false,
+                      controlAffinity: ListTileControlAffinity.leading,
+                      title: Text(
+                        item.name,
+                        style: GoogleFonts.roboto(color: Colors.white70),
+                      ),
+                      value: item.isChecked,
+                      onChanged: (value) {
+                        setState(() {
+                          _checkedState[item.id] = value ?? false;
+                        });
                       },
-                    ),
+                    );
+                  }
+                  return Container();
+                },
+              ),
             ),
           ],
         ),
@@ -171,44 +172,50 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
     );
   }
 
-  Widget _buildBagReadyPlaceholder() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: AppColors.accent.withOpacity(0.2),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                Icons.check_circle_outline,
-                size: 64,
-                color: AppColors.accent,
-              ),
-            ),
-            const SizedBox(height: 24),
-            Text(
-              "Votre sac est prêt !",
-              style: GoogleFonts.robotoCondensed(
-                fontSize: 28,
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              "Toutes vos fournitures sont cochées",
-              style: GoogleFonts.roboto(
-                fontSize: 16,
-                color: Colors.white54,
-              ),
-            ),
-          ],
+  Widget _buildBagReadyBanner() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.accent.withOpacity(0.15),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: AppColors.accent.withOpacity(0.3),
+          width: 1,
         ),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            Icons.check_circle,
+            color: AppColors.accent,
+            size: 28,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "Votre sac est prêt !",
+                  style: GoogleFonts.robotoCondensed(
+                    fontSize: 16,
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  "Toutes vos fournitures sont cochées",
+                  style: GoogleFonts.roboto(
+                    fontSize: 12,
+                    color: Colors.white54,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

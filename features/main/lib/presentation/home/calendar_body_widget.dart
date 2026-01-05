@@ -214,68 +214,71 @@ class CalendarBodyWidget extends ConsumerWidget {
               sizeOfQuarter,
           child: GestureDetector(
             onTap: () => _showCourseOptions(context, ref, event),
-            child: Stack(
-              children: [
-                Container(
-                  decoration: BoxDecoration(
-                    color: Colors.black12,
-                    borderRadius: BorderRadius.circular(8)
-                  ),
-                  margin: EdgeInsets.symmetric(vertical: 4, horizontal: 4),
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Column(
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.black12,
+                borderRadius: BorderRadius.circular(8)
+              ),
+              margin: EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text(
+                      FormatterDate.formatHours(event.startTime, event.endTime),
+                      style: GoogleFonts.robotoCondensed(
+                        color: Colors.white38,
+                        fontSize: 12
+                      )
+                    ),
+                    // Title with badge inline
+                    Row(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        Text(
-                          FormatterDate.formatHours(event.startTime, event.endTime),
-                          style: GoogleFonts.robotoCondensed(
-                            color: Colors.white38,
-                            fontSize: 12
-                          )
+                        Flexible(
+                          child: Text(
+                            event.title,
+                            style: GoogleFonts.roboto(
+                              color: Colors.white,
+                              fontSize: 14
+                            ),
+                            textAlign: TextAlign.center,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
-                        Text(
-                          event.title,
-                          style: GoogleFonts.roboto(
-                            color: Colors.white,
-                            fontSize: 14
-                          )
-                        ),
-                        Text(
-                          event.room,
-                          style: GoogleFonts.roboto(
-                            color: Colors.white38,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w300
-                          )
-                        ),
+                        if (event.weekType != 'BOTH') ...[
+                          const SizedBox(width: 6),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                            decoration: BoxDecoration(
+                              color: AppColors.accent,
+                              borderRadius: BorderRadius.circular(3),
+                            ),
+                            child: Text(
+                              event.weekType,
+                              style: GoogleFonts.robotoCondensed(
+                                color: Colors.white,
+                                fontSize: 9,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
                       ],
                     ),
-                  ),
-                ),
-                // Week badge (only show if not BOTH)
-                if (event.weekType != 'BOTH')
-                  Positioned(
-                    top: 8,
-                    right: 8,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: AppColors.accent,
-                        borderRadius: BorderRadius.circular(3),
-                      ),
-                      child: Text(
-                        event.weekType,
-                        style: GoogleFonts.robotoCondensed(
-                          color: Colors.white,
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                    Text(
+                      event.room,
+                      style: GoogleFonts.roboto(
+                        color: Colors.white38,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w300
+                      )
                     ),
-                  ),
-              ],
+                  ],
+                ),
+              ),
             ),
           ),
         ));
