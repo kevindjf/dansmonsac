@@ -85,6 +85,18 @@ class AddCalendarCourseController extends _$AddCalendarCourseController {
     ));
   }
 
+  void weekTypeChanged(WeekType weekType) {
+    state = AsyncValue.data(state.value!.copyWith(
+      weekType: weekType,
+    ));
+  }
+
+  void dayOfWeekChanged(int dayOfWeek) {
+    state = AsyncValue.data(state.value!.copyWith(
+      dayOfWeek: dayOfWeek,
+    ));
+  }
+
   bool _validateInputs() {
     bool isValid = true;
     final currentState = state.value!;
@@ -126,6 +138,8 @@ class AddCalendarCourseController extends _$AddCalendarCourseController {
       roomName: currentState.roomName,
       startTime: currentState.startTime,
       endTime: currentState.endTime,
+      weekType: currentState.weekType,
+      dayOfWeek: currentState.dayOfWeek,
     );
 
     final repository = ref.read(calendarCourseRepositoryProvider);
