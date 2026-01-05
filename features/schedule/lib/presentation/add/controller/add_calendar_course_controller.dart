@@ -9,6 +9,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../repository/calendar_course_repository.dart';
 import '../../../di/riverpod_di.dart';
+import '../../calendar/controller/calendar_controller.dart';
+import '../../supply_list/controller/tomorrow_supply_controller.dart';
 import 'add_calendar_couse_state.dart';
 
 part 'add_calendar_course_controller.g.dart';
@@ -147,7 +149,12 @@ class AddCalendarCourseController extends _$AddCalendarCourseController {
 
     result.fold(
       (failure) => _errorStreamController.add("Erreur lors de l'enregistrement: ${failure.message}"),
-      (savedCalendarCourse) => _successStreamController.add(savedCalendarCourse),
+      (savedCalendarCourse) {
+        _successStreamController.add(savedCalendarCourse);
+        // Refresh calendar and supply list
+        ref.invalidate(calendarControllerProvider);
+        ref.invalidate(tomorrowSupplyControllerProvider);
+      },
     );
   }
 }

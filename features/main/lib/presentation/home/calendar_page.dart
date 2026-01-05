@@ -4,6 +4,7 @@ import 'package:common/src/ui/ui.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:main/presentation/home/calendar_body_widget.dart';
 import 'package:schedule/presentation/add/add_calendar_course_page.dart';
+import 'package:schedule/presentation/calendar/controller/calendar_controller.dart';
 
 
 class CalendarPage extends ConsumerWidget {
@@ -40,13 +41,45 @@ class CalendarPage extends ConsumerWidget {
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Text(
-                    "Vos cours de la journée",
-                    style: GoogleFonts.robotoCondensed(
-                        color: Colors.white38, fontSize: 14),
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                  child: Row(
+                    children: [
+                      Text(
+                        "Vos cours de la journée",
+                        style: GoogleFonts.robotoCondensed(
+                            color: Colors.white38, fontSize: 14),
+                      ),
+                      const SizedBox(width: 12),
+                      // Week A/B indicator
+                      FutureBuilder<WeekInfo?>(
+                        future: ref.read(calendarControllerProvider.notifier).getCurrentWeekInfo(),
+                        builder: (context, snapshot) {
+                          if (snapshot.hasData && snapshot.data != null) {
+                            final weekInfo = snapshot.data!;
+                            return Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: AppColors.accent.withOpacity(0.2),
+                                borderRadius: BorderRadius.circular(4),
+                                border: Border.all(color: AppColors.accent, width: 1),
+                              ),
+                              child: Text(
+                                "Semaine ${weekInfo.weekType}",
+                                style: GoogleFonts.robotoCondensed(
+                                  color: AppColors.accent,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            );
+                          }
+                          return const SizedBox.shrink();
+                        },
+                      ),
+                    ],
                   ),
                 ),
+                const SizedBox(height: 8),
                 Expanded(child: CalendarBodyWidget())
               ],
             ),

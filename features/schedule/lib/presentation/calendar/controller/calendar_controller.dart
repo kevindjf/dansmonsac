@@ -26,11 +26,43 @@ class CalendarEvent {
   });
 }
 
+class WeekInfo {
+  final String weekType; // 'A' or 'B'
+
+  WeekInfo({required this.weekType});
+}
+
 @riverpod
 class CalendarController extends _$CalendarController {
   @override
   Future<List<CalendarEvent>> build() async {
     return _fetchTodaysCourses();
+  }
+
+  // Get current week info (returns null if no A/B courses exist)
+  Future<WeekInfo?> getCurrentWeekInfo() async {
+    final repository = ref.watch(calendarCourseRepositoryProvider);
+    final result = await repository.fetchCalendarCourses();
+
+    return result.fold(
+      (failure) => null,
+      (courses) {
+        // Check if any course uses A/B system (not all BOTH)
+        final hasABSystem = courses.any((course) =>
+          course.weekType == WeekType.A || course.weekType == WeekType.B
+        );
+
+        if (!hasABSystem) return null;
+
+        // Calculate current week type
+        final today = DateTime.now();
+        final currentYear = today.month >= 9 ? today.year : today.year - 1;
+        final schoolYearStart = DateTime(currentYear, 9, 1);
+        final currentWeekType = WeekUtils.getCurrentWeekType(schoolYearStart, today);
+
+        return WeekInfo(weekType: currentWeekType);
+      },
+    );
   }
 
   Future<List<CalendarEvent>> _fetchTodaysCourses() async {
