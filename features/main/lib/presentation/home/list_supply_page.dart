@@ -63,7 +63,7 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
 
             items.add(SupplyItem(
               id: supply.id,
-              name: supply.supplyName,
+              name: supply.name,
               isChecked: isChecked,
             ));
           }

@@ -82,7 +82,7 @@ class CalendarController extends _$CalendarController {
         for (final course in todaysCourses) {
           // Look up course name
           final courseData = courseMap[course.courseId];
-          final courseName = courseData?.coursName ?? 'Cours';
+          final courseName = courseData?.name ?? 'Cours';
 
           // Create DateTime for today with the course times
           final startTime = DateTime(

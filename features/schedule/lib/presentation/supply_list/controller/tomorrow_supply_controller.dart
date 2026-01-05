@@ -79,7 +79,7 @@ class TomorrowSupplyController extends _$TomorrowSupplyController {
           if (supplies.isNotEmpty) {
             coursesWithSupplies.add(CourseWithSuppliesForTomorrow(
               courseId: courseData.id,
-              courseName: courseData.coursName,
+              courseName: courseData.name,
               supplies: supplies,
             ));
           }
