@@ -2,8 +2,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:common/src/utils/hours_util.dart';
+import 'package:common/src/ui/ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:schedule/presentation/calendar/controller/calendar_controller.dart';
+import 'package:schedule/di/riverpod_di.dart';
 
 class EventUI {
   final Event event;
@@ -15,6 +17,7 @@ class EventUI {
 }
 
 class Event {
+  final String id;
   final String title;
   final String room;
   final String hour;
@@ -22,6 +25,7 @@ class Event {
   final DateTime endTime;
 
   Event({
+    required this.id,
     required this.title,
     required this.room,
     required this.hour,
@@ -37,6 +41,7 @@ class Event {
   // Factory to create from CalendarEvent
   factory Event.fromCalendarEvent(CalendarEvent calendarEvent) {
     return Event(
+      id: calendarEvent.id,
       title: calendarEvent.title,
       room: calendarEvent.room,
       hour: calendarEvent.hour,
@@ -195,29 +200,32 @@ class CalendarBodyWidget extends ConsumerWidget {
               MediaQuery.of(context).size.width / grouped.length * width - 10,
           height: getQuarterHourIntervals(event.startTime, event.endTime) *
               sizeOfQuarter,
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.black12,
-                  borderRadius: BorderRadius.circular(8)
-            ),
-            margin: EdgeInsets.symmetric(vertical: 4,horizontal: 4),
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Text(FormatterDate.formatHours(event.startTime, event.endTime),
-                      style: GoogleFonts.robotoCondensed(
-                          color: Colors.white38, fontSize: 12)
-                  ),
-                  Text(event.title,
-                      style: GoogleFonts.roboto(
-                          color: Colors.white, fontSize: 14)
-                  ),
-                  Text(event.room,style: GoogleFonts.roboto(
-                      color: Colors.white38, fontSize: 12,fontWeight: FontWeight.w300)),
-                ],
+          child: GestureDetector(
+            onTap: () => _showCourseOptions(context, ref, event),
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.black12,
+                    borderRadius: BorderRadius.circular(8)
+              ),
+              margin: EdgeInsets.symmetric(vertical: 4,horizontal: 4),
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text(FormatterDate.formatHours(event.startTime, event.endTime),
+                        style: GoogleFonts.robotoCondensed(
+                            color: Colors.white38, fontSize: 12)
+                    ),
+                    Text(event.title,
+                        style: GoogleFonts.roboto(
+                            color: Colors.white, fontSize: 14)
+                    ),
+                    Text(event.room,style: GoogleFonts.roboto(
+                        color: Colors.white38, fontSize: 12,fontWeight: FontWeight.w300)),
+                  ],
+                ),
               ),
             ),
           ),
@@ -236,36 +244,89 @@ class CalendarBodyWidget extends ConsumerWidget {
         ],
       ),
     );
+  }
 
-    /* return Column(
-      children: () {
-        List<Widget> widgets = [];
+  void _showCourseOptions(BuildContext context, WidgetRef ref, Event event) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Color(0xFF303030),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) => Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Course info
+            Text(
+              event.title,
+              style: GoogleFonts.roboto(
+                color: Colors.white,
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              "${event.room} • ${event.hour}",
+              style: GoogleFonts.roboto(
+                color: Colors.white38,
+                fontSize: 14,
+              ),
+            ),
+            const SizedBox(height: 24),
 
-        // Tri des événements par heure de début
+            // Delete button
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: () async {
+                  Navigator.pop(context);
+                  await _deleteCourse(context, ref, event.id);
+                },
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  side: BorderSide(color: Colors.red),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                icon: Icon(Icons.delete_outline, color: Colors.red),
+                label: Text(
+                  "Supprimer ce cours",
+                  style: TextStyle(fontSize: 16, color: Colors.red),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
+        ),
+      ),
+    );
+  }
 
+  Future<void> _deleteCourse(BuildContext context, WidgetRef ref, String courseId) async {
+    final repository = ref.read(calendarCourseRepositoryProvider);
+    final result = await repository.deleteCalendarCourse(courseId);
 
-        // J'ai les evenent qui se chevauchent pas date de début
-        var groupedEvent = groupOverlappingEvents(events);
-
-        /*for (int i = 0; i < groupedEvent.length; i++) {
-          // Je parcours les colonnes
-          // je calcule où je me place
-          List<Event> eventsSameTime = groupedEvent[i];
-
-          for(int j = 0; j < eventsSameTime.length; j++){
-            var event = eventsSameTime[j];
-            var marginWithStart = getQuarterHourIntervals(startDay.startTime, event.startTime);
-            var height = getQuarterHourIntervals(event.startTime, event.endTime);
-            widgets.add(Container(
-              color: Colors.blue,
-              margin: Edge,
-            ))
-          }
-        }*/
-
-        return widgets;
-      }(),
-    );*/
+    result.fold(
+      (failure) {
+        ShowErrorMessage.show(context, "Erreur lors de la suppression: ${failure.message}");
+      },
+      (_) {
+        // Refresh calendar and supply list
+        ref.invalidate(calendarControllerProvider);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Cours supprimé avec succès'),
+            backgroundColor: Color(0xFF303030),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      },
+    );
   }
 }
 
