@@ -1,11 +1,10 @@
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:common/src/utils/hours_util.dart';
 import 'package:common/src/ui/ui.dart';
+import 'package:common/src/utils/hours_util.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:schedule/presentation/calendar/controller/calendar_controller.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:schedule/di/riverpod_di.dart';
+import 'package:schedule/presentation/calendar/controller/calendar_controller.dart';
 
 class EventUI {
   final Event event;
@@ -135,7 +134,8 @@ class CalendarBodyWidget extends ConsumerWidget {
     return calendarState.when(
       data: (calendarEvents) {
         // Convert CalendarEvent to Event
-        final events = calendarEvents.map((e) => Event.fromCalendarEvent(e)).toList();
+        final events =
+            calendarEvents.map((e) => Event.fromCalendarEvent(e)).toList();
 
         // If no events, show empty message
         if (events.isEmpty) {
@@ -153,7 +153,7 @@ class CalendarBodyWidget extends ConsumerWidget {
           );
         }
 
-        return _buildCalendar(context, events);
+        return _buildCalendar(context, events, ref);
       },
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (error, stack) => Center(
@@ -171,7 +171,8 @@ class CalendarBodyWidget extends ConsumerWidget {
     );
   }
 
-  Widget _buildCalendar(BuildContext context, List<Event> events) {
+  Widget _buildCalendar(
+      BuildContext context, List<Event> events, WidgetRef ref) {
     var grouped = groupOverlappingEvents(events);
     // 2. Définir notre unité temporelle (pixels par minute)
     final double pixelsPerMinute = 100 / 30; // 100 pixels pour 30 minutes
@@ -200,7 +201,7 @@ class CalendarBodyWidget extends ConsumerWidget {
           margin: EdgeInsets.only(
               top:
                   getQuarterHourIntervals(startDay.startTime, event.startTime) *
-                          sizeOfQuarter,
+                      sizeOfQuarter,
               left: MediaQuery.of(context).size.width / grouped.length * i),
           width:
               MediaQuery.of(context).size.width / grouped.length * width - 10,
@@ -210,26 +211,28 @@ class CalendarBodyWidget extends ConsumerWidget {
             onTap: () => _showCourseOptions(context, ref, event),
             child: Container(
               decoration: BoxDecoration(
-                color: Colors.black12,
-                    borderRadius: BorderRadius.circular(8)
-              ),
-              margin: EdgeInsets.symmetric(vertical: 4,horizontal: 4),
+                  color: Colors.black12,
+                  borderRadius: BorderRadius.circular(8)),
+              margin: EdgeInsets.symmetric(vertical: 4, horizontal: 4),
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Text(FormatterDate.formatHours(event.startTime, event.endTime),
+                    Text(
+                        FormatterDate.formatHours(
+                            event.startTime, event.endTime),
                         style: GoogleFonts.robotoCondensed(
-                            color: Colors.white38, fontSize: 12)
-                    ),
+                            color: Colors.white38, fontSize: 12)),
                     Text(event.title,
                         style: GoogleFonts.roboto(
-                            color: Colors.white, fontSize: 14)
-                    ),
-                    Text(event.room,style: GoogleFonts.roboto(
-                        color: Colors.white38, fontSize: 12,fontWeight: FontWeight.w300)),
+                            color: Colors.white, fontSize: 14)),
+                    Text(event.room,
+                        style: GoogleFonts.roboto(
+                            color: Colors.white38,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w300)),
                   ],
                 ),
               ),
@@ -313,13 +316,15 @@ class CalendarBodyWidget extends ConsumerWidget {
     );
   }
 
-  Future<void> _deleteCourse(BuildContext context, WidgetRef ref, String courseId) async {
+  Future<void> _deleteCourse(
+      BuildContext context, WidgetRef ref, String courseId) async {
     final repository = ref.read(calendarCourseRepositoryProvider);
     final result = await repository.deleteCalendarCourse(courseId);
 
     result.fold(
       (failure) {
-        ShowErrorMessage.show(context, "Erreur lors de la suppression: ${failure.message}");
+        ShowErrorMessage.show(
+            context, "Erreur lors de la suppression: ${failure.message}");
       },
       (_) {
         // Refresh calendar and supply list

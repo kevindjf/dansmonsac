@@ -1,5 +1,6 @@
 import 'dart:async';
-import 'dart:developer' as developer;
+
+import 'package:common/src/di/riverpod_di.dart';
 import 'package:flutter/material.dart';
 import 'package:onboarding/src/di/riverpod_di.dart';
 import 'package:onboarding/src/models/command/pack_time_command.dart';
@@ -7,7 +8,6 @@ import 'package:onboarding/src/presentation/course/course_page.dart';
 import 'package:onboarding/src/presentation/hour/controller/setup_time_onboarding_state.dart';
 import 'package:onboarding/src/repositories/onboarding_repository.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:common/src/di/riverpod_di.dart';
 
 part 'setup_time_onboarding_controller.g.dart';
 
@@ -17,7 +17,6 @@ class SetupTimeOnboardingController extends _$SetupTimeOnboardingController {
 
   final _errorController = StreamController<String>.broadcast();
   Stream<String> get errorStream => _errorController.stream;
-
 
   @override
   SetupTimeOnboardingState build() {
@@ -44,10 +43,10 @@ class SetupTimeOnboardingController extends _$SetupTimeOnboardingController {
     response.fold((failure) {
       state = state.copyWith(isLoading: false);
 
-      _errorController.add("Une erreur est survenue, veuillez réessayer ultérieurement !");
-
+      print(failure);
+      _errorController
+          .add("Une erreur est survenue, veuillez réessayer ultérieurement !");
     }, (_) => ref.read(routerDelegateProvider))?.setRoute(
         OnboardingCoursePage.routeName);
   }
-
 }
