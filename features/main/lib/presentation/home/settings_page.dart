@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:common/src/ui/ui.dart';
+import 'package:dansmonsac/services/preferences_service.dart';
+import 'package:dansmonsac/services/notification_service.dart';
+import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 
 class SettingsPage extends ConsumerStatefulWidget {
   const SettingsPage({Key? key}) : super(key: key);
@@ -11,12 +14,42 @@ class SettingsPage extends ConsumerStatefulWidget {
 }
 
 class _SettingsPageState extends ConsumerState<SettingsPage> {
-  // TODO: Get from preferences
   TimeOfDay _packTime = TimeOfDay(hour: 19, minute: 0);
   DateTime _schoolYearStart = DateTime(2024, 9, 2);
+  bool _notificationsEnabled = false;
+  Color _accentColor = const Color(0xFF9C27B0);
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPreferences();
+  }
+
+  Future<void> _loadPreferences() async {
+    final packTime = await PreferencesService.getPackTime();
+    final schoolYearStart = await PreferencesService.getSchoolYearStart();
+    final notificationsEnabled = await PreferencesService.getNotificationsEnabled();
+    final accentColor = await PreferencesService.getAccentColor();
+
+    setState(() {
+      _packTime = packTime;
+      _schoolYearStart = schoolYearStart;
+      _notificationsEnabled = notificationsEnabled;
+      _accentColor = accentColor;
+      _isLoading = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return Scaffold(
+        backgroundColor: Color(0xFF212121),
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
     return Scaffold(
       backgroundColor: Color(0xFF212121),
       body: SafeArea(
@@ -69,6 +102,37 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                     subtitle: 'Quand préparez-vous votre sac ?',
                     value: _formatTime(_packTime),
                     onTap: () => _selectPackTime(context),
+                  ),
+
+                  _buildSwitchCard(
+                    icon: Icons.notifications_outlined,
+                    title: 'Notifications de rappel',
+                    subtitle: 'Recevoir un rappel quotidien',
+                    value: _notificationsEnabled,
+                    onChanged: _toggleNotifications,
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // Section: Apparence
+                  _buildSectionTitle('Apparence'),
+                  const SizedBox(height: 8),
+
+                  _buildSettingCard(
+                    icon: Icons.palette_outlined,
+                    title: 'Couleur d\'accent',
+                    subtitle: 'Personnalisez votre thème',
+                    value: '',
+                    onTap: () => _selectAccentColor(context),
+                    trailing: Container(
+                      width: 24,
+                      height: 24,
+                      decoration: BoxDecoration(
+                        color: _accentColor,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white24, width: 2),
+                      ),
+                    ),
                   ),
 
                   const SizedBox(height: 24),
@@ -138,6 +202,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     required String subtitle,
     required String value,
     required VoidCallback? onTap,
+    Widget? trailing,
   }) {
     return Card(
       color: Color(0xFF303030),
@@ -195,25 +260,30 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                 ),
               ),
 
-              // Value
-              if (value.isNotEmpty)
-                Text(
-                  value,
-                  style: GoogleFonts.roboto(
-                    color: AppColors.accent,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
+              // Custom trailing or default value/arrow
+              if (trailing != null)
+                trailing
+              else ...[
+                // Value
+                if (value.isNotEmpty)
+                  Text(
+                    value,
+                    style: GoogleFonts.roboto(
+                      color: AppColors.accent,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
-                ),
 
-              // Arrow icon if tappable
-              if (onTap != null) ...[
-                const SizedBox(width: 8),
-                Icon(
-                  Icons.chevron_right,
-                  color: Colors.white38,
-                  size: 24,
-                ),
+                // Arrow icon if tappable
+                if (onTap != null) ...[
+                  const SizedBox(width: 8),
+                  Icon(
+                    Icons.chevron_right,
+                    color: Colors.white38,
+                    size: 24,
+                  ),
+                ],
               ],
             ],
           ),
@@ -257,7 +327,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       setState(() {
         _packTime = picked;
       });
-      // TODO: Save to preferences
+      await PreferencesService.setPackTime(picked);
+      await NotificationService.updateNotificationIfEnabled();
       _showSnackBar('Heure de préparation mise à jour: ${_formatTime(picked)}');
     }
   }
@@ -288,8 +359,182 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       setState(() {
         _schoolYearStart = picked;
       });
-      // TODO: Save to preferences
+      await PreferencesService.setSchoolYearStart(picked);
       _showSnackBar('Date de début mise à jour: ${_formatDate(picked)}');
+    }
+  }
+
+  Widget _buildSwitchCard({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required bool value,
+    required Function(bool) onChanged,
+  }) {
+    return Card(
+      color: Color(0xFF303030),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      margin: const EdgeInsets.only(bottom: 8.0),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Row(
+          children: [
+            // Icon
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: AppColors.accent.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(
+                icon,
+                color: AppColors.accent,
+                size: 24,
+              ),
+            ),
+            const SizedBox(width: 16),
+
+            // Title and subtitle
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: GoogleFonts.roboto(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  if (subtitle.isNotEmpty) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      subtitle,
+                      style: GoogleFonts.roboto(
+                        color: Colors.white38,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w300,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+
+            // Switch
+            Switch(
+              value: value,
+              onChanged: onChanged,
+              activeColor: AppColors.accent,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _toggleNotifications(bool enabled) async {
+    setState(() {
+      _notificationsEnabled = enabled;
+    });
+
+    await PreferencesService.setNotificationsEnabled(enabled);
+
+    if (enabled) {
+      // Request permissions
+      final granted = await NotificationService.requestPermissions();
+      if (granted) {
+        await NotificationService.scheduleDailyNotification();
+        _showSnackBar('Notifications activées à ${_formatTime(_packTime)}');
+      } else {
+        // Permission denied, revert the switch
+        setState(() {
+          _notificationsEnabled = false;
+        });
+        await PreferencesService.setNotificationsEnabled(false);
+        _showSnackBar('Permission de notification refusée');
+      }
+    } else {
+      await NotificationService.cancelNotification();
+      _showSnackBar('Notifications désactivées');
+    }
+  }
+
+  Future<void> _selectAccentColor(BuildContext context) async {
+    Color? pickedColor;
+
+    await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: Color(0xFF303030),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Text(
+            'Choisir une couleur',
+            style: GoogleFonts.robotoCondensed(
+              color: Colors.white,
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          content: SingleChildScrollView(
+            child: ColorPicker(
+              pickerColor: _accentColor,
+              onColorChanged: (Color color) {
+                pickedColor = color;
+              },
+              pickerAreaHeightPercent: 0.8,
+              enableAlpha: false,
+              displayThumbColor: true,
+              labelTypes: const [],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(
+                'Annuler',
+                style: GoogleFonts.roboto(
+                  color: Colors.white54,
+                  fontSize: 16,
+                ),
+              ),
+            ),
+            FilledButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              style: FilledButton.styleFrom(
+                backgroundColor: AppColors.accent,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: Text(
+                'Confirmer',
+                style: GoogleFonts.roboto(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (pickedColor != null && pickedColor != _accentColor) {
+      setState(() {
+        _accentColor = pickedColor!;
+      });
+      await PreferencesService.setAccentColor(pickedColor!);
+      _showSnackBar('Couleur mise à jour ! Redémarrez l\'app pour appliquer');
     }
   }
 

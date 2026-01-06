@@ -41,6 +41,10 @@ dependencies:
   flutter_riverpod:
   json_annotation: ^4.9.0
   intl: ^0.20.2
+  flutter_local_notifications: ^18.0.1
+  shared_preferences: ^2.3.3
+  flutter_colorpicker: ^1.1.0
+  timezone: ^0.9.4
 
   ##### MODULES DEPENCIES #######
   common:

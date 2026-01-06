@@ -5,10 +5,12 @@ import 'package:common/src/repository/repository_helper.dart';
 import 'package:common/src/navigation/routes.dart';
 import 'package:common/src/di/riverpod_di.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:dansmonsac/services/notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await RepositoryHelper.initialize();
+  await NotificationService.initialize();
 
   runApp(ProviderScope(child: MyApp()));
 }
