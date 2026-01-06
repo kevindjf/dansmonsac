@@ -15,19 +15,39 @@ void main() async {
   runApp(ProviderScope(child: MyApp()));
 }
 
-class MyApp extends ConsumerWidget {
+class MyApp extends ConsumerStatefulWidget {
+  const MyApp({super.key});
+
+  @override
+  ConsumerState<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends ConsumerState<MyApp> {
   final AppRouteInformationParser _routeInformationParser =
       AppRouteInformationParser();
 
-  MyApp({super.key});
+  Color _accentColor = const Color(0xFF9C27B0); // Default color
+
+  @override
+  void initState() {
+    super.initState();
+    _loadAccentColor();
+  }
+
+  Future<void> _loadAccentColor() async {
+    final color = await PreferencesService.getAccentColor();
+    setState(() {
+      _accentColor = color;
+    });
+  }
 
   // This widget is the root of your application.
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     return MaterialApp.router(
       title: 'Dans mon sac',
       theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
+      darkTheme: AppTheme.darkThemeWithColor(_accentColor),
       themeMode: ThemeMode.dark,
       debugShowCheckedModeBanner: false,
       localizationsDelegates: const [

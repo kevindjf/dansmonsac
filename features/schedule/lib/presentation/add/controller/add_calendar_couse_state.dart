@@ -27,7 +27,7 @@ class AddCalendarCourseState {
     this.errorRoomName,
     this.errorStartTime,
     this.errorEndTime,
-  }) : dayOfWeek = dayOfWeek ?? DateTime.now().weekday;
+  }) : dayOfWeek = dayOfWeek ?? 1; // Default to Monday, will be set by page
 
   AddCalendarCourseState copyWith({
     String? courseId,

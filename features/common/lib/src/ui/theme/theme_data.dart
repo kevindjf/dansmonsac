@@ -7,6 +7,11 @@ import 'text_styles.dart';
 class AppTheme {
   AppTheme._(); // Constructeur privé
 
+  /// Generate dark theme with custom accent color
+  static ThemeData darkThemeWithColor(Color accentColor) {
+    return _buildDarkTheme(accentColor);
+  }
+
   /// Thème clair de l'application
   static ThemeData get lightTheme {
     return ThemeData(
@@ -136,12 +141,17 @@ class AppTheme {
 
   /// Thème sombre de l'application
   static ThemeData get darkTheme {
+    return _buildDarkTheme(AppColors.accent);
+  }
+
+  /// Build dark theme with a specific accent color
+  static ThemeData _buildDarkTheme(Color accentColor) {
     return ThemeData.dark().copyWith(
       useMaterial3: true,
       primaryColor: AppColors.primary,
-      colorScheme: const ColorScheme.dark(
+      colorScheme: ColorScheme.dark(
         primary: Color.fromARGB(255, 90, 44, 155),
-        secondary: AppColors.accent,
+        secondary: accentColor,
         error: AppColors.error,
         background: AppColors.grey900,
         // Fond sombre
@@ -241,15 +251,15 @@ class AppTheme {
         thickness: 1,
         space: 1,
       ),
-      iconTheme: const IconThemeData(
-        color: AppColors.primary,
+      iconTheme: IconThemeData(
+        color: accentColor,
         size: 24,
       ),
-      tabBarTheme: const TabBarThemeData(
-        labelColor: AppColors.primary,
+      tabBarTheme: TabBarThemeData(
+        labelColor: accentColor,
         unselectedLabelColor: AppColors.textSecondary,
         indicator: UnderlineTabIndicator(
-          borderSide: BorderSide(color: AppColors.primary, width: 2),
+          borderSide: BorderSide(color: accentColor, width: 2),
         ),
       ),
     );

@@ -72,8 +72,8 @@ class TomorrowSupplyController extends _$TomorrowSupplyController {
           );
         }).toList();
 
-        // Build list of courses with supplies
-        final coursesWithSupplies = <CourseWithSuppliesForTomorrow>[];
+        // Build list of courses with supplies (deduplicated by course ID)
+        final coursesMap = <String, CourseWithSuppliesForTomorrow>{};
 
         for (final calendarCourse in targetCourses) {
           final courseData = courseMap[calendarCourse.courseId];
@@ -82,17 +82,17 @@ class TomorrowSupplyController extends _$TomorrowSupplyController {
           // Get supplies from CourseWithSupplies
           final supplies = courseData.supplies;
 
-          // Only add if course has supplies
-          if (supplies.isNotEmpty) {
-            coursesWithSupplies.add(CourseWithSuppliesForTomorrow(
+          // Only add if course has supplies and not already added
+          if (supplies.isNotEmpty && !coursesMap.containsKey(courseData.id)) {
+            coursesMap[courseData.id] = CourseWithSuppliesForTomorrow(
               courseId: courseData.id,
               courseName: courseData.name,
               supplies: supplies,
-            ));
+            );
           }
         }
 
-        return coursesWithSupplies;
+        return coursesMap.values.toList();
       },
     );
   }
