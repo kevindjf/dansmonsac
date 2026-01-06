@@ -84,17 +84,22 @@ class _AddCalendarCoursePageState extends ConsumerState<AddCalendarCoursePage> {
     if (picked != null && picked != _startTime) {
       setState(() {
         _startTime = picked;
-        // Si l'heure de fin est avant l'heure de début, ajuster l'heure de fin
-        if (_endTime.hour < _startTime.hour ||
-            (_endTime.hour == _startTime.hour &&
-                _endTime.minute < _startTime.minute)) {
+        // Si l'heure de fin est avant ou égale à l'heure de début, ajuster l'heure de fin
+        final startMinutes = _startTime.hour * 60 + _startTime.minute;
+        final endMinutes = _endTime.hour * 60 + _endTime.minute;
+
+        if (endMinutes <= startMinutes) {
           _endTime = TimeOfDay(
-              hour: _startTime.hour + 1, minute: _startTime.minute);
+              hour: (_startTime.hour + 1) % 24, minute: 0);
         }
       });
       ref
           .read(addCalendarCourseControllerProvider.notifier)
           .startTimeChanged(_startTime);
+      // Update end time in controller if it was adjusted
+      ref
+          .read(addCalendarCourseControllerProvider.notifier)
+          .endTimeChanged(_endTime);
     }
   }
 
@@ -119,19 +124,22 @@ class _AddCalendarCoursePageState extends ConsumerState<AddCalendarCoursePage> {
     var asyncState = ref.watch(addCalendarCourseControllerProvider);
 
     return asyncState.when(
-      data: (state) => Container(
+      data: (state) => PopScope(
+      canPop: true,
+      child: Container(
       width: double.infinity,
-      child: Padding(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom,
-          left: 16,
-          right: 16,
-          top: 16,
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
+      child: SingleChildScrollView(
+        child: Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+            left: 16,
+            right: 16,
+            top: 16,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
             Text(
               "Ajouter au calendrier",
               style: GoogleFonts.robotoCondensed(
@@ -450,7 +458,9 @@ class _AddCalendarCoursePageState extends ConsumerState<AddCalendarCoursePage> {
             ),
           ],
         ),
+        ),
       ),
+    ),
     ),
       loading: () => Center(child: CircularProgressIndicator()),
       error: (error, stack) => Center(child: Text('Erreur: $error')),

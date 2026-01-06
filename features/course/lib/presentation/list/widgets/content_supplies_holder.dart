@@ -39,10 +39,71 @@ class ContentSupplyHolder extends ConsumerWidget {
         _buildActionButton(
           icon: Icons.delete,
           label: "Supprimer cours",
-          onPressed: onDeleteCourse,
+          onPressed: () => _showDeleteConfirmation(context),
           backgroundColor: Colors.transparent,
         ),
       ],
+    );
+  }
+
+  void _showDeleteConfirmation(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: Color(0xFF303030),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Text(
+            'Supprimer le cours',
+            style: GoogleFonts.robotoCondensed(
+              color: Colors.white,
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          content: Text(
+            'Êtes-vous sûr de vouloir supprimer ce cours ?\n\nCela supprimera également :\n• Le cours de votre planning\n• Toutes les fournitures associées',
+            style: GoogleFonts.roboto(
+              color: Colors.white70,
+              fontSize: 14,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(
+                'Annuler',
+                style: GoogleFonts.roboto(
+                  color: Colors.white54,
+                  fontSize: 16,
+                ),
+              ),
+            ),
+            FilledButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                onDeleteCourse();
+              },
+              style: FilledButton.styleFrom(
+                backgroundColor: Colors.red,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: Text(
+                'Supprimer',
+                style: GoogleFonts.roboto(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 

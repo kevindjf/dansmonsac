@@ -45,8 +45,8 @@ class HomePage extends ConsumerWidget {
         // Couleur des éléments non sélectionnés
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
-            icon: Icon(Icons.list),
-            label: 'Votre liste',
+            icon: Icon(Icons.backpack),
+            label: 'Mon sac',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.calendar_month),

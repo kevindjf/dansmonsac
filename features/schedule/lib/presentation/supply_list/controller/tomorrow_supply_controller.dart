@@ -41,34 +41,43 @@ class TomorrowSupplyController extends _$TomorrowSupplyController {
     return calendarResult.fold(
       (failure) => [],
       (calendarCourses) {
-        // Get tomorrow's date and day of week
-        final tomorrow = WeekUtils.getTomorrow();
-        final tomorrowWeekday = tomorrow.weekday; // 1=Monday, 7=Sunday
+        // Get pack time
+        final packTime = getPackTime();
+        final now = DateTime.now();
+
+        // Determine target date: if current time is before pack time, show today's supplies
+        // Otherwise, show tomorrow's supplies
+        final targetDate = (now.hour < packTime.hour ||
+                           (now.hour == packTime.hour && now.minute < packTime.minute))
+            ? DateTime.now()
+            : WeekUtils.getTomorrow();
+
+        final targetWeekday = targetDate.weekday; // 1=Monday, 7=Sunday
 
         // TODO: Get school year start date from preferences
         // For now, use September 1st of current school year
-        final currentYear = tomorrow.month >= 9 ? tomorrow.year : tomorrow.year - 1;
+        final currentYear = targetDate.month >= 9 ? targetDate.year : targetDate.year - 1;
         final schoolYearStart = DateTime(currentYear, 9, 1);
 
-        // Filter courses for tomorrow
-        final tomorrowCourses = calendarCourses.where((course) {
-          // Check if course is for tomorrow's day of week
-          if (course.dayOfWeek != tomorrowWeekday) {
+        // Filter courses for target date
+        final targetCourses = calendarCourses.where((course) {
+          // Check if course is for target date's day of week
+          if (course.dayOfWeek != targetWeekday) {
             return false;
           }
 
-          // Check if course should be shown for tomorrow's week (A/B or BOTH)
+          // Check if course should be shown for target date's week (A/B or BOTH)
           return WeekUtils.shouldShowCourseForDate(
             course.weekType.value,
             schoolYearStart,
-            tomorrow,
+            targetDate,
           );
         }).toList();
 
         // Build list of courses with supplies
         final coursesWithSupplies = <CourseWithSuppliesForTomorrow>[];
 
-        for (final calendarCourse in tomorrowCourses) {
+        for (final calendarCourse in targetCourses) {
           final courseData = courseMap[calendarCourse.courseId];
           if (courseData == null) continue;
 
