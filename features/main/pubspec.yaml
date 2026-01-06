@@ -10,10 +10,10 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  riverpod:
+  riverpod: ^2.6.1
   # the annotation package containing @riverpod
-  riverpod_annotation:
-  flutter_riverpod:
+  riverpod_annotation: ^2.6.1
+  flutter_riverpod: ^2.6.1
   json_annotation: ^4.9.0
   google_fonts: ^6.2.1
   flutter_colorpicker: ^1.1.0
@@ -30,7 +30,7 @@ dev_dependencies:
   flutter_lints: ^5.0.0
   build_runner: ^2.4.9
   # the code generator
-  riverpod_generator:
+  riverpod_generator: ^2.6.2
   json_serializable: ^6.8.0
 
 # For information on the generic Dart part of this file, see the
