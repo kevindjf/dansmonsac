@@ -42,6 +42,45 @@ class ListSupply extends ConsumerStatefulWidget {
 class _ListSupplyState extends ConsumerState<ListSupply> {
   // Map to track checked state of supplies by ID
   final Map<String, bool> _checkedState = {};
+  DateTime? _targetDate;
+  bool _isLoaded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCheckedState();
+  }
+
+  Future<void> _loadCheckedState() async {
+    // Determine target date
+    final packTime = await PreferencesService.getPackTime();
+    final now = DateTime.now();
+    final targetDate = (now.hour < packTime.hour ||
+                       (now.hour == packTime.hour && now.minute < packTime.minute))
+        ? DateTime(now.year, now.month, now.day)
+        : DateTime(now.year, now.month, now.day + 1);
+
+    _targetDate = targetDate;
+
+    // Load saved state for this date
+    final savedState = await PreferencesService.loadSupplyCheckedState(targetDate);
+
+    if (mounted) {
+      setState(() {
+        _checkedState.addAll(savedState);
+        _isLoaded = true;
+      });
+    }
+
+    // Clean old states
+    PreferencesService.clearOldSupplyStates();
+  }
+
+  Future<void> _saveCheckedState() async {
+    if (_targetDate != null) {
+      await PreferencesService.saveSupplyCheckedState(_targetDate!, _checkedState);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -162,6 +201,7 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
                             _checkedState[supplyId] = value ?? false;
                           }
                         });
+                        _saveCheckedState();
                       },
                     );
                   } else if (item is SupplyItem) {
@@ -187,6 +227,7 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
                         setState(() {
                           _checkedState[item.id] = value ?? false;
                         });
+                        _saveCheckedState();
                       },
                     );
                   }
