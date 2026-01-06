@@ -7,7 +7,7 @@ part of 'setup_time_onboarding_controller.dart';
 // **************************************************************************
 
 String _$setupTimeOnboardingControllerHash() =>
-    r'49f28335a8fa33475409e40fc673f94ec18bd38b';
+    r'f940c8b75418b5f38542fc5f44a499437781fce3';
 
 /// See also [SetupTimeOnboardingController].
 @ProviderFor(SetupTimeOnboardingController)

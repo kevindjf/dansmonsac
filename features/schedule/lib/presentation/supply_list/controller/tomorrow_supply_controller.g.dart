@@ -7,7 +7,7 @@ part of 'tomorrow_supply_controller.dart';
 // **************************************************************************
 
 String _$tomorrowSupplyControllerHash() =>
-    r'ccc520bced7b415c32c8ae11ced92acb43a0844a';
+    r'1a496c18bf48754e623092a994af281146a2b8a5';
 
 /// See also [TomorrowSupplyController].
 @ProviderFor(TomorrowSupplyController)
