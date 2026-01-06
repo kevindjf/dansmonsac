@@ -23,7 +23,7 @@ class ContentSupplyHolder extends ConsumerWidget {
     return Column(
       children: [
         // Liste des fournitures
-        ...supplies.map((supply) => _buildSupplyItem(supply)).toList(),
+        ...supplies.map((supply) => _buildSupplyItem(supply, context)).toList(),
         const SizedBox(height: 16),
 
         // Bouton pour ajouter une fourniture
@@ -108,7 +108,9 @@ class ContentSupplyHolder extends ConsumerWidget {
   }
 
   /// 📝 Widget pour afficher une fourniture
-  Widget _buildSupplyItem(SupplyItemUI supply) {
+  Widget _buildSupplyItem(SupplyItemUI supply, BuildContext context) {
+    final accentColor = Theme.of(context).colorScheme.secondary;
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 12.0),
       child: Row(
@@ -122,7 +124,7 @@ class ContentSupplyHolder extends ConsumerWidget {
             onTap: () => onDeleteSupply(supply),
             child: Icon(
               Icons.delete,
-              color: AppColors.accent,
+              color: accentColor,
             ),
           ),
         ],

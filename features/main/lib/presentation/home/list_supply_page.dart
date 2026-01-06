@@ -163,12 +163,14 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
             _buildHeader(checked, total, packTime),
             // Show banner when bag is ready
             if (isBagReady)
-              _buildBagReadyBanner(),
+              _buildBagReadyBanner(context),
             Expanded(
               child: ListView.builder(
                 itemCount: items.length,
                 itemBuilder: (context, index) {
                   final item = items[index];
+                  final accentColor = Theme.of(context).colorScheme.secondary;
+
                   if (item is CourseTitleItem) {
                     // Check if all supplies for this course are checked
                     final allChecked = item.supplyIds.isNotEmpty &&
@@ -179,7 +181,7 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
                         borderRadius: BorderRadius.circular(4.0),
                         side: BorderSide(
                           width: 4.5,
-                          color: AppColors.accent,
+                          color: accentColor,
                         ),
                       ),
                       contentPadding:
@@ -190,7 +192,7 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
                         item.title.toUpperCase(),
                         style: GoogleFonts.robotoCondensed(
                             fontSize: 16,
-                            color: AppColors.accent,
+                            color: accentColor,
                             fontWeight: FontWeight.bold),
                       ),
                       value: allChecked,
@@ -242,15 +244,17 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
     );
   }
 
-  Widget _buildBagReadyBanner() {
+  Widget _buildBagReadyBanner(BuildContext context) {
+    final accentColor = Theme.of(context).colorScheme.secondary;
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.accent.withOpacity(0.15),
+        color: accentColor.withOpacity(0.15),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: AppColors.accent.withOpacity(0.3),
+          color: accentColor.withOpacity(0.3),
           width: 1,
         ),
       ),
@@ -258,7 +262,7 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
         children: [
           Icon(
             Icons.check_circle,
-            color: AppColors.accent,
+            color: accentColor,
             size: 28,
           ),
           const SizedBox(width: 12),

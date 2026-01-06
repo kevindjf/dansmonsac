@@ -16,6 +16,7 @@ class HomePage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     var state = ref.watch(homeControllerProvider);
+    final accentColor = Theme.of(context).colorScheme.secondary;
 
     return Scaffold(
       backgroundColor: Color(0xFF212121),
@@ -38,7 +39,7 @@ class HomePage extends ConsumerWidget {
           }
           ref.read(homeControllerProvider.notifier).changePage(index, page);
         },
-        selectedItemColor: AppColors.accent,
+        selectedItemColor: accentColor,
         unselectedItemColor: Color(0xFF616161),
         showSelectedLabels: true,
         showUnselectedLabels: true,
@@ -66,10 +67,10 @@ class HomePage extends ConsumerWidget {
     );
   }
 
-  Widget getItem(String letter, {bool isSelected = false}) {
+  Widget getItem(String letter, {bool isSelected = false, required Color accentColor}) {
     return Container(
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.accent : Colors.black,
+          color: isSelected ? accentColor : Colors.black,
           // Couleur du fond
           borderRadius:
               BorderRadius.circular(8.0), // Rayon appliqué aux 4 coins

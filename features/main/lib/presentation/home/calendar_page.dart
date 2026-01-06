@@ -147,6 +147,8 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
 
   Widget _buildWeekFilterButton(String label, WeekFilter filter) {
     final isSelected = _weekFilter == filter;
+    final accentColor = Theme.of(context).colorScheme.secondary;
+
     return GestureDetector(
       onTap: () {
         setState(() {
@@ -156,7 +158,7 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.accent : Colors.transparent,
+          color: isSelected ? accentColor : Colors.transparent,
           borderRadius: BorderRadius.circular(6),
         ),
         child: Text(
@@ -172,6 +174,8 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
   }
 
   Widget _buildDayButton(String letter, int weekday, bool isSelected) {
+    final accentColor = Theme.of(context).colorScheme.secondary;
+
     return GestureDetector(
       onTap: () {
         setState(() {
@@ -184,7 +188,7 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
       },
       child: Container(
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.accent : Colors.black,
+          color: isSelected ? accentColor : Colors.black,
           borderRadius: BorderRadius.circular(8.0),
         ),
         child: Padding(

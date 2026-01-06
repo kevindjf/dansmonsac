@@ -27,6 +27,7 @@ class ContentCourseHolder extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     var isOpen = course.isExpand;
+    final accentColor = Theme.of(context).colorScheme.secondary;
 
     return Card(
       child: Padding(
@@ -44,15 +45,15 @@ class ContentCourseHolder extends ConsumerWidget {
                     course.title.toUpperCase(),
                     style: GoogleFonts.robotoCondensed(
                         fontSize: 16,
-                        color: AppColors.accent,
+                        color: accentColor,
                         fontWeight: FontWeight.bold),
                   ),
                   AnimatedRotation(
                     duration: Duration(milliseconds: 150),
                     curve: Curves.easeInOut,
                     turns: isOpen ? 0.25 : 0,
-                    child: const Icon(Icons.chevron_right,
-                        size: 24, color: AppColors.accent),
+                    child: Icon(Icons.chevron_right,
+                        size: 24, color: accentColor),
                   )
                 ],
               ),

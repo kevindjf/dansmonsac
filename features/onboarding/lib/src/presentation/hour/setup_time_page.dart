@@ -44,6 +44,7 @@ class _OnboardingSetupTimePageState
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
+    final accentColor = Theme.of(context).colorScheme.secondary;
 
     var state = ref.watch(setupTimeOnboardingControllerProvider);
 
@@ -87,7 +88,7 @@ class _OnboardingSetupTimePageState
                 child: FilledButton(
                   onPressed: () => _selectTimePicker(state.setupTime),
                   style: FilledButton.styleFrom(
-                    backgroundColor: AppColors.accent,
+                    backgroundColor: accentColor,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),

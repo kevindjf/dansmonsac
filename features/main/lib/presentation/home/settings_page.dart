@@ -92,10 +92,11 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                 padding: const EdgeInsets.all(16.0),
                 children: [
                   // Section: Préparation du sac
-                  _buildSectionTitle('Préparation du sac'),
+                  _buildSectionTitle('Préparation du sac', context),
                   const SizedBox(height: 8),
 
                   _buildSettingCard(
+                    context: context,
                     icon: Icons.access_time,
                     title: 'Heure de préparation',
                     subtitle: 'Quand préparez-vous votre sac ?',
@@ -114,10 +115,11 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                   const SizedBox(height: 24),
 
                   // Section: Apparence
-                  _buildSectionTitle('Apparence'),
+                  _buildSectionTitle('Apparence', context),
                   const SizedBox(height: 8),
 
                   _buildSettingCard(
+                    context: context,
                     icon: Icons.palette_outlined,
                     title: 'Couleur d\'accent',
                     subtitle: 'Personnalisez votre thème',
@@ -137,10 +139,11 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                   const SizedBox(height: 24),
 
                   // Section: Année scolaire
-                  _buildSectionTitle('Année scolaire'),
+                  _buildSectionTitle('Année scolaire', context),
                   const SizedBox(height: 8),
 
                   _buildSettingCard(
+                    context: context,
                     icon: Icons.calendar_today,
                     title: 'Début d\'année scolaire',
                     subtitle: 'Date de la première semaine A',
@@ -151,10 +154,11 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                   const SizedBox(height: 24),
 
                   // Section: À propos
-                  _buildSectionTitle('À propos'),
+                  _buildSectionTitle('À propos', context),
                   const SizedBox(height: 8),
 
                   _buildSettingCard(
+                    context: context,
                     icon: Icons.info_outline,
                     title: 'Version',
                     subtitle: 'DansMonSac',
@@ -163,6 +167,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                   ),
 
                   _buildSettingCard(
+                    context: context,
                     icon: Icons.help_outline,
                     title: 'Aide',
                     subtitle: 'Besoin d\'assistance ?',
@@ -180,14 +185,16 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     );
   }
 
-  Widget _buildSectionTitle(String title) {
+  Widget _buildSectionTitle(String title, BuildContext context) {
+    final accentColor = Theme.of(context).colorScheme.secondary;
+
     return Padding(
       padding: const EdgeInsets.only(left: 8.0, bottom: 4.0),
       child: Text(
         title.toUpperCase(),
         style: GoogleFonts.robotoCondensed(
           fontSize: 14,
-          color: AppColors.accent,
+          color: accentColor,
           fontWeight: FontWeight.bold,
           letterSpacing: 1.2,
         ),
@@ -196,6 +203,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   }
 
   Widget _buildSettingCard({
+    required BuildContext context,
     required IconData icon,
     required String title,
     required String subtitle,
@@ -203,6 +211,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     required VoidCallback? onTap,
     Widget? trailing,
   }) {
+    final accentColor = Theme.of(context).colorScheme.secondary;
+
     return Card(
       color: Color(0xFF303030),
       shape: RoundedRectangleBorder(
@@ -220,12 +230,12 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: AppColors.accent.withOpacity(0.2),
+                  color: accentColor.withOpacity(0.2),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(
                   icon,
-                  color: AppColors.accent,
+                  color: accentColor,
                   size: 24,
                 ),
               ),
@@ -268,7 +278,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                   Text(
                     value,
                     style: GoogleFonts.roboto(
-                      color: AppColors.accent,
+                      color: accentColor,
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
                     ),
@@ -304,6 +314,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   }
 
   Future<void> _selectPackTime(BuildContext context) async {
+    final accentColor = Theme.of(context).colorScheme.secondary;
+
     final TimeOfDay? picked = await showTimePicker(
       context: context,
       initialTime: _packTime,
@@ -311,7 +323,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
         return Theme(
           data: ThemeData.dark().copyWith(
             colorScheme: ColorScheme.dark(
-              primary: AppColors.accent,
+              primary: accentColor,
               onPrimary: Colors.white,
               surface: Color(0xFF303030),
               onSurface: Colors.white,
@@ -333,6 +345,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   }
 
   Future<void> _selectSchoolYearStart(BuildContext context) async {
+    final accentColor = Theme.of(context).colorScheme.secondary;
+
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: _schoolYearStart,
@@ -343,7 +357,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
         return Theme(
           data: ThemeData.dark().copyWith(
             colorScheme: ColorScheme.dark(
-              primary: AppColors.accent,
+              primary: accentColor,
               onPrimary: Colors.white,
               surface: Color(0xFF303030),
               onSurface: Colors.white,
@@ -370,6 +384,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     required bool value,
     required Function(bool) onChanged,
   }) {
+    final accentColor = Theme.of(context).colorScheme.secondary;
+
     return Card(
       color: Color(0xFF303030),
       shape: RoundedRectangleBorder(
@@ -384,12 +400,12 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: AppColors.accent.withOpacity(0.2),
+                color: accentColor.withOpacity(0.2),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Icon(
                 icon,
-                color: AppColors.accent,
+                color: accentColor,
                 size: 24,
               ),
             ),
@@ -427,7 +443,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
             Switch(
               value: value,
               onChanged: onChanged,
-              activeColor: AppColors.accent,
+              activeColor: accentColor,
             ),
           ],
         ),
@@ -463,6 +479,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   }
 
   Future<void> _selectAccentColor(BuildContext context) async {
+    final accentColor = Theme.of(context).colorScheme.secondary;
     Color? pickedColor;
 
     await showDialog(
@@ -509,7 +526,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                 Navigator.of(context).pop();
               },
               style: FilledButton.styleFrom(
-                backgroundColor: AppColors.accent,
+                backgroundColor: accentColor,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
