@@ -7,7 +7,7 @@ part of 'calendar_controller.dart';
 // **************************************************************************
 
 String _$calendarControllerHash() =>
-    r'04cd71cfd3acc0a8ec453318794ba7a606ab7fda';
+    r'3b953280a57c376332aaf405db4a428e64ca7281';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -33,9 +33,11 @@ class _SystemHash {
 abstract class _$CalendarController
     extends BuildlessAutoDisposeAsyncNotifier<List<CalendarEvent>> {
   late final DateTime selectedDate;
+  late final WeekFilter weekFilter;
 
   FutureOr<List<CalendarEvent>> build(
     DateTime selectedDate,
+    WeekFilter weekFilter,
   );
 }
 
@@ -51,9 +53,11 @@ class CalendarControllerFamily extends Family<AsyncValue<List<CalendarEvent>>> {
   /// See also [CalendarController].
   CalendarControllerProvider call(
     DateTime selectedDate,
+    WeekFilter weekFilter,
   ) {
     return CalendarControllerProvider(
       selectedDate,
+      weekFilter,
     );
   }
 
@@ -63,6 +67,7 @@ class CalendarControllerFamily extends Family<AsyncValue<List<CalendarEvent>>> {
   ) {
     return call(
       provider.selectedDate,
+      provider.weekFilter,
     );
   }
 
@@ -87,8 +92,11 @@ class CalendarControllerProvider extends AutoDisposeAsyncNotifierProviderImpl<
   /// See also [CalendarController].
   CalendarControllerProvider(
     DateTime selectedDate,
+    WeekFilter weekFilter,
   ) : this._internal(
-          () => CalendarController()..selectedDate = selectedDate,
+          () => CalendarController()
+            ..selectedDate = selectedDate
+            ..weekFilter = weekFilter,
           from: calendarControllerProvider,
           name: r'calendarControllerProvider',
           debugGetCreateSourceHash:
@@ -99,6 +107,7 @@ class CalendarControllerProvider extends AutoDisposeAsyncNotifierProviderImpl<
           allTransitiveDependencies:
               CalendarControllerFamily._allTransitiveDependencies,
           selectedDate: selectedDate,
+          weekFilter: weekFilter,
         );
 
   CalendarControllerProvider._internal(
@@ -109,9 +118,11 @@ class CalendarControllerProvider extends AutoDisposeAsyncNotifierProviderImpl<
     required super.debugGetCreateSourceHash,
     required super.from,
     required this.selectedDate,
+    required this.weekFilter,
   }) : super.internal();
 
   final DateTime selectedDate;
+  final WeekFilter weekFilter;
 
   @override
   FutureOr<List<CalendarEvent>> runNotifierBuild(
@@ -119,6 +130,7 @@ class CalendarControllerProvider extends AutoDisposeAsyncNotifierProviderImpl<
   ) {
     return notifier.build(
       selectedDate,
+      weekFilter,
     );
   }
 
@@ -127,13 +139,16 @@ class CalendarControllerProvider extends AutoDisposeAsyncNotifierProviderImpl<
     return ProviderOverride(
       origin: this,
       override: CalendarControllerProvider._internal(
-        () => create()..selectedDate = selectedDate,
+        () => create()
+          ..selectedDate = selectedDate
+          ..weekFilter = weekFilter,
         from: from,
         name: null,
         dependencies: null,
         allTransitiveDependencies: null,
         debugGetCreateSourceHash: null,
         selectedDate: selectedDate,
+        weekFilter: weekFilter,
       ),
     );
   }
@@ -147,13 +162,15 @@ class CalendarControllerProvider extends AutoDisposeAsyncNotifierProviderImpl<
   @override
   bool operator ==(Object other) {
     return other is CalendarControllerProvider &&
-        other.selectedDate == selectedDate;
+        other.selectedDate == selectedDate &&
+        other.weekFilter == weekFilter;
   }
 
   @override
   int get hashCode {
     var hash = _SystemHash.combine(0, runtimeType.hashCode);
     hash = _SystemHash.combine(hash, selectedDate.hashCode);
+    hash = _SystemHash.combine(hash, weekFilter.hashCode);
 
     return _SystemHash.finish(hash);
   }
@@ -165,6 +182,9 @@ mixin CalendarControllerRef
     on AutoDisposeAsyncNotifierProviderRef<List<CalendarEvent>> {
   /// The parameter `selectedDate` of this provider.
   DateTime get selectedDate;
+
+  /// The parameter `weekFilter` of this provider.
+  WeekFilter get weekFilter;
 }
 
 class _CalendarControllerProviderElement
@@ -175,6 +195,9 @@ class _CalendarControllerProviderElement
   @override
   DateTime get selectedDate =>
       (origin as CalendarControllerProvider).selectedDate;
+  @override
+  WeekFilter get weekFilter =>
+      (origin as CalendarControllerProvider).weekFilter;
 }
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
