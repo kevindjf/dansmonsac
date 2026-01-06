@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:common/src/ui/ui.dart';
+import 'package:common/src/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:schedule/presentation/supply_list/controller/tomorrow_supply_controller.dart';
 
@@ -45,41 +46,47 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
   @override
   Widget build(BuildContext context) {
     final tomorrowSuppliesState = ref.watch(tomorrowSupplyControllerProvider);
-    final packTime = ref.read(tomorrowSupplyControllerProvider.notifier).getPackTime();
 
-    return tomorrowSuppliesState.when(
-      data: (coursesWithSupplies) {
-        // Build list items from courses and supplies
-        final List<ListItem> items = [];
-        int totalSupplies = 0;
-        int checkedSupplies = 0;
+    return FutureBuilder<TimeOfDay>(
+      future: PreferencesService.getPackTime(),
+      builder: (context, packTimeSnapshot) {
+        final packTime = packTimeSnapshot.data ?? const TimeOfDay(hour: 19, minute: 0);
 
-        for (final course in coursesWithSupplies) {
-          // Collect supply IDs for this course
-          final supplyIds = course.supplies.map((s) => s.id).toList();
-          items.add(CourseTitleItem(title: course.courseName, supplyIds: supplyIds));
+        return tomorrowSuppliesState.when(
+          data: (coursesWithSupplies) {
+            // Build list items from courses and supplies
+            final List<ListItem> items = [];
+            int totalSupplies = 0;
+            int checkedSupplies = 0;
 
-          for (final supply in course.supplies) {
-            totalSupplies++;
-            final isChecked = _checkedState[supply.id] ?? false;
-            if (isChecked) checkedSupplies++;
+            for (final course in coursesWithSupplies) {
+              // Collect supply IDs for this course
+              final supplyIds = course.supplies.map((s) => s.id).toList();
+              items.add(CourseTitleItem(title: course.courseName, supplyIds: supplyIds));
 
-            items.add(SupplyItem(
-              id: supply.id,
-              name: supply.name,
-              isChecked: isChecked,
-            ));
-          }
-        }
+              for (final supply in course.supplies) {
+                totalSupplies++;
+                final isChecked = _checkedState[supply.id] ?? false;
+                if (isChecked) checkedSupplies++;
 
-        return _buildSupplyList(context, items, checkedSupplies, totalSupplies, packTime);
+                items.add(SupplyItem(
+                  id: supply.id,
+                  name: supply.name,
+                  isChecked: isChecked,
+                ));
+              }
+            }
+
+            return _buildSupplyList(context, items, checkedSupplies, totalSupplies, packTime);
+          },
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (error, stack) => _buildEmptyState(packTime),
+        );
       },
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (error, stack) => _buildEmptyState(packTime),
     );
   }
 
-  Widget _buildEmptyState(PackTimeInfo packTime) {
+  Widget _buildEmptyState(TimeOfDay packTime) {
     return Stack(
       children: [
         Column(
@@ -106,7 +113,7 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
     );
   }
 
-  Widget _buildSupplyList(BuildContext context, List<ListItem> items, int checked, int total, PackTimeInfo packTime) {
+  Widget _buildSupplyList(BuildContext context, List<ListItem> items, int checked, int total, TimeOfDay packTime) {
     // Check if bag is ready (all supplies checked)
     final bool isBagReady = total > 0 && checked == total;
 
@@ -242,7 +249,7 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
     );
   }
 
-  Widget _buildHeader(int checked, int total, PackTimeInfo packTime) {
+  Widget _buildHeader(int checked, int total, TimeOfDay packTime) {
     return Container(
       width: double.infinity,
       color: Color(0xFF303030),
@@ -266,7 +273,7 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
                   fontWeight: FontWeight.bold),
             ),
             Text(
-              "Heure de préparation du sac : ${packTime.toFormattedString()}",
+              "Heure de préparation du sac : ${packTime.hour.toString().padLeft(2, '0')}:${packTime.minute.toString().padLeft(2, '0')}",
               style: GoogleFonts.roboto(
                   color: Colors.white38,
                   fontSize: 14,

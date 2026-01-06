@@ -1,4 +1,5 @@
 import 'package:common/src/utils/week_utils.dart';
+import 'package:common/src/services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -54,7 +55,7 @@ class CalendarController extends _$CalendarController {
 
     return result.fold(
       (failure) => null,
-      (courses) {
+      (courses) async {
         // Check if any course uses A/B system (not all BOTH)
         final hasABSystem = courses.any((course) =>
           course.weekType == WeekType.A || course.weekType == WeekType.B
@@ -62,10 +63,9 @@ class CalendarController extends _$CalendarController {
 
         if (!hasABSystem) return null;
 
-        // Calculate current week type
+        // Calculate current week type using school year start from preferences
         final today = DateTime.now();
-        final currentYear = today.month >= 9 ? today.year : today.year - 1;
-        final schoolYearStart = DateTime(currentYear, 9, 1);
+        final schoolYearStart = await PreferencesService.getSchoolYearStart();
         final currentWeekType = WeekUtils.getCurrentWeekType(schoolYearStart, today);
 
         return WeekInfo(weekType: currentWeekType);
@@ -83,6 +83,9 @@ class CalendarController extends _$CalendarController {
     // Fetch all calendar courses
     final result = await repository.fetchCalendarCourses();
 
+    // Get school year start from preferences
+    final schoolYearStart = await PreferencesService.getSchoolYearStart();
+
     return result.fold(
       (failure) {
         // Handle error - return empty list
@@ -91,11 +94,6 @@ class CalendarController extends _$CalendarController {
       (courses) {
         // Get target date's day of week
         final targetWeekday = targetDate.weekday; // 1=Monday, 7=Sunday
-
-        // TODO: Get school year start date from preferences
-        // For now, use September 1st of current school year
-        final currentYear = targetDate.month >= 9 ? targetDate.year : targetDate.year - 1;
-        final schoolYearStart = DateTime(currentYear, 9, 1);
 
         // Filter courses for target date
         final dateCourses = courses.where((course) {
