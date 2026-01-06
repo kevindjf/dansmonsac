@@ -5,7 +5,7 @@ import 'package:common/src/repository/repository_helper.dart';
 import 'package:common/src/navigation/routes.dart';
 import 'package:common/src/di/riverpod_di.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:dansmonsac/services/notification_service.dart';
+import 'package:common/src/services.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

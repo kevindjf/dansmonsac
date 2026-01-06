@@ -1,4 +1,5 @@
 import 'package:common/src/utils/week_utils.dart';
+import 'package:common/src/services.dart';
 import 'package:course/models/cours_with_supplies.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -38,11 +39,13 @@ class TomorrowSupplyController extends _$TomorrowSupplyController {
     // Fetch all calendar courses
     final calendarResult = await calendarRepository.fetchCalendarCourses();
 
+    // Get pack time and school year start from preferences
+    final packTime = await PreferencesService.getPackTime();
+    final schoolYearStart = await PreferencesService.getSchoolYearStart();
+
     return calendarResult.fold(
       (failure) => [],
       (calendarCourses) {
-        // Get pack time
-        final packTime = getPackTime();
         final now = DateTime.now();
 
         // Determine target date: if current time is before pack time, show today's supplies
@@ -53,11 +56,6 @@ class TomorrowSupplyController extends _$TomorrowSupplyController {
             : WeekUtils.getTomorrow();
 
         final targetWeekday = targetDate.weekday; // 1=Monday, 7=Sunday
-
-        // TODO: Get school year start date from preferences
-        // For now, use September 1st of current school year
-        final currentYear = targetDate.month >= 9 ? targetDate.year : targetDate.year - 1;
-        final schoolYearStart = DateTime(currentYear, 9, 1);
 
         // Filter courses for target date
         final targetCourses = calendarCourses.where((course) {
@@ -102,23 +100,5 @@ class TomorrowSupplyController extends _$TomorrowSupplyController {
   // Method to refresh supplies
   void refresh() {
     ref.invalidateSelf();
-  }
-
-  // Get pack time (placeholder for now)
-  // TODO: Get from preferences
-  PackTimeInfo getPackTime() {
-    return PackTimeInfo(hour: 19, minute: 0);
-  }
-}
-
-/// Represents pack time information
-class PackTimeInfo {
-  final int hour;
-  final int minute;
-
-  PackTimeInfo({required this.hour, required this.minute});
-
-  String toFormattedString() {
-    return '${hour.toString().padLeft(2, '0')}:${minute.toString().padLeft(2, '0')}';
   }
 }

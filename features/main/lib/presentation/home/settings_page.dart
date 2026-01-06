@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:common/src/ui/ui.dart';
-import 'package:dansmonsac/services/preferences_service.dart';
-import 'package:dansmonsac/services/notification_service.dart';
+import 'package:common/src/services.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 
 class SettingsPage extends ConsumerStatefulWidget {
