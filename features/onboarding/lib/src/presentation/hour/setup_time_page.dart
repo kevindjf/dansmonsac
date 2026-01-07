@@ -1,10 +1,11 @@
 import 'dart:async';
 
 import 'package:common/src/ui/ui.dart';
+import 'package:common/src/di/riverpod_di.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:onboarding/src/presentation/hour/controller/setup_time_onboarding_controller.dart';
-import 'package:common/src/ui/ui.dart';
+import 'package:onboarding/src/presentation/course/course_page.dart';
 
 class OnboardingSetupTimePage extends ConsumerStatefulWidget {
   static const String routeName = "/setup-onboarding";
@@ -55,6 +56,27 @@ class _OnboardingSetupTimePageState
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
+              const SizedBox(height: 24),
+
+              // Bouton Skip en haut à droite
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(
+                    onPressed: state.isLoading
+                        ? null
+                        : () => ref.read(routerDelegateProvider).setRoute(OnboardingCoursePage.routeName),
+                    child: Text(
+                      "Passer",
+                      style: TextStyle(
+                        color: colorScheme.onSurfaceVariant,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+
               const Spacer(flex: 1),
 
               // Titre

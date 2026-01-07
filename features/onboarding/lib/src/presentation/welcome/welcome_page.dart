@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:common/src/di/riverpod_di.dart';
-import 'package:onboarding/src/presentation/hour/setup_time_page.dart';
+import 'package:onboarding/src/presentation/week_explanation/week_explanation_page.dart';
 import 'package:onboarding/src/repositories/onboarding_repository.dart';
 import 'package:onboarding/src/repositories/onboarding_supabase_repository.dart';
 
@@ -14,6 +14,7 @@ class OnboardingWelcomePage extends ConsumerWidget {
   Widget build(BuildContext context,WidgetRef ref) {
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
+    final accentColor = Theme.of(context).colorScheme.secondary;
 
     return Scaffold(
       body: SafeArea(
@@ -23,12 +24,27 @@ class OnboardingWelcomePage extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               const SizedBox(height: 48),
-              Spacer(
-                flex: 1,
+              const Spacer(flex: 1),
+
+              // Icône
+              Container(
+                padding: const EdgeInsets.all(32),
+                decoration: BoxDecoration(
+                  color: accentColor.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.backpack,
+                  size: 80,
+                  color: accentColor,
+                ),
               ),
+
+              const SizedBox(height: 32),
+
               // Titre
               Text(
-                "Prépare ton sac en un clin d'œil ! ",
+                "Bienvenue dans DansMonSac !",
                 style: textTheme.displayLarge?.copyWith(
                   fontWeight: FontWeight.bold,
                   color: colorScheme.onSurface,
@@ -40,20 +56,42 @@ class OnboardingWelcomePage extends ConsumerWidget {
 
               // Description
               Text(
-                "Fini les galères du matin ! Avec Dans Mon Sac, prépare ton sac en un clin d'œil et évite les oublis. Simple, rapide et efficace !",
-                style: textTheme.bodyMedium?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
+                "Ton assistant personnel pour ne plus rien oublier à l'école",
+                style: textTheme.titleLarge?.copyWith(
+                  color: accentColor,
+                  fontWeight: FontWeight.w500,
                 ),
                 textAlign: TextAlign.center,
               ),
 
+              const SizedBox(height: 32),
+
+              // Points clés
+              _buildFeaturePoint(
+                Icons.calendar_today,
+                "Gère ton emploi du temps en semaines A/B",
+                colorScheme,
+              ),
+              const SizedBox(height: 16),
+              _buildFeaturePoint(
+                Icons.checklist_rtl,
+                "Liste automatique des fournitures à préparer",
+                colorScheme,
+              ),
+              const SizedBox(height: 16),
+              _buildFeaturePoint(
+                Icons.notifications_active,
+                "Rappel quotidien pour préparer ton sac",
+                colorScheme,
+              ),
+
               const Spacer(flex: 2),
-              // Bouton Next
+
+              // Bouton Commencer
               SizedBox(
                 width: double.infinity,
                 child: FilledButton(
-                  // Appel de la méthode du contrôleur sans passer le context
-                  onPressed: () => ref.read(routerDelegateProvider).setRoute(OnboardingSetupTimePage.routeName),
+                  onPressed: () => ref.read(routerDelegateProvider).setRoute(OnboardingWeekExplanationPage.routeName),
                   style: FilledButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
@@ -61,8 +99,8 @@ class OnboardingWelcomePage extends ConsumerWidget {
                     ),
                   ),
                   child: const Text(
-                    "Suivant",
-                    style: TextStyle(fontSize: 16),
+                    "Commencer",
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                 ),
               ),
@@ -71,6 +109,28 @@ class OnboardingWelcomePage extends ConsumerWidget {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildFeaturePoint(IconData icon, String text, ColorScheme colorScheme) {
+    return Row(
+      children: [
+        Icon(
+          icon,
+          color: colorScheme.secondary,
+          size: 24,
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Text(
+            text,
+            style: TextStyle(
+              color: colorScheme.onSurfaceVariant,
+              fontSize: 16,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
