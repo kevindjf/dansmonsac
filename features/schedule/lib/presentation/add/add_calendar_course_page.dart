@@ -10,6 +10,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:schedule/models/calendar_course.dart';
 import 'package:schedule/presentation/add/controller/add_calendar_course_controller.dart';
+import 'package:schedule/presentation/add/controller/add_calendar_couse_state.dart';
 
 class AddCalendarCoursePage extends ConsumerStatefulWidget {
   final ValueChanged<CalendarCourse?> onAddCalendarCourse;

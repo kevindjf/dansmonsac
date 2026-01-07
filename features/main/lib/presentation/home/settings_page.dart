@@ -4,7 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:common/src/ui/ui.dart';
 import 'package:common/src/services.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
-import 'package:dansmonsac/providers/accent_color_provider.dart';
+import 'package:common/src/providers.dart';
 
 class SettingsPage extends ConsumerStatefulWidget {
   const SettingsPage({Key? key}) : super(key: key);

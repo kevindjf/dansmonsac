@@ -6,7 +6,7 @@ import 'package:common/src/navigation/routes.dart';
 import 'package:common/src/di/riverpod_di.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:common/src/services.dart';
-import 'providers/accent_color_provider.dart';
+import 'package:common/src/providers.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
