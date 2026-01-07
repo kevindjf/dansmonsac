@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:common/src/ui/ui.dart';
@@ -45,12 +46,45 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
   DateTime? _targetDate;
   bool _isLoaded = false;
   List<String> _standaloneSupplies = [];
+  final ScrollController _scrollController = ScrollController();
+  bool _isScrolling = false;
+  Timer? _scrollTimer;
 
   @override
   void initState() {
     super.initState();
     _loadCheckedState();
     _loadStandaloneSupplies();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    _scrollTimer?.cancel();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    // User is scrolling
+    if (!_isScrolling) {
+      setState(() {
+        _isScrolling = true;
+      });
+    }
+
+    // Cancel previous timer
+    _scrollTimer?.cancel();
+
+    // Set timer to detect when scrolling stops
+    _scrollTimer = Timer(const Duration(milliseconds: 300), () {
+      if (mounted) {
+        setState(() {
+          _isScrolling = false;
+        });
+      }
+    });
   }
 
   Future<void> _loadCheckedState() async {
@@ -198,8 +232,14 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
               _buildBagReadyBanner(context),
             Expanded(
               child: ListView.builder(
-                itemCount: items.length,
+                controller: _scrollController,
+                itemCount: items.length + 1, // +1 for footer padding
                 itemBuilder: (context, index) {
+                  // Footer padding
+                  if (index == items.length) {
+                    return const SizedBox(height: 100); // Space for the button
+                  }
+
                   final item = items[index];
                   final accentColor = Theme.of(context).colorScheme.secondary;
 
@@ -371,39 +411,61 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
   }
 
   Widget _buildAddButton() {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.end,
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: SizedBox(
-            width: double.infinity,
-            child: FilledButton(
-              onPressed: () => _showAddSupplyDialog(),
-              style: FilledButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+    return Positioned(
+      right: 16,
+      bottom: 16,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+        width: _isScrolling ? 56 : null, // Shrink to FAB size when scrolling
+        child: FilledButton(
+          onPressed: () => _showAddSupplyDialog(),
+          style: FilledButton.styleFrom(
+            padding: _isScrolling
+                ? const EdgeInsets.all(16)
+                : const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(_isScrolling ? 28 : 12),
+            ),
+            minimumSize: _isScrolling ? const Size(56, 56) : null,
+          ),
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 200),
+            transitionBuilder: (Widget child, Animation<double> animation) {
+              return FadeTransition(
+                opacity: animation,
+                child: SizeTransition(
+                  sizeFactor: animation,
+                  axis: Axis.horizontal,
+                  child: child,
                 ),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
+              );
+            },
+            child: _isScrolling
+                ? const Icon(
                     Icons.add,
                     color: Colors.white,
+                    key: ValueKey('icon'),
+                  )
+                : Row(
+                    key: const ValueKey('row'),
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: const [
+                      Icon(
+                        Icons.add,
+                        color: Colors.white,
+                      ),
+                      SizedBox(width: 16),
+                      Text(
+                        "Ajouter une fourniture",
+                        style: TextStyle(fontSize: 16),
+                      ),
+                    ],
                   ),
-                  const SizedBox(width: 16),
-                  const Text(
-                    "Ajouter une fourniture",
-                    style: TextStyle(fontSize: 16),
-                  ),
-                ],
-              ),
-            ),
           ),
         ),
-      ],
+      ),
     );
   }
 
