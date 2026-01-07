@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
@@ -13,8 +14,10 @@ class NotificationService {
   static Future<void> initialize() async {
     // Initialize timezone
     tz.initializeTimeZones();
+    // Set local timezone to Europe/Paris for France
+    tz.setLocalLocation(tz.getLocation('Europe/Paris'));
 
-    const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
+    const androidSettings = AndroidInitializationSettings('@drawable/ic_notification_bag');
     const iosSettings = DarwinInitializationSettings(
       requestAlertPermission: false,
       requestBadgePermission: false,
@@ -41,6 +44,14 @@ class NotificationService {
 
     if (androidPlugin != null) {
       androidGranted = await androidPlugin.requestNotificationsPermission();
+
+      // Request exact alarm permission for Android 12+
+      try {
+        final exactAlarmGranted = await androidPlugin.requestExactAlarmsPermission();
+        print('🔔 Exact alarms permission: ${exactAlarmGranted ?? false}');
+      } catch (e) {
+        print('⚠️ Exact alarms permission not available or error: $e');
+      }
     }
 
     if (iosPlugin != null) {
@@ -51,58 +62,113 @@ class NotificationService {
       );
     }
 
-    return androidGranted ?? iosGranted ?? false;
+    final granted = androidGranted ?? iosGranted ?? false;
+    print('🔔 Notification permissions granted: $granted');
+    return granted;
+  }
+
+  /// Check if exact alarms permission is granted (Android 12+)
+  static Future<bool> canScheduleExactAlarms() async {
+    final androidPlugin = _notifications.resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin>();
+
+    if (androidPlugin != null) {
+      try {
+        final canSchedule = await androidPlugin.canScheduleExactNotifications();
+        print('📱 Can schedule exact alarms: ${canSchedule ?? false}');
+        return canSchedule ?? false;
+      } catch (e) {
+        print('⚠️ Error checking exact alarms permission: $e');
+        return false;
+      }
+    }
+
+    return true; // iOS doesn't need this
   }
 
   static Future<void> scheduleDailyNotification() async {
-    // Get pack time from preferences
-    final packTime = await PreferencesService.getPackTime();
+    try {
+      // Check if we can schedule exact alarms
+      final canSchedule = await canScheduleExactAlarms();
+      if (!canSchedule) {
+        print('⚠️ Cannot schedule exact alarms. Please enable in settings.');
+        // Still try to schedule, but it might not work
+      }
 
-    // Cancel existing notification
-    await _notifications.cancel(_dailyNotificationId);
+      // Get pack time from preferences
+      final packTime = await PreferencesService.getPackTime();
 
-    // Schedule new notification
-    final now = tz.TZDateTime.now(tz.local);
-    var scheduledDate = tz.TZDateTime(
-      tz.local,
-      now.year,
-      now.month,
-      now.day,
-      packTime.hour,
-      packTime.minute,
-    );
+      // Cancel existing notification
+      await _notifications.cancel(_dailyNotificationId);
 
-    // If the scheduled time is in the past, schedule for tomorrow
-    if (scheduledDate.isBefore(now)) {
-      scheduledDate = scheduledDate.add(const Duration(days: 1));
+      // Schedule new notification
+      final now = tz.TZDateTime.now(tz.local);
+      var scheduledDate = tz.TZDateTime(
+        tz.local,
+        now.year,
+        now.month,
+        now.day,
+        packTime.hour,
+        packTime.minute,
+      );
+
+      // If the scheduled time is in the past, schedule for tomorrow
+      if (scheduledDate.isBefore(now)) {
+        scheduledDate = scheduledDate.add(const Duration(days: 1));
+      }
+
+      print('📅 Scheduling notification for: $scheduledDate');
+      print('🕐 Pack time: ${packTime.hour}:${packTime.minute}');
+      print('🌍 Timezone: ${tz.local.name}');
+      print('⏰ Current time: $now');
+
+      const androidDetails = AndroidNotificationDetails(
+        'daily_reminder',
+        'Rappel quotidien',
+        channelDescription: 'Rappel pour préparer votre sac',
+        importance: Importance.high,
+        priority: Priority.high,
+        icon: '@drawable/ic_notification_bag',
+        enableVibration: true,
+        playSound: true,
+        enableLights: true,
+      );
+
+      const iosDetails = DarwinNotificationDetails(
+        presentAlert: true,
+        presentBadge: true,
+        presentSound: true,
+      );
+
+      const details = NotificationDetails(
+        android: androidDetails,
+        iOS: iosDetails,
+      );
+
+      await _notifications.zonedSchedule(
+        _dailyNotificationId,
+        'Préparez votre sac ! 🎒',
+        'Il est temps de préparer votre sac pour demain',
+        scheduledDate,
+        details,
+        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        uiLocalNotificationDateInterpretation:
+            UILocalNotificationDateInterpretation.absoluteTime,
+        matchDateTimeComponents: DateTimeComponents.time,
+      );
+
+      print('✅ Notification scheduled successfully');
+
+      // Show pending notifications for debugging
+      final pending = await _notifications.pendingNotificationRequests();
+      print('📋 Pending notifications: ${pending.length}');
+      for (final notification in pending) {
+        print('  - ID: ${notification.id}, Title: ${notification.title}');
+      }
+    } catch (e) {
+      print('❌ Error scheduling notification: $e');
+      rethrow;
     }
-
-    const androidDetails = AndroidNotificationDetails(
-      'daily_reminder',
-      'Rappel quotidien',
-      channelDescription: 'Rappel pour préparer votre sac',
-      importance: Importance.high,
-      priority: Priority.high,
-    );
-
-    const iosDetails = DarwinNotificationDetails();
-
-    const details = NotificationDetails(
-      android: androidDetails,
-      iOS: iosDetails,
-    );
-
-    await _notifications.zonedSchedule(
-      _dailyNotificationId,
-      'Préparez votre sac ! 🎒',
-      'Il est temps de préparer votre sac pour demain',
-      scheduledDate,
-      details,
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-      uiLocalNotificationDateInterpretation:
-          UILocalNotificationDateInterpretation.absoluteTime,
-      matchDateTimeComponents: DateTimeComponents.time,
-    );
   }
 
   static Future<void> cancelNotification() async {
