@@ -415,8 +415,8 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
       right: 16,
       bottom: 16,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.easeInOutCubic,
         width: _isScrolling ? 56 : null, // Shrink to FAB size when scrolling
         child: FilledButton(
           onPressed: () => _showAddSupplyDialog(),
@@ -430,13 +430,14 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
             minimumSize: _isScrolling ? const Size(56, 56) : null,
           ),
           child: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 200),
+            duration: const Duration(milliseconds: 400),
+            switchInCurve: Curves.easeInOutCubic,
+            switchOutCurve: Curves.easeInOutCubic,
             transitionBuilder: (Widget child, Animation<double> animation) {
               return FadeTransition(
                 opacity: animation,
-                child: SizeTransition(
-                  sizeFactor: animation,
-                  axis: Axis.horizontal,
+                child: ScaleTransition(
+                  scale: animation,
                   child: child,
                 ),
               );
