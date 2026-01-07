@@ -1,0 +1,6 @@
+# Copier ce fichier vers key.properties et remplir avec vos informations
+# NE PAS commiter key.properties dans git !
+storePassword=VOTRE_STORE_PASSWORD
+keyPassword=VOTRE_KEY_PASSWORD
+keyAlias=dansmonsac
+storeFile=../upload-keystore.jks
