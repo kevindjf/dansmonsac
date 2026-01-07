@@ -10,6 +10,7 @@ class PreferencesService {
   static const String _keyAccentColor = 'accent_color';
   static const String _keySupplyCheckedState = 'supply_checked_state_';
   static const String _keyStandaloneSupplies = 'standalone_supplies';
+  static const String _keyOnboardingCompleted = 'onboarding_completed';
 
   static Future<void> setPackTime(TimeOfDay time) async {
     final prefs = await SharedPreferences.getInstance();
@@ -49,6 +50,16 @@ class PreferencesService {
   static Future<bool> getNotificationsEnabled() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getBool(_keyNotificationsEnabled) ?? false;
+  }
+
+  static Future<void> setOnboardingCompleted(bool completed) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_keyOnboardingCompleted, completed);
+  }
+
+  static Future<bool> getOnboardingCompleted() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_keyOnboardingCompleted) ?? false;
   }
 
   static Future<void> setAccentColor(Color color) async {
