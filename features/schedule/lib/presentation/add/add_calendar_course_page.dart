@@ -32,6 +32,7 @@ class _AddCalendarCoursePageState extends ConsumerState<AddCalendarCoursePage> {
   StreamSubscription? _successSubscription;
   TimeOfDay _startTime = TimeOfDay(hour: TimeOfDay.now().hour, minute: 0);
   TimeOfDay _endTime = TimeOfDay(hour: TimeOfDay.now().hour + 1, minute: 0);
+  bool _hasSetInitialDay = false;
 
   @override
   void initState() {
@@ -58,13 +59,6 @@ class _AddCalendarCoursePageState extends ConsumerState<AddCalendarCoursePage> {
         widget.onAddCalendarCourse(calendarCourse);
         Navigator.pop(context);
       }
-    });
-
-    // Set the day of week to the selected date's weekday
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref
-          .read(addCalendarCourseControllerProvider.notifier)
-          .dayOfWeekChanged(widget.selectedDate.weekday);
     });
   }
 
@@ -122,6 +116,21 @@ class _AddCalendarCoursePageState extends ConsumerState<AddCalendarCoursePage> {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     var asyncState = ref.watch(addCalendarCourseControllerProvider);
+
+    // Set initial day of week once when state is loaded
+    ref.listen<AsyncValue<AddCalendarCourseState>>(
+      addCalendarCourseControllerProvider,
+      (previous, next) {
+        if (!_hasSetInitialDay && next is AsyncData) {
+          _hasSetInitialDay = true;
+          Future.microtask(() {
+            ref
+                .read(addCalendarCourseControllerProvider.notifier)
+                .dayOfWeekChanged(widget.selectedDate.weekday);
+          });
+        }
+      },
+    );
 
     return asyncState.when(
       data: (state) => PopScope(
