@@ -6,6 +6,7 @@ import 'package:common/src/navigation/routes.dart';
 import 'package:common/src/di/riverpod_di.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:common/src/services.dart';
+import 'providers/accent_color_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -15,39 +16,21 @@ void main() async {
   runApp(ProviderScope(child: MyApp()));
 }
 
-class MyApp extends ConsumerStatefulWidget {
+class MyApp extends ConsumerWidget {
   const MyApp({super.key});
 
   @override
-  ConsumerState<MyApp> createState() => _MyAppState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final AppRouteInformationParser routeInformationParser =
+        AppRouteInformationParser();
 
-class _MyAppState extends ConsumerState<MyApp> {
-  final AppRouteInformationParser _routeInformationParser =
-      AppRouteInformationParser();
+    // Watch accent color provider for reactive updates
+    final accentColor = ref.watch(accentColorProvider);
 
-  Color _accentColor = const Color(0xFF9C27B0); // Default color
-
-  @override
-  void initState() {
-    super.initState();
-    _loadAccentColor();
-  }
-
-  Future<void> _loadAccentColor() async {
-    final color = await PreferencesService.getAccentColor();
-    setState(() {
-      _accentColor = color;
-    });
-  }
-
-  // This widget is the root of your application.
-  @override
-  Widget build(BuildContext context) {
     return MaterialApp.router(
       title: 'Dans mon sac',
       theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkThemeWithColor(_accentColor),
+      darkTheme: AppTheme.darkThemeWithColor(accentColor),
       themeMode: ThemeMode.dark,
       debugShowCheckedModeBanner: false,
       localizationsDelegates: const [
@@ -59,7 +42,7 @@ class _MyAppState extends ConsumerState<MyApp> {
         Locale('fr', 'FR'),
       ],
       routerDelegate: ref.watch(routerDelegateProvider),
-      routeInformationParser: _routeInformationParser,
+      routeInformationParser: routeInformationParser,
     );
   }
 }

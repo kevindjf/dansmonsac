@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:common/src/ui/ui.dart';
 import 'package:common/src/services.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
+import 'package:dansmonsac/providers/accent_color_provider.dart';
 
 class SettingsPage extends ConsumerStatefulWidget {
   const SettingsPage({Key? key}) : super(key: key);
@@ -549,8 +550,9 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       setState(() {
         _accentColor = pickedColor!;
       });
-      await PreferencesService.setAccentColor(pickedColor!);
-      _showSnackBar('Couleur mise à jour ! Redémarrez l\'app pour appliquer');
+      // Update color via provider for instant app-wide update
+      await ref.read(accentColorProvider.notifier).updateColor(pickedColor!);
+      _showSnackBar('Couleur mise à jour !');
     }
   }
 

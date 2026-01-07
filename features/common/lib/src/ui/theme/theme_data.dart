@@ -148,9 +148,9 @@ class AppTheme {
   static ThemeData _buildDarkTheme(Color accentColor) {
     return ThemeData.dark().copyWith(
       useMaterial3: true,
-      primaryColor: AppColors.primary,
+      primaryColor: accentColor,
       colorScheme: ColorScheme.dark(
-        primary: Color.fromARGB(255, 90, 44, 155),
+        primary: accentColor,
         secondary: accentColor,
         error: AppColors.error,
         background: AppColors.grey900,
