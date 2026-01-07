@@ -17,6 +17,8 @@ import 'package:common/src/di/riverpod_di.dart';
 import 'package:supply/di/riverpod_di.dart';
 import 'package:supply/models/supply.dart';
 import 'package:supply/repository/supply_repository.dart';
+import 'package:schedule/presentation/add/controller/add_calendar_course_controller.dart';
+import 'package:schedule/presentation/supply_list/controller/tomorrow_supply_controller.dart';
 
 import '../../../models/cours_with_supplies.dart';
 
@@ -108,6 +110,10 @@ class CoursesController extends _$CoursesController {
       ..addAll(updatedCourses);
 
     state = AsyncValue.data(DataCourseListState(updatedUI));
+
+    // Invalidate providers to refresh supply list in "Mon Sac"
+    ref.invalidate(coursesProvider);
+    ref.invalidate(tomorrowSupplyControllerProvider);
   }
 
   Future<void> onDeleteSupply(int courseIndex, SupplyItemUI supply) async {
@@ -177,6 +183,10 @@ class CoursesController extends _$CoursesController {
 
       // Mettre à jour l'état avec les données réelles (mais l'utilisateur ne devrait pas voir de différence)
       state = AsyncValue.data(DataCourseListState(updatedUI));
+
+      // Invalidate providers to refresh supply list in "Mon Sac"
+      ref.invalidate(coursesProvider);
+      ref.invalidate(tomorrowSupplyControllerProvider);
     } catch (e) {
       // Ignorer l'erreur car l'UI est déjà mise à jour optimistiquement
       // Vous pourriez logger l'erreur pour le débogage
@@ -239,6 +249,10 @@ class CoursesController extends _$CoursesController {
 
       // Mettre à jour l'état avec les données réelles
       state = AsyncValue.data(DataCourseListState(updatedUI));
+
+      // Invalidate providers to refresh supply list in "Mon Sac"
+      ref.invalidate(coursesProvider);
+      ref.invalidate(tomorrowSupplyControllerProvider);
     } catch (e) {
       // Ignorer l'erreur car l'UI est déjà mise à jour optimistiquement
       // Vous pourriez logger l'erreur pour le débogage
@@ -266,6 +280,10 @@ class CoursesController extends _$CoursesController {
       ..addAll(updatedCourses);
 
     state = AsyncValue.data(DataCourseListState(updatedUI));
+
+    // Invalidate providers to refresh supply list in "Mon Sac"
+    ref.invalidate(coursesProvider);
+    ref.invalidate(tomorrowSupplyControllerProvider);
   }
 
   refreshCourses() async {
