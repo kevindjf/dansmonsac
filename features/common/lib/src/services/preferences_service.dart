@@ -9,6 +9,7 @@ class PreferencesService {
   static const String _keyNotificationsEnabled = 'notifications_enabled';
   static const String _keyAccentColor = 'accent_color';
   static const String _keySupplyCheckedState = 'supply_checked_state_';
+  static const String _keyStandaloneSupplies = 'standalone_supplies';
 
   static Future<void> setPackTime(TimeOfDay time) async {
     final prefs = await SharedPreferences.getInstance();
@@ -115,5 +116,44 @@ class PreferencesService {
   /// Format date as key (yyyy-MM-dd)
   static String _formatDateKey(DateTime date) {
     return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+  }
+
+  /// Get standalone supplies (supplies not linked to a course)
+  static Future<List<String>> getStandaloneSupplies() async {
+    final prefs = await SharedPreferences.getInstance();
+    final jsonString = prefs.getString(_keyStandaloneSupplies);
+
+    if (jsonString != null && jsonString.isNotEmpty) {
+      try {
+        final List<dynamic> decoded = json.decode(jsonString);
+        return decoded.map((item) => item.toString()).toList();
+      } catch (e) {
+        return [];
+      }
+    }
+    return [];
+  }
+
+  /// Set standalone supplies
+  static Future<void> setStandaloneSupplies(List<String> supplies) async {
+    final prefs = await SharedPreferences.getInstance();
+    final jsonString = json.encode(supplies);
+    await prefs.setString(_keyStandaloneSupplies, jsonString);
+  }
+
+  /// Add a standalone supply
+  static Future<void> addStandaloneSupply(String supplyName) async {
+    final supplies = await getStandaloneSupplies();
+    if (!supplies.contains(supplyName)) {
+      supplies.add(supplyName);
+      await setStandaloneSupplies(supplies);
+    }
+  }
+
+  /// Remove a standalone supply
+  static Future<void> removeStandaloneSupply(String supplyName) async {
+    final supplies = await getStandaloneSupplies();
+    supplies.remove(supplyName);
+    await setStandaloneSupplies(supplies);
   }
 }

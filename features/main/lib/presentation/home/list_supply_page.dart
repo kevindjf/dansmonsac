@@ -44,11 +44,13 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
   final Map<String, bool> _checkedState = {};
   DateTime? _targetDate;
   bool _isLoaded = false;
+  List<String> _standaloneSupplies = [];
 
   @override
   void initState() {
     super.initState();
     _loadCheckedState();
+    _loadStandaloneSupplies();
   }
 
   Future<void> _loadCheckedState() async {
@@ -74,6 +76,15 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
 
     // Clean old states
     PreferencesService.clearOldSupplyStates();
+  }
+
+  Future<void> _loadStandaloneSupplies() async {
+    final supplies = await PreferencesService.getStandaloneSupplies();
+    if (mounted) {
+      setState(() {
+        _standaloneSupplies = supplies;
+      });
+    }
   }
 
   Future<void> _saveCheckedState() async {
@@ -111,6 +122,27 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
                 items.add(SupplyItem(
                   id: supply.id,
                   name: supply.name,
+                  isChecked: isChecked,
+                ));
+              }
+            }
+
+            // Add standalone supplies section if there are any
+            if (_standaloneSupplies.isNotEmpty) {
+              // Add section title
+              final standaloneIds = _standaloneSupplies.map((name) => 'standalone_$name').toList();
+              items.add(CourseTitleItem(title: "Autres fournitures", supplyIds: standaloneIds));
+
+              // Add standalone supplies
+              for (final supplyName in _standaloneSupplies) {
+                final id = 'standalone_$supplyName';
+                totalSupplies++;
+                final isChecked = _checkedState[id] ?? false;
+                if (isChecked) checkedSupplies++;
+
+                items.add(SupplyItem(
+                  id: id,
+                  name: supplyName,
                   isChecked: isChecked,
                 ));
               }
@@ -207,6 +239,9 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
                       },
                     );
                   } else if (item is SupplyItem) {
+                    // Check if this is a standalone supply
+                    final isStandalone = item.id.startsWith('standalone_');
+
                     return CheckboxListTile(
                       checkboxShape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(4.0),
@@ -215,7 +250,12 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
                           color: Colors.grey,
                         ),
                       ),
-                      secondary: SizedBox(width: 10),
+                      secondary: isStandalone
+                          ? IconButton(
+                              icon: Icon(Icons.delete, color: accentColor),
+                              onPressed: () => _deleteStandaloneSupply(item.name),
+                            )
+                          : SizedBox(width: 10),
                       contentPadding:
                           EdgeInsets.symmetric(horizontal: 8.0, vertical: 2.0),
                       dense: false,
@@ -339,7 +379,7 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
           child: SizedBox(
             width: double.infinity,
             child: FilledButton(
-              onPressed: () => print("là"),
+              onPressed: () => _showAddSupplyDialog(),
               style: FilledButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
@@ -365,5 +405,101 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
         ),
       ],
     );
+  }
+
+  Future<void> _deleteStandaloneSupply(String supplyName) async {
+    await PreferencesService.removeStandaloneSupply(supplyName);
+    await _loadStandaloneSupplies();
+  }
+
+  Future<void> _showAddSupplyDialog() async {
+    final TextEditingController controller = TextEditingController();
+    final accentColor = Theme.of(context).colorScheme.secondary;
+
+    await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: Color(0xFF303030),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Text(
+            'Ajouter une fourniture',
+            style: GoogleFonts.robotoCondensed(
+              color: Colors.white,
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          content: TextField(
+            controller: controller,
+            autofocus: true,
+            decoration: InputDecoration(
+              filled: false,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: Colors.grey),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: Colors.grey),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: accentColor),
+              ),
+              labelText: "Nom de la fourniture",
+              hintText: "Exemple : Règle",
+              labelStyle: const TextStyle(color: Colors.grey),
+            ),
+            onSubmitted: (value) {
+              if (value.trim().isNotEmpty) {
+                Navigator.of(context).pop(value.trim());
+              }
+            },
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(
+                'Annuler',
+                style: GoogleFonts.roboto(
+                  color: Colors.white54,
+                  fontSize: 16,
+                ),
+              ),
+            ),
+            FilledButton(
+              onPressed: () {
+                final supplyName = controller.text.trim();
+                if (supplyName.isNotEmpty) {
+                  Navigator.of(context).pop(supplyName);
+                }
+              },
+              style: FilledButton.styleFrom(
+                backgroundColor: accentColor,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: Text(
+                'Ajouter',
+                style: GoogleFonts.roboto(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    ).then((supplyName) async {
+      if (supplyName != null && supplyName is String && supplyName.isNotEmpty) {
+        await PreferencesService.addStandaloneSupply(supplyName);
+        await _loadStandaloneSupplies();
+      }
+    });
   }
 }
