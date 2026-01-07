@@ -5,7 +5,7 @@ import 'package:common/src/di/riverpod_di.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:onboarding/src/presentation/hour/controller/setup_time_onboarding_controller.dart';
-import 'package:onboarding/src/presentation/course/course_page.dart';
+import 'package:onboarding/src/presentation/notifications/notification_permission_page.dart';
 
 class OnboardingSetupTimePage extends ConsumerStatefulWidget {
   static const String routeName = "/setup-onboarding";
@@ -65,7 +65,7 @@ class _OnboardingSetupTimePageState
                   TextButton(
                     onPressed: state.isLoading
                         ? null
-                        : () => ref.read(routerDelegateProvider).setRoute(OnboardingCoursePage.routeName),
+                        : () => ref.read(routerDelegateProvider).setRoute(OnboardingNotificationPermissionPage.routeName),
                     child: Text(
                       "Passer",
                       style: TextStyle(

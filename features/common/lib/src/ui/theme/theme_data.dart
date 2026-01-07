@@ -166,8 +166,8 @@ class AppTheme {
       ),
       scaffoldBackgroundColor: AppColors.grey900,
       // Fond sombre pour tout l'app
-      appBarTheme: const AppBarTheme(
-        backgroundColor: AppColors.primary,
+      appBarTheme: AppBarTheme(
+        backgroundColor: accentColor,
         foregroundColor: Colors.white,
         elevation: 0,
         centerTitle: true,
@@ -207,7 +207,7 @@ class AppTheme {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: AppColors.primary, width: 2),
+          borderSide: BorderSide(color: accentColor, width: 2),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
@@ -219,7 +219,7 @@ class AppTheme {
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           foregroundColor: Colors.white,
-          backgroundColor: AppColors.primary,
+          backgroundColor: accentColor,
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8),
@@ -230,20 +230,20 @@ class AppTheme {
       ),
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
-          foregroundColor: AppColors.primary,
+          foregroundColor: accentColor,
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          textStyle: AppTextStyles.button.copyWith(color: AppColors.primary),
+          textStyle: AppTextStyles.button.copyWith(color: accentColor),
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          foregroundColor: AppColors.primary,
-          side: const BorderSide(color: AppColors.primary),
+          foregroundColor: accentColor,
+          side: BorderSide(color: accentColor),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8),
           ),
-          textStyle: AppTextStyles.button.copyWith(color: AppColors.primary),
+          textStyle: AppTextStyles.button.copyWith(color: accentColor),
         ),
       ),
       dividerTheme: const DividerThemeData(

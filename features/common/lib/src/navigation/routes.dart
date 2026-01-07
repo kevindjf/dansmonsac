@@ -4,6 +4,7 @@ import 'package:onboarding/src/presentation/week_explanation/week_explanation_pa
 import 'package:onboarding/src/presentation/school_year/school_year_page.dart';
 import 'package:onboarding/src/presentation/hour/setup_time_page.dart';
 import 'package:onboarding/src/presentation/course/course_page.dart';
+import 'package:onboarding/src/presentation/notifications/notification_permission_page.dart';
 import 'package:splash/presentation/splash_page.dart';
 import 'package:main/presentation/home/home_page.dart';
 
@@ -14,6 +15,7 @@ class AppRoutes {
   static const String weekExplanation = OnboardingWeekExplanationPage.routeName;
   static const String schoolYear = OnboardingSchoolYearPage.routeName;
   static const String setupTime = OnboardingSetupTimePage.routeName;
+  static const String notificationPermission = OnboardingNotificationPermissionPage.routeName;
   static const String onboardingCourse = OnboardingCoursePage.routeName;
 
   static final Map<String, Widget Function()> routes = {
@@ -22,6 +24,7 @@ class AppRoutes {
     weekExplanation: () => OnboardingWeekExplanationPage(),
     schoolYear: () => OnboardingSchoolYearPage(),
     setupTime: () => OnboardingSetupTimePage(),
+    notificationPermission: () => OnboardingNotificationPermissionPage(),
     onboardingCourse: () => OnboardingCoursePage(),
     splash: () => SplashPage(),
   };
