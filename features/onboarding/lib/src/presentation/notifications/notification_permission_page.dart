@@ -24,11 +24,11 @@ class _OnboardingNotificationPermissionPageState
     });
 
     try {
-      // Request permission to schedule exact alarms
-      final canSchedule = await NotificationService.canScheduleExactAlarms();
+      // Request notification permissions
+      final granted = await NotificationService.requestPermissions();
 
-      if (!canSchedule && mounted) {
-        // Show dialog explaining that permissions are required
+      if (!granted && mounted) {
+        // Show dialog explaining that permissions are recommended
         await showDialog(
           context: context,
           builder: (context) => AlertDialog(
