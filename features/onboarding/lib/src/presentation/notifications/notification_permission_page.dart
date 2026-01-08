@@ -16,74 +16,59 @@ class OnboardingNotificationPermissionPage extends ConsumerStatefulWidget {
 
 class _OnboardingNotificationPermissionPageState
     extends ConsumerState<OnboardingNotificationPermissionPage> {
-  bool _isRequesting = false;
-  bool? _permissionGranted;
+  bool _isStarting = false;
 
-  @override
-  void initState() {
-    super.initState();
-    _checkCurrentPermission();
-  }
-
-  Future<void> _checkCurrentPermission() async {
-    final canSchedule = await NotificationService.canScheduleExactAlarms();
-    if (mounted) {
-      setState(() {
-        _permissionGranted = canSchedule;
-      });
-    }
-  }
-
-  Future<void> _requestPermission() async {
+  Future<void> _startApp() async {
     setState(() {
-      _isRequesting = true;
+      _isStarting = true;
     });
 
     try {
       // Request permission to schedule exact alarms
       final canSchedule = await NotificationService.canScheduleExactAlarms();
 
-      if (!canSchedule) {
+      if (!canSchedule && mounted) {
         // Show dialog explaining that permissions are required
-        if (mounted) {
-          _showPermissionDialog();
-        }
+        await showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Autorisation recommandée'),
+            content: const Text(
+              'Pour recevoir tes rappels quotidiens, tu peux activer les notifications dans les paramètres de ton appareil.\n\n'
+              'Paramètres > Applications > DansMonSac > Notifications\n\n'
+              'Tu pourras aussi le faire plus tard depuis les paramètres de l\'app.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('Compris'),
+              ),
+            ],
+          ),
+        );
       }
 
-      setState(() {
-        _permissionGranted = canSchedule;
-      });
+      // Mark onboarding as completed
+      await PreferencesService.setOnboardingCompleted(true);
+
+      // Navigate to home using the app's routing system
+      if (mounted) {
+        ref.read(routerDelegateProvider).goToHome();
+      }
     } finally {
-      setState(() {
-        _isRequesting = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isStarting = false;
+        });
+      }
     }
   }
 
-  void _showPermissionDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Autorisation requise'),
-        content: const Text(
-          'Pour recevoir tes rappels quotidiens, active les notifications dans les paramètres de ton appareil.\n\n'
-          'Paramètres > Applications > DansMonSac > Notifications',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Compris'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Future<void> _continueToApp() async {
-    // Mark onboarding as completed
+  Future<void> _skipToApp() async {
+    // Mark onboarding as completed without requesting permissions
     await PreferencesService.setOnboardingCompleted(true);
 
-    // Navigate to home using the app's routing system
+    // Navigate to home
     if (mounted) {
       ref.read(routerDelegateProvider).goToHome();
     }
@@ -172,104 +157,37 @@ class _OnboardingNotificationPermissionPageState
 
               const Spacer(),
 
-              // Permission status
-              if (_permissionGranted == true)
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.green.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.green, width: 1),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(Icons.check_circle, color: Colors.green),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          'Notifications activées !',
-                          style: TextStyle(
-                            color: Colors.green,
-                            fontWeight: FontWeight.bold,
-                          ),
+              // Main button - Start app with notification request
+              FilledButton.icon(
+                onPressed: _isStarting ? null : _startApp,
+                icon: _isStarting
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(Colors.white),
                         ),
-                      ),
-                    ],
-                  ),
+                      )
+                    : const Icon(Icons.rocket_launch),
+                label: Text(
+                  _isStarting ? 'Démarrage...' : 'Commencer',
                 ),
-
-              if (_permissionGranted == false)
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.orange.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.orange, width: 1),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(Icons.warning, color: Colors.orange),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          'Active les notifications pour profiter pleinement de l\'app',
-                          style: TextStyle(
-                            color: Colors.orange,
-                            fontSize: 13,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+                style: FilledButton.styleFrom(
+                  backgroundColor: accentColor,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
-
-              const SizedBox(height: 16),
-
-              // Action buttons
-              if (_permissionGranted != true)
-                FilledButton.icon(
-                  onPressed: _isRequesting ? null : _requestPermission,
-                  icon: _isRequesting
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor:
-                                AlwaysStoppedAnimation<Color>(Colors.white),
-                          ),
-                        )
-                      : const Icon(Icons.notifications_active),
-                  label: Text(
-                    _isRequesting ? 'Vérification...' : 'Activer les notifications',
-                  ),
-                  style: FilledButton.styleFrom(
-                    backgroundColor: accentColor,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                  ),
-                ),
-
-              if (_permissionGranted == true)
-                FilledButton.icon(
-                  onPressed: _continueToApp,
-                  icon: const Icon(Icons.check),
-                  label: const Text('Commencer'),
-                  style: FilledButton.styleFrom(
-                    backgroundColor: accentColor,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                  ),
-                ),
+              ),
 
               const SizedBox(height: 8),
 
               // Skip button
-              if (_permissionGranted != true)
-                TextButton(
-                  onPressed: _continueToApp,
-                  child: const Text('Passer cette étape'),
-                ),
+              TextButton(
+                onPressed: _isStarting ? null : _skipToApp,
+                child: const Text('Passer cette étape'),
+              ),
 
               const SizedBox(height: 16),
             ],
