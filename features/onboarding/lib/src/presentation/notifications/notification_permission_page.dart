@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:common/src/services.dart';
+import 'package:common/src/di/riverpod_di.dart';
 import 'package:main/presentation/home/home_page.dart';
 
 class OnboardingNotificationPermissionPage extends ConsumerStatefulWidget {
@@ -78,12 +79,14 @@ class _OnboardingNotificationPermissionPageState
     );
   }
 
-  void _continueToApp() {
+  Future<void> _continueToApp() async {
     // Mark onboarding as completed
-    PreferencesService.setOnboardingCompleted(true);
+    await PreferencesService.setOnboardingCompleted(true);
 
-    // Navigate to home
-    Navigator.of(context).pushReplacementNamed(HomePage.routeName);
+    // Navigate to home using the app's routing system
+    if (mounted) {
+      ref.read(routerDelegateProvider).goToHome();
+    }
   }
 
   @override
