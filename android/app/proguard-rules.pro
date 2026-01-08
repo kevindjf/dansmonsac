@@ -23,7 +23,6 @@
 }
 
 # Google Play Core (for deferred components - not used but referenced by Flutter)
--dontwarn com.google.android.play.core.splitcompat.SplitCompatApplication
--dontwarn com.google.android.play.core.splitinstall.**
--dontwarn com.google.android.play.core.tasks.**
--keep class com.google.android.play.core.** { *; }
+# Ignore missing classes from Play Core library - these are optional Flutter features we don't use
+-dontwarn com.google.android.play.core.**
+-dontnote com.google.android.play.core.**
