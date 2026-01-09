@@ -81,81 +81,82 @@ class _OnboardingNotificationPermissionPageState
 
     return Scaffold(
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const SizedBox(height: 40),
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const SizedBox(height: 40),
 
-              // Icon
-              Container(
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color: accentColor.withOpacity(0.1),
-                  shape: BoxShape.circle,
+                // Icon
+                Container(
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: accentColor.withOpacity(0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.notifications_active,
+                    size: 80,
+                    color: accentColor,
+                  ),
                 ),
-                child: Icon(
-                  Icons.notifications_active,
-                  size: 80,
-                  color: accentColor,
+
+                const SizedBox(height: 32),
+
+                // Title
+                Text(
+                  'Reçois tes rappels',
+                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                  textAlign: TextAlign.center,
                 ),
-              ),
 
-              const SizedBox(height: 32),
+                const SizedBox(height: 16),
 
-              // Title
-              Text(
-                'Reçois tes rappels',
-                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                textAlign: TextAlign.center,
-              ),
+                // Description
+                Text(
+                  'Pour ne jamais oublier de préparer ton sac, active les notifications.',
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        color: Colors.white70,
+                      ),
+                  textAlign: TextAlign.center,
+                ),
 
-              const SizedBox(height: 16),
+                const SizedBox(height: 32),
 
-              // Description
-              Text(
-                'Pour ne jamais oublier de préparer ton sac, active les notifications.',
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      color: Colors.white70,
-                    ),
-                textAlign: TextAlign.center,
-              ),
+                // Features list
+                _buildFeature(
+                  icon: Icons.alarm,
+                  title: 'Rappel quotidien',
+                  description: 'Reçois une notification à l\'heure que tu as choisie',
+                  accentColor: accentColor,
+                ),
 
-              const SizedBox(height: 32),
+                const SizedBox(height: 16),
 
-              // Features list
-              _buildFeature(
-                icon: Icons.alarm,
-                title: 'Rappel quotidien',
-                description: 'Reçois une notification à l\'heure que tu as choisie',
-                accentColor: accentColor,
-              ),
+                _buildFeature(
+                  icon: Icons.event_note,
+                  title: 'Liste personnalisée',
+                  description:
+                      'La notification affiche les fournitures pour le lendemain',
+                  accentColor: accentColor,
+                ),
 
-              const SizedBox(height: 16),
+                const SizedBox(height: 16),
 
-              _buildFeature(
-                icon: Icons.event_note,
-                title: 'Liste personnalisée',
-                description:
-                    'La notification affiche les fournitures pour le lendemain',
-                accentColor: accentColor,
-              ),
+                _buildFeature(
+                  icon: Icons.privacy_tip,
+                  title: '100% privé',
+                  description:
+                      'Notifications locales uniquement, aucune donnée envoyée',
+                  accentColor: accentColor,
+                ),
 
-              const SizedBox(height: 16),
-
-              _buildFeature(
-                icon: Icons.privacy_tip,
-                title: '100% privé',
-                description:
-                    'Notifications locales uniquement, aucune donnée envoyée',
-                accentColor: accentColor,
-              ),
-
-              const Spacer(),
+                const SizedBox(height: 48),
 
               // Main button - Start app with notification request
               FilledButton.icon(

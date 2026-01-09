@@ -18,94 +18,95 @@ class OnboardingWelcomePage extends ConsumerWidget {
 
     return Scaffold(
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              const SizedBox(height: 48),
-              const Spacer(flex: 1),
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                const SizedBox(height: 48),
 
-              // Icône
-              Container(
-                padding: const EdgeInsets.all(32),
-                decoration: BoxDecoration(
-                  color: accentColor.withOpacity(0.1),
-                  shape: BoxShape.circle,
+                // Icône
+                Container(
+                  padding: const EdgeInsets.all(32),
+                  decoration: BoxDecoration(
+                    color: accentColor.withOpacity(0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.backpack,
+                    size: 80,
+                    color: accentColor,
+                  ),
                 ),
-                child: Icon(
-                  Icons.backpack,
-                  size: 80,
-                  color: accentColor,
+
+                const SizedBox(height: 32),
+
+                // Titre
+                Text(
+                  "Bienvenue dans DansMonSac !",
+                  style: textTheme.displayLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: colorScheme.onSurface,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
-              ),
 
-              const SizedBox(height: 32),
+                const SizedBox(height: 16),
 
-              // Titre
-              Text(
-                "Bienvenue dans DansMonSac !",
-                style: textTheme.displayLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: colorScheme.onSurface,
+                // Description
+                Text(
+                  "Ton assistant personnel pour ne plus rien oublier à l'école",
+                  style: textTheme.titleLarge?.copyWith(
+                    color: accentColor,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
-                textAlign: TextAlign.center,
-              ),
 
-              const SizedBox(height: 16),
+                const SizedBox(height: 48),
 
-              // Description
-              Text(
-                "Ton assistant personnel pour ne plus rien oublier à l'école",
-                style: textTheme.titleLarge?.copyWith(
-                  color: accentColor,
-                  fontWeight: FontWeight.w500,
+                // Points clés
+                _buildFeaturePoint(
+                  Icons.calendar_today,
+                  "Gère ton emploi du temps en semaines A/B",
+                  colorScheme,
                 ),
-                textAlign: TextAlign.center,
-              ),
+                const SizedBox(height: 16),
+                _buildFeaturePoint(
+                  Icons.checklist_rtl,
+                  "Liste automatique des fournitures à préparer",
+                  colorScheme,
+                ),
+                const SizedBox(height: 16),
+                _buildFeaturePoint(
+                  Icons.notifications_active,
+                  "Rappel quotidien pour préparer ton sac",
+                  colorScheme,
+                ),
 
-              const SizedBox(height: 32),
+                const SizedBox(height: 48),
 
-              // Points clés
-              _buildFeaturePoint(
-                Icons.calendar_today,
-                "Gère ton emploi du temps en semaines A/B",
-                colorScheme,
-              ),
-              const SizedBox(height: 16),
-              _buildFeaturePoint(
-                Icons.checklist_rtl,
-                "Liste automatique des fournitures à préparer",
-                colorScheme,
-              ),
-              const SizedBox(height: 16),
-              _buildFeaturePoint(
-                Icons.notifications_active,
-                "Rappel quotidien pour préparer ton sac",
-                colorScheme,
-              ),
-
-              const Spacer(flex: 2),
-
-              // Bouton Commencer
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton(
-                  onPressed: () => ref.read(routerDelegateProvider).setRoute(OnboardingWeekExplanationPage.routeName),
-                  style: FilledButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                // Bouton Commencer
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton(
+                    onPressed: () => ref.read(routerDelegateProvider).setRoute(OnboardingWeekExplanationPage.routeName),
+                    style: FilledButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: const Text(
+                      "Commencer",
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                   ),
-                  child: const Text(
-                    "Commencer",
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
                 ),
-              ),
-              const SizedBox(height: 8),
-            ],
+                const SizedBox(height: 24),
+              ],
+            ),
           ),
         ),
       ),

@@ -51,117 +51,118 @@ class _OnboardingSetupTimePageState
 
     return Scaffold(
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              const SizedBox(height: 24),
-
-              // Bouton Skip en haut à droite
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  TextButton(
-                    onPressed: state.isLoading
-                        ? null
-                        : () => ref.read(routerDelegateProvider).setRoute(OnboardingNotificationPermissionPage.routeName),
-                    child: Text(
-                      "Passer",
-                      style: TextStyle(
-                        color: colorScheme.onSurfaceVariant,
-                        fontSize: 16,
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // Bouton Skip en haut à droite
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    TextButton(
+                      onPressed: state.isLoading
+                          ? null
+                          : () => ref.read(routerDelegateProvider).setRoute(OnboardingNotificationPermissionPage.routeName),
+                      child: Text(
+                        "Passer",
+                        style: TextStyle(
+                          color: colorScheme.onSurfaceVariant,
+                          fontSize: 16,
+                        ),
                       ),
                     ),
+                  ],
+                ),
+
+                const SizedBox(height: 40),
+
+                // Titre
+                Text(
+                  "À quelle heure tu prépares ton sac ?",
+                  style: textTheme.displayLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: colorScheme.onSurface,
                   ),
-                ],
-              ),
-
-              const Spacer(flex: 1),
-
-              // Titre
-              Text(
-                "À quelle heure tu prépares ton sac ?",
-                style: textTheme.displayLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: colorScheme.onSurface,
+                  textAlign: TextAlign.center,
                 ),
-                textAlign: TextAlign.center,
-              ),
 
-              const SizedBox(height: 16),
+                const SizedBox(height: 16),
 
-              // Description
-              Text(
-                "Renseigne l'heure à laquelle tu fais ton sac, et on te rappellera ce qu'il te faut pour le lendemain. Plus d'oubli, plus de stress !",
-                style: textTheme.bodyMedium?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
+                // Description
+                Text(
+                  "Renseigne l'heure à laquelle tu fais ton sac, et on te rappellera ce qu'il te faut pour le lendemain. Plus d'oubli, plus de stress !",
+                  style: textTheme.bodyMedium?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
-                textAlign: TextAlign.center,
-              ),
 
-              Spacer(
-                flex: 1,
-              ),
+                const SizedBox(height: 40),
 
-              // Sélecteur d'heure
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton(
-                  onPressed: () => _selectTimePicker(state.setupTime),
-                  style: FilledButton.styleFrom(
-                    backgroundColor: accentColor,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                // Affichage de l'heure
+                Text(
+                  state.setupTime.format(context),
+                  style: textTheme.displayLarge?.copyWith(
+                    fontSize: 50,
+                    fontWeight: FontWeight.bold,
+                    color: colorScheme.secondary.withAlpha(100),
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+
+                const SizedBox(height: 32),
+
+                // Sélecteur d'heure
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton(
+                    onPressed: () => _selectTimePicker(state.setupTime),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: accentColor,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: const Text(
+                      "Choisir une heure",
+                      style: TextStyle(fontSize: 16),
                     ),
                   ),
-                  child: const Text(
-                    "Choisir une heure",
-                    style: TextStyle(fontSize: 16),
-                  ),
                 ),
-              ),
 
-              const SizedBox(height: 32),
-              Text(
-                state.setupTime.format(context),
-                style: textTheme.displayLarge?.copyWith(
-                  fontSize: 50,
-                  fontWeight: FontWeight.bold,
-                  color: colorScheme.secondary.withAlpha(100),
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const Spacer(flex: 1),
+                const SizedBox(height: 40),
 
-              // Bouton Next
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton(
-                  onPressed: state.isLoading
-                      ? null
-                      : () => ref
-                          .read(setupTimeOnboardingControllerProvider.notifier)
-                          .store(),
-                  style: FilledButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                // Bouton Next
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton(
+                    onPressed: state.isLoading
+                        ? null
+                        : () => ref
+                            .read(setupTimeOnboardingControllerProvider.notifier)
+                            .store(),
+                    style: FilledButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
+                    child: state.isLoading
+                        ? Center(
+                            child: SizedBox(child: CircularProgressIndicator()),
+                          )
+                        : const Text(
+                            "Suivant",
+                            style: TextStyle(fontSize: 16),
+                          ),
                   ),
-                  child: state.isLoading
-                      ? Center(
-                          child: SizedBox(child: CircularProgressIndicator()),
-                        )
-                      : const Text(
-                          "Suivant",
-                          style: TextStyle(fontSize: 16),
-                        ),
                 ),
-              ),
-              const SizedBox(height: 12),
-            ],
+                const SizedBox(height: 24),
+              ],
+            ),
           ),
         ),
       ),

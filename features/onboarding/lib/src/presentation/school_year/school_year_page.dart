@@ -51,157 +51,157 @@ class _OnboardingSchoolYearPageState
 
     return Scaffold(
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              const SizedBox(height: 24),
-
-              // Bouton Skip en haut à droite
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  TextButton(
-                    onPressed: state.isLoading
-                        ? null
-                        : () => ref
-                            .read(schoolYearOnboardingControllerProvider.notifier)
-                            .skip(),
-                    child: Text(
-                      "Passer",
-                      style: TextStyle(
-                        color: colorScheme.onSurfaceVariant,
-                        fontSize: 16,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-
-              const Spacer(flex: 1),
-
-              // Titre
-              Text(
-                "Début de l'année scolaire",
-                style: textTheme.displayLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: colorScheme.onSurface,
-                ),
-                textAlign: TextAlign.center,
-              ),
-
-              const SizedBox(height: 16),
-
-              // Description
-              Text(
-                "Quelle est la date de ta première semaine A ?\n\nOn utilisera cette info pour gérer l'alternance des semaines.",
-                style: textTheme.bodyMedium?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                  height: 1.5,
-                ),
-                textAlign: TextAlign.center,
-              ),
-
-              const Spacer(flex: 1),
-
-              // Affichage de la date sélectionnée
-              Container(
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color: accentColor.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: accentColor.withOpacity(0.3),
-                    width: 2,
-                  ),
-                ),
-                child: Column(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // Bouton Skip en haut à droite
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    Icon(
-                      Icons.event,
-                      size: 48,
-                      color: accentColor,
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      dateFormat.format(state.schoolYearStart),
-                      style: GoogleFonts.roboto(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: colorScheme.onSurface,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      "(1er lundi de septembre par défaut)",
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: colorScheme.onSurfaceVariant,
+                    TextButton(
+                      onPressed: state.isLoading
+                          ? null
+                          : () => ref
+                              .read(schoolYearOnboardingControllerProvider.notifier)
+                              .skip(),
+                      child: Text(
+                        "Passer",
+                        style: TextStyle(
+                          color: colorScheme.onSurfaceVariant,
+                          fontSize: 16,
+                        ),
                       ),
                     ),
                   ],
                 ),
-              ),
 
-              const SizedBox(height: 32),
+                const SizedBox(height: 40),
 
-              // Bouton pour changer la date
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton(
-                  onPressed: () => _selectDate(state.schoolYearStart),
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    side: BorderSide(color: accentColor, width: 2),
+                // Titre
+                Text(
+                  "Début de l'année scolaire",
+                  style: textTheme.displayLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: colorScheme.onSurface,
                   ),
-                  child: Text(
-                    "Modifier la date",
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: accentColor,
-                    ),
-                  ),
+                  textAlign: TextAlign.center,
                 ),
-              ),
 
-              const Spacer(flex: 1),
+                const SizedBox(height: 16),
 
-              // Bouton Suivant
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton(
-                  onPressed: state.isLoading
-                      ? null
-                      : () => ref
-                          .read(schoolYearOnboardingControllerProvider.notifier)
-                          .store(),
-                  style: FilledButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                // Description
+                Text(
+                  "Quelle est la date de ta première semaine A ?\n\nOn utilisera cette info pour gérer l'alternance des semaines.",
+                  style: textTheme.bodyMedium?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                    height: 1.5,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+
+                const SizedBox(height: 40),
+
+                // Affichage de la date sélectionnée
+                Container(
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: accentColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: accentColor.withOpacity(0.3),
+                      width: 2,
                     ),
                   ),
-                  child: state.isLoading
-                      ? const Center(
-                          child: SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          ),
-                        )
-                      : const Text(
-                          "Suivant",
-                          style: TextStyle(fontSize: 16),
+                  child: Column(
+                    children: [
+                      Icon(
+                        Icons.event,
+                        size: 48,
+                        color: accentColor,
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        dateFormat.format(state.schoolYearStart),
+                        style: GoogleFonts.roboto(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: colorScheme.onSurface,
                         ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        "(1er lundi de septembre par défaut)",
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(height: 12),
-            ],
+
+                const SizedBox(height: 32),
+
+                // Bouton pour changer la date
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton(
+                    onPressed: () => _selectDate(state.schoolYearStart),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      side: BorderSide(color: accentColor, width: 2),
+                    ),
+                    child: Text(
+                      "Modifier la date",
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: accentColor,
+                      ),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 40),
+
+                // Bouton Suivant
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton(
+                    onPressed: state.isLoading
+                        ? null
+                        : () => ref
+                            .read(schoolYearOnboardingControllerProvider.notifier)
+                            .store(),
+                    style: FilledButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: state.isLoading
+                        ? const Center(
+                            child: SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                          )
+                        : const Text(
+                            "Suivant",
+                            style: TextStyle(fontSize: 16),
+                          ),
+                  ),
+                ),
+                const SizedBox(height: 24),
+              ],
+            ),
           ),
         ),
       ),
