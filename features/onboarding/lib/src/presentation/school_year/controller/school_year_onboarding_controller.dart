@@ -1,10 +1,10 @@
 import 'dart:async';
-import 'package:flutter/material.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:common/src/services.dart';
+
 import 'package:common/src/di/riverpod_di.dart';
-import 'package:onboarding/src/presentation/school_year/controller/school_year_onboarding_state.dart';
+import 'package:common/src/services.dart';
 import 'package:onboarding/src/presentation/hour/setup_time_page.dart';
+import 'package:onboarding/src/presentation/school_year/controller/school_year_onboarding_state.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'school_year_onboarding_controller.g.dart';
 
@@ -33,9 +33,12 @@ class SchoolYearOnboardingController extends _$SchoolYearOnboardingController {
       await PreferencesService.setSchoolYearStart(state.schoolYearStart);
 
       // Navigate to next onboarding step
-      ref.read(routerDelegateProvider).setRoute(OnboardingSetupTimePage.routeName);
+      ref
+          .read(routerDelegateProvider)
+          .setRoute(OnboardingSetupTimePage.routeName);
     } catch (e) {
-      _errorStreamController.add("Erreur lors de l'enregistrement: ${e.toString()}");
+      _errorStreamController
+          .add("Erreur lors de l'enregistrement: ${e.toString()}");
     } finally {
       state = state.copyWith(isLoading: false);
     }
@@ -46,12 +49,14 @@ class SchoolYearOnboardingController extends _$SchoolYearOnboardingController {
     await PreferencesService.setSchoolYearStart(state.schoolYearStart);
 
     // Navigate to next step
-    ref.read(routerDelegateProvider).setRoute(OnboardingSetupTimePage.routeName);
+    ref
+        .read(routerDelegateProvider)
+        .setRoute(OnboardingSetupTimePage.routeName);
   }
 
   @override
   void dispose() {
     _errorStreamController.close();
-    super.dispose();
+    //super.dispose();
   }
 }
