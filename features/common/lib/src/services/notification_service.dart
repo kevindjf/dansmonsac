@@ -17,7 +17,8 @@ class NotificationService {
     // Set local timezone to Europe/Paris for France
     tz.setLocalLocation(tz.getLocation('Europe/Paris'));
 
-    const androidSettings = AndroidInitializationSettings('@drawable/ic_notification_bag');
+    // Use ic_launcher as notification icon (available in all Android projects)
+    const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
     const iosSettings = DarwinInitializationSettings(
       requestAlertPermission: false,
       requestBadgePermission: false,
@@ -128,7 +129,7 @@ class NotificationService {
         channelDescription: 'Rappel pour préparer votre sac',
         importance: Importance.high,
         priority: Priority.high,
-        icon: '@drawable/ic_notification_bag',
+        icon: '@mipmap/ic_launcher',
         enableVibration: true,
         playSound: true,
         enableLights: true,
