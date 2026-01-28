@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:common/src/ui/ui.dart';
+import 'package:common/src/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:main/presentation/home/calendar_body_widget.dart';
 import 'package:schedule/presentation/add/add_calendar_course_page.dart';
 import 'package:schedule/presentation/calendar/controller/calendar_controller.dart';
+import 'package:sharing/sharing.dart';
 
 
 class CalendarPage extends ConsumerStatefulWidget {
@@ -18,6 +20,29 @@ class CalendarPage extends ConsumerStatefulWidget {
 class _CalendarPageState extends ConsumerState<CalendarPage> {
   DateTime _selectedDate = DateTime.now();
   WeekFilter _weekFilter = WeekFilter.all; // Default to show all courses
+  bool _showWeekend = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadWeekendPreference();
+  }
+
+  Future<void> _loadWeekendPreference() async {
+    final showWeekend = await PreferencesService.getShowWeekend();
+    if (mounted) {
+      setState(() {
+        _showWeekend = showWeekend;
+        // If weekend is hidden and currently selecting Sat/Sun, switch to Friday
+        if (!_showWeekend && _selectedDate.weekday >= 6) {
+          final now = DateTime.now();
+          final currentWeekday = now.weekday;
+          final difference = 5 - currentWeekday; // Go to Friday
+          _selectedDate = now.add(Duration(days: difference));
+        }
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -30,23 +55,24 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
               children: [
                 const SizedBox(height: 16),
                 Padding(
-                  padding: const EdgeInsets.all(8.0),
+                  padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Wrap(
-                        alignment: WrapAlignment.center,
-                        spacing: 12.0,
-                        children: [
-                          _buildDayButton("L", 1, selectedWeekday == 1),
-                          _buildDayButton("M", 2, selectedWeekday == 2),
-                          _buildDayButton("M", 3, selectedWeekday == 3),
-                          _buildDayButton("J", 4, selectedWeekday == 4),
-                          _buildDayButton("V", 5, selectedWeekday == 5),
-                          _buildDayButton("S", 6, selectedWeekday == 6),
-                          _buildDayButton("D", 7, selectedWeekday == 7),
-                        ],
-                      ),
+                      _buildDayButton("L", 1, selectedWeekday == 1),
+                      const SizedBox(width: 6),
+                      _buildDayButton("M", 2, selectedWeekday == 2),
+                      const SizedBox(width: 6),
+                      _buildDayButton("M", 3, selectedWeekday == 3),
+                      const SizedBox(width: 6),
+                      _buildDayButton("J", 4, selectedWeekday == 4),
+                      const SizedBox(width: 6),
+                      _buildDayButton("V", 5, selectedWeekday == 5),
+                      if (_showWeekend) ...[
+                        const SizedBox(width: 6),
+                        _buildDayButton("S", 6, selectedWeekday == 6),
+                        const SizedBox(width: 6),
+                        _buildDayButton("D", 7, selectedWeekday == 7),
+                      ],
                     ],
                   ),
                 ),
@@ -89,7 +115,7 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 Padding(
-                  padding: const EdgeInsets.all(16.0),
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   child: SizedBox(
                     width: double.infinity,
                     child: FilledButton(
@@ -119,6 +145,44 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
                     ),
                   ),
                 ),
+                const SizedBox(height: 8),
+                Padding(
+                  padding: const EdgeInsets.only(left: 16.0, right: 16.0, bottom: 16.0),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton(
+                      onPressed: () {
+                        _showShareModal(context);
+                      },
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        side: BorderSide(
+                          color: Theme.of(context).colorScheme.secondary,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.share,
+                            color: Theme.of(context).colorScheme.secondary,
+                          ),
+                          const SizedBox(width: 16),
+                          Text(
+                            "Partager mon emploi du temps",
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Theme.of(context).colorScheme.secondary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
               ],
             )
           ],
@@ -142,6 +206,15 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
           }
         },
       ),
+    );
+  }
+
+  void _showShareModal(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => const SharePage(),
     );
   }
 
@@ -176,23 +249,24 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
   Widget _buildDayButton(String letter, int weekday, bool isSelected) {
     final accentColor = Theme.of(context).colorScheme.secondary;
 
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          // Calculate the date for the selected weekday in current week
-          final now = DateTime.now();
-          final currentWeekday = now.weekday;
-          final difference = weekday - currentWeekday;
-          _selectedDate = now.add(Duration(days: difference));
-        });
-      },
-      child: Container(
-        decoration: BoxDecoration(
-          color: isSelected ? accentColor : Colors.black,
-          borderRadius: BorderRadius.circular(8.0),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
+    return Expanded(
+      child: GestureDetector(
+        onTap: () {
+          setState(() {
+            // Calculate the date for the selected weekday in current week
+            final now = DateTime.now();
+            final currentWeekday = now.weekday;
+            final difference = weekday - currentWeekday;
+            _selectedDate = now.add(Duration(days: difference));
+          });
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          decoration: BoxDecoration(
+            color: isSelected ? accentColor : Colors.black,
+            borderRadius: BorderRadius.circular(10),
+          ),
+          alignment: Alignment.center,
           child: Text(
             letter,
             style: TextStyle(

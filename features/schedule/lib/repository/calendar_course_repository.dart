@@ -7,6 +7,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 abstract class CalendarCourseRepository {
   Future<Either<Failure, CalendarCourse>> addCalendarCourse(CalendarCourse calendarCourse);
+  Future<Either<Failure, void>> updateCalendarCourse(CalendarCourse calendarCourse);
   Future<Either<Failure, List<CalendarCourse>>> fetchCalendarCourses();
   Future<Either<Failure, void>> deleteCalendarCourse(String id);
 }
@@ -57,6 +58,25 @@ class CalendarCourseSupabaseRepository extends CalendarCourseRepository {
       return (response as List)
           .map((json) => CalendarCourse.fromJson(json as Map<String, dynamic>))
           .toList();
+    });
+  }
+
+  @override
+  Future<Either<Failure, void>> updateCalendarCourse(CalendarCourse calendarCourse) {
+    return handleErrors(() async {
+      await supabaseClient
+          .from('calendar_courses')
+          .update({
+            'course_id': calendarCourse.courseId,
+            'room_name': calendarCourse.roomName,
+            'start_time_hour': calendarCourse.startTime.hour,
+            'start_time_minute': calendarCourse.startTime.minute,
+            'end_time_hour': calendarCourse.endTime.hour,
+            'end_time_minute': calendarCourse.endTime.minute,
+            'week_type': calendarCourse.weekType.value,
+            'day_of_week': calendarCourse.dayOfWeek,
+          })
+          .eq('id', calendarCourse.id);
     });
   }
 

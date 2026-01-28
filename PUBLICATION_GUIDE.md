@@ -340,6 +340,21 @@ Code signing error
 ```
 **Solution** : Vérifiez que votre compte Apple Developer est actif et que les certificats sont valides
 
+### Pages memoire 16 ko (Android)
+```
+Votre appli ne prend pas en charge les tailles de page de mémoire de 16 ko
+```
+**Contexte** : Google Play exige que les librairies natives (.so) soient alignees sur 16 ko. Cela concerne les plugins Flutter qui embarquent du code natif (C/C++, Rust, etc.).
+
+**Solution appliquee** : `android:extractNativeLibs="true"` dans `AndroidManifest.xml`. Cela force l'extraction des libs natives au lieu de les charger directement depuis l'APK, ce qui contourne le probleme d'alignement.
+
+**Avant d'ajouter un nouveau plugin**, verifiez :
+- Que le plugin supporte l'alignement 16 ko (verifier les issues GitHub du plugin)
+- Que la version du NDK utilisee par le plugin est recente (r27+)
+- En cas de doute, testez le build release et uploadez sur Play Console en test interne avant de publier
+
+**Plugins a risque** : ceux qui incluent des libs natives pre-compilees (camera, scanner, ML, audio, video, crypto). Les plugins purement Dart ne sont pas concernes.
+
 ### L'app crash au lancement (release)
 **Causes possibles** :
 - Proguard trop agressif : ajustez `proguard-rules.pro`

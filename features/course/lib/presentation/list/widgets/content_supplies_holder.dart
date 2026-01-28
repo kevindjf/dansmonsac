@@ -6,16 +6,20 @@ import 'package:common/src/ui/ui.dart';
 
 class ContentSupplyHolder extends ConsumerWidget {
   final List<SupplyItemUI> supplies;
+  final String courseName;
   final VoidCallback onAddSupply;
   final ValueChanged<SupplyItemUI> onDeleteSupply;
   final VoidCallback onDeleteCourse;
+  final ValueChanged<String> onRenameCourse;
 
   const ContentSupplyHolder({
     super.key,
     required this.supplies,
+    required this.courseName,
     required this.onAddSupply,
     required this.onDeleteSupply,
     required this.onDeleteCourse,
+    required this.onRenameCourse,
   });
 
   @override
@@ -31,6 +35,16 @@ class ContentSupplyHolder extends ConsumerWidget {
           icon: Icons.add,
           label: "Ajouter une fourniture",
           onPressed: onAddSupply,
+        ),
+
+        const SizedBox(height: 4),
+
+        // Bouton pour modifier le nom du cours
+        _buildActionButton(
+          icon: Icons.edit,
+          label: "Modifier le nom",
+          onPressed: () => _showRenameBottomSheet(context),
+          backgroundColor: Colors.transparent,
         ),
 
         const SizedBox(height: 4),
@@ -105,6 +119,115 @@ class ContentSupplyHolder extends ConsumerWidget {
         );
       },
     );
+  }
+
+  void _showRenameBottomSheet(BuildContext context) {
+    final controller = TextEditingController(text: courseName);
+
+    showModalBottomSheet<String>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: const Color(0xFF303030),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (sheetContext) {
+        final bottomSafeArea = MediaQuery.of(sheetContext).viewPadding.bottom;
+        return Padding(
+          padding: EdgeInsets.only(
+            left: 16,
+            right: 16,
+            top: 16,
+            bottom: MediaQuery.of(sheetContext).viewInsets.bottom + bottomSafeArea + 16,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                "Modifier le nom",
+                style: GoogleFonts.robotoCondensed(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: controller,
+                autofocus: true,
+                decoration: InputDecoration(
+                  filled: false,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: Colors.grey),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: Colors.grey),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Theme.of(sheetContext).colorScheme.primary),
+                  ),
+                  labelText: "Nom du cours",
+                  labelStyle: const TextStyle(color: Colors.grey),
+                ),
+                onSubmitted: (value) {
+                  if (value.trim().isNotEmpty) {
+                    Navigator.of(sheetContext).pop(value.trim());
+                  }
+                },
+              ),
+              const SizedBox(height: 32),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton(
+                  onPressed: () {
+                    final newName = controller.text.trim();
+                    if (newName.isNotEmpty) {
+                      Navigator.of(sheetContext).pop(newName);
+                    }
+                  },
+                  style: FilledButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text(
+                    "Modifier",
+                    style: TextStyle(fontSize: 16),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton(
+                  onPressed: () => Navigator.of(sheetContext).pop(),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: Colors.transparent,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text(
+                    "Annuler",
+                    style: TextStyle(fontSize: 16),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    ).then((newName) {
+      if (newName != null && newName.isNotEmpty && newName != courseName) {
+        onRenameCourse(newName);
+      }
+    });
   }
 
   /// 📝 Widget pour afficher une fourniture

@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:schedule/di/riverpod_di.dart';
+import 'package:schedule/models/calendar_course.dart';
+import 'package:schedule/presentation/add/add_calendar_course_page.dart';
 import 'package:schedule/presentation/calendar/controller/calendar_controller.dart';
 
 class EventUI {
@@ -17,21 +19,25 @@ class EventUI {
 
 class Event {
   final String id;
+  final String courseId;
   final String title;
   final String room;
   final String hour;
   final DateTime startTime;
   final DateTime endTime;
   final String weekType; // 'A', 'B', or 'BOTH'
+  final int dayOfWeek; // 1=Monday, 7=Sunday
 
   Event({
     required this.id,
+    required this.courseId,
     required this.title,
     required this.room,
     required this.hour,
     required this.startTime,
     required this.endTime,
     required this.weekType,
+    required this.dayOfWeek,
   });
 
   @override
@@ -43,12 +49,14 @@ class Event {
   factory Event.fromCalendarEvent(CalendarEvent calendarEvent) {
     return Event(
       id: calendarEvent.id,
+      courseId: calendarEvent.courseId,
       title: calendarEvent.title,
       room: calendarEvent.room,
       hour: calendarEvent.hour,
       startTime: calendarEvent.startTime,
       endTime: calendarEvent.endTime,
       weekType: calendarEvent.weekType,
+      dayOfWeek: calendarEvent.dayOfWeek,
     );
   }
 }
@@ -305,57 +313,118 @@ class CalendarBodyWidget extends ConsumerWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
-      builder: (context) => Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Course info
-            Text(
-              event.title,
-              style: GoogleFonts.roboto(
-                color: Colors.white,
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
+      builder: (sheetContext) {
+        final bottomPadding = MediaQuery.of(sheetContext).viewPadding.bottom;
+        return Padding(
+          padding: EdgeInsets.only(
+            left: 24.0,
+            right: 24.0,
+            top: 24.0,
+            bottom: 16.0 + bottomPadding,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Course info
+              Text(
+                event.title,
+                style: GoogleFonts.roboto(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              "${event.room} • ${event.hour}",
-              style: GoogleFonts.roboto(
-                color: Colors.white38,
-                fontSize: 14,
+              const SizedBox(height: 8),
+              Text(
+                "${event.room} • ${event.hour}",
+                style: GoogleFonts.roboto(
+                  color: Colors.white38,
+                  fontSize: 14,
+                ),
               ),
-            ),
-            const SizedBox(height: 24),
+              const SizedBox(height: 24),
 
-            // Delete button
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton.icon(
-                onPressed: () async {
-                  Navigator.pop(context);
-                  await _deleteCourse(context, ref, event.id);
-                },
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  side: BorderSide(color: Colors.red),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+              // Edit button
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: () {
+                    Navigator.pop(sheetContext);
+                    _editCourse(context, ref, event);
+                  },
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    side: BorderSide(color: Theme.of(context).colorScheme.secondary),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  icon: Icon(Icons.edit_outlined, color: Theme.of(context).colorScheme.secondary),
+                  label: Text(
+                    "Modifier ce cours",
+                    style: TextStyle(fontSize: 16, color: Theme.of(context).colorScheme.secondary),
                   ),
                 ),
-                icon: Icon(Icons.delete_outline, color: Colors.red),
-                label: Text(
-                  "Supprimer ce cours",
-                  style: TextStyle(fontSize: 16, color: Colors.red),
+              ),
+              const SizedBox(height: 12),
+
+              // Delete button
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: () async {
+                    Navigator.pop(sheetContext);
+                    await _deleteCourse(context, ref, event.id);
+                  },
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    side: BorderSide(color: Colors.red),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  icon: Icon(Icons.delete_outline, color: Colors.red),
+                  label: Text(
+                    "Supprimer ce cours",
+                    style: TextStyle(fontSize: 16, color: Colors.red),
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 16),
-          ],
-        ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _editCourse(BuildContext context, WidgetRef ref, Event event) {
+    final existingCourse = CalendarCourse(
+      id: event.id,
+      courseId: event.courseId,
+      roomName: event.room,
+      startTime: TimeOfDay(hour: event.startTime.hour, minute: event.startTime.minute),
+      endTime: TimeOfDay(hour: event.endTime.hour, minute: event.endTime.minute),
+      weekType: WeekType.fromString(event.weekType),
+      dayOfWeek: event.dayOfWeek,
+    );
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: const Color(0xFF303030),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
+      builder: (sheetContext) {
+        return AddCalendarCoursePage(
+          existingCourse: existingCourse,
+          selectedDate: selectedDate,
+          onAddCalendarCourse: (calendarCourse) {
+            ref.invalidate(calendarControllerProvider);
+          },
+        );
+      },
     );
   }
 

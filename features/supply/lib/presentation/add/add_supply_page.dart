@@ -73,14 +73,13 @@ class _AddSupplyPageState extends ConsumerState<AddSupplyPage> {
   Widget build(BuildContext context) {
     var state = ref.watch(addSupplyControllerProvider(widget.courseId));
     final colorScheme = Theme.of(context).colorScheme;
+    final bottomSafeArea = MediaQuery.of(context).viewPadding.bottom;
 
     return Container(
       width: double.infinity,
       child: Padding(
         padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context)
-              .viewInsets
-              .bottom, // Ajuste le padding selon la hauteur du clavier
+          bottom: MediaQuery.of(context).viewInsets.bottom + bottomSafeArea + 16,
           left: 16,
           right: 16,
           top: 16,

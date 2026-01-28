@@ -26,6 +26,11 @@ dependencies:
   google_fonts: ^6.2.1
   flutter_local_notifications: ^18.0.1
   timezone: ^0.9.4
+  drift: ^2.28.2
+  sqlite3_flutter_libs: ^0.5.0
+  path_provider: ^2.0.0
+  path: ^1.8.0
+  connectivity_plus: ^6.0.0
 
   onboarding:
     path: ../onboarding
@@ -44,5 +49,6 @@ dev_dependencies:
   # the code generator
   riverpod_generator: ^2.6.2
   json_serializable: ^6.8.0
+  drift_dev: ^2.28.0
 
 flutter:

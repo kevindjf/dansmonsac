@@ -18,12 +18,16 @@ dependencies:
   json_annotation: ^4.9.0
   supabase_flutter: ^2.8.4
   dartz: ^0.10.1
+  mobile_scanner: ^7.0.0
 
   common:
     path: ../common
 
   course:
     path: ../course
+
+  sharing:
+    path: ../sharing
 
 dev_dependencies:
   flutter_test:

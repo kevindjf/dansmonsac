@@ -11,6 +11,10 @@ class PreferencesService {
   static const String _keySupplyCheckedState = 'supply_checked_state_';
   static const String _keyStandaloneSupplies = 'standalone_supplies';
   static const String _keyOnboardingCompleted = 'onboarding_completed';
+  static const String _keyTutorialSeen = 'tutorial_seen';
+  static const String _keyShareCode = 'share_code';
+  static const String _keySharerName = 'sharer_name';
+  static const String _keyShowWeekend = 'show_weekend';
 
   static Future<void> setPackTime(TimeOfDay time) async {
     final prefs = await SharedPreferences.getInstance();
@@ -166,5 +170,53 @@ class PreferencesService {
     final supplies = await getStandaloneSupplies();
     supplies.remove(supplyName);
     await setStandaloneSupplies(supplies);
+  }
+
+  /// Set tutorial seen state
+  static Future<void> setTutorialSeen(bool seen) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_keyTutorialSeen, seen);
+  }
+
+  /// Get tutorial seen state
+  static Future<bool> getTutorialSeen() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_keyTutorialSeen) ?? false;
+  }
+
+  /// Set share code
+  static Future<void> setShareCode(String code) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_keyShareCode, code);
+  }
+
+  /// Get share code
+  static Future<String?> getShareCode() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_keyShareCode);
+  }
+
+  /// Set sharer name
+  static Future<void> setSharerName(String name) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_keySharerName, name);
+  }
+
+  /// Get sharer name
+  static Future<String> getSharerName() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_keySharerName) ?? '';
+  }
+
+  /// Set show weekend (Saturday/Sunday) in calendar
+  static Future<void> setShowWeekend(bool show) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_keyShowWeekend, show);
+  }
+
+  /// Get show weekend preference (default: true)
+  static Future<bool> getShowWeekend() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_keyShowWeekend) ?? true;
   }
 }

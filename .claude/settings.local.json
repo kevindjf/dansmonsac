@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(flutter analyze:*)",
+      "Bash(flutter pub run build_runner build:*)",
+      "Bash(ls:*)",
+      "Bash(find:*)",
+      "Bash(flutter test:*)",
+      "Bash(grep:*)",
+      "Bash(flutter build:*)",
+      "Bash(flutter:*)",
+      "Bash(xcrun simctl list:*)",
+      "Bash(xcrun simctl runtime list:*)",
+      "Bash(xcode-select:*)",
+      "Bash(xcodebuild:*)",
+      "Bash(xcrun simctl boot:*)",
+      "Bash(git -C /Users/kevin/kappsmobile/projects/interne/dansmonsac status)"
+    ]
+  }
+}

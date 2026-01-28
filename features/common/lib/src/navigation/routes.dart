@@ -5,6 +5,7 @@ import 'package:onboarding/src/presentation/school_year/school_year_page.dart';
 import 'package:onboarding/src/presentation/hour/setup_time_page.dart';
 import 'package:onboarding/src/presentation/course/course_page.dart';
 import 'package:onboarding/src/presentation/notifications/notification_permission_page.dart';
+import 'package:onboarding/src/presentation/import/import_step_page.dart';
 import 'package:splash/presentation/splash_page.dart';
 import 'package:main/presentation/home/home_page.dart';
 
@@ -17,6 +18,7 @@ class AppRoutes {
   static const String setupTime = OnboardingSetupTimePage.routeName;
   static const String notificationPermission = OnboardingNotificationPermissionPage.routeName;
   static const String onboardingCourse = OnboardingCoursePage.routeName;
+  static const String onboardingImport = OnboardingImportStepPage.routeName;
 
   static final Map<String, Widget Function()> routes = {
     home: () => HomePage(),
@@ -26,6 +28,7 @@ class AppRoutes {
     setupTime: () => OnboardingSetupTimePage(),
     notificationPermission: () => OnboardingNotificationPermissionPage(),
     onboardingCourse: () => OnboardingCoursePage(),
+    onboardingImport: () => OnboardingImportStepPage(),
     splash: () => SplashPage(),
   };
 }
@@ -33,11 +36,13 @@ class AppRoutes {
 class AppRouterDelegate extends RouterDelegate<String>
     with PopNavigatorRouterDelegateMixin<String>, ChangeNotifier {
   String? _currentRoute;
+  int? _initialTabIndex;
+  bool _showTutorial = false;
 
   AppRouterDelegate();
 
   @override
-  GlobalKey<NavigatorState> get navigatorKey => GlobalKey<NavigatorState>();
+  final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
   @override
   String get currentConfiguration => _currentRoute ?? AppRoutes.splash;
@@ -74,9 +79,25 @@ class AppRouterDelegate extends RouterDelegate<String>
     notifyListeners();
   }
 
-  void goToHome() {
+  void goToHome({int? initialTabIndex, bool showTutorial = false}) {
     _currentRoute = AppRoutes.home;
+    _initialTabIndex = initialTabIndex;
+    _showTutorial = showTutorial;
     notifyListeners();
+  }
+
+  /// Returns and clears the initial tab index (one-time use)
+  int? consumeInitialTabIndex() {
+    final index = _initialTabIndex;
+    _initialTabIndex = null;
+    return index;
+  }
+
+  /// Returns and clears the show tutorial flag (one-time use)
+  bool consumeShowTutorial() {
+    final show = _showTutorial;
+    _showTutorial = false;
+    return show;
   }
 }
 

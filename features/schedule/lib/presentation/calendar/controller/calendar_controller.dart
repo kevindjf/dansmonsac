@@ -11,21 +11,25 @@ part 'calendar_controller.g.dart';
 
 class CalendarEvent {
   final String id;
+  final String courseId;
   final String title;
   final String room;
   final String hour;
   final DateTime startTime;
   final DateTime endTime;
   final String weekType; // 'A', 'B', or 'BOTH'
+  final int dayOfWeek; // 1=Monday, 7=Sunday
 
   CalendarEvent({
     required this.id,
+    required this.courseId,
     required this.title,
     required this.room,
     required this.hour,
     required this.startTime,
     required this.endTime,
     required this.weekType,
+    required this.dayOfWeek,
   });
 }
 
@@ -146,12 +150,14 @@ class CalendarController extends _$CalendarController {
 
           events.add(CalendarEvent(
             id: course.id,
+            courseId: course.courseId,
             title: courseName,
             room: course.roomName,
             hour: hourString,
             startTime: startTime,
             endTime: endTime,
             weekType: course.weekType.value,
+            dayOfWeek: course.dayOfWeek,
           ));
         }
 

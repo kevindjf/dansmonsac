@@ -153,7 +153,37 @@ class AddCalendarCourseController extends _$AddCalendarCourseController {
         // Refresh calendar and supply list
         ref.invalidate(calendarControllerProvider);
         ref.invalidate(tomorrowSupplyControllerProvider);
-        ref.invalidate(coursesProvider); // Refresh courses to ensure course names are up to date
+        ref.invalidate(coursesProvider);
+      },
+    );
+  }
+
+  Future<void> updateCourse(String existingId) async {
+    if (!_validateInputs()) {
+      return;
+    }
+
+    final currentState = state.value!;
+    final calendarCourse = CalendarCourse(
+      id: existingId,
+      courseId: currentState.courseId!,
+      roomName: currentState.roomName,
+      startTime: currentState.startTime,
+      endTime: currentState.endTime,
+      weekType: currentState.weekType,
+      dayOfWeek: currentState.dayOfWeek,
+    );
+
+    final repository = ref.read(calendarCourseRepositoryProvider);
+    final result = await repository.updateCalendarCourse(calendarCourse);
+
+    result.fold(
+      (failure) => _errorStreamController.add("Erreur lors de la modification: ${failure.message}"),
+      (_) {
+        _successStreamController.add(calendarCourse);
+        ref.invalidate(calendarControllerProvider);
+        ref.invalidate(tomorrowSupplyControllerProvider);
+        ref.invalidate(coursesProvider);
       },
     );
   }

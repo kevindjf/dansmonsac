@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:common/src/di/riverpod_di.dart';
-import 'package:onboarding/src/presentation/week_explanation/week_explanation_page.dart';
-import 'package:onboarding/src/repositories/onboarding_repository.dart';
-import 'package:onboarding/src/repositories/onboarding_supabase_repository.dart';
+import 'package:onboarding/src/presentation/import/import_step_page.dart';
 
 class OnboardingWelcomePage extends ConsumerWidget {
   static const String routeName = "/welcome-onboarding";
@@ -91,7 +89,7 @@ class OnboardingWelcomePage extends ConsumerWidget {
                 SizedBox(
                   width: double.infinity,
                   child: FilledButton(
-                    onPressed: () => ref.read(routerDelegateProvider).setRoute(OnboardingWeekExplanationPage.routeName),
+                    onPressed: () => ref.read(routerDelegateProvider).setRoute(OnboardingImportStepPage.routeName),
                     style: FilledButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(

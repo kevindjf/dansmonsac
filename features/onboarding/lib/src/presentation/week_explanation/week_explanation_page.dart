@@ -71,7 +71,7 @@ class OnboardingWeekExplanationPage extends ConsumerWidget {
 
                 // Description
                 Text(
-                  "Ton emploi du temps alterne entre semaine A et semaine B.\n\nChaque semaine, tes cours peuvent être différents. L'app gère automatiquement l'alternance pour t'afficher les bons cours !",
+                  "Ton emploi du temps alterne entre semaine A et semaine B ?\n\nChaque semaine, tes cours peuvent être différents. L'app gère automatiquement l'alternance pour t'afficher les bons cours !",
                   style: textTheme.bodyLarge?.copyWith(
                     color: colorScheme.onSurfaceVariant,
                     height: 1.5,

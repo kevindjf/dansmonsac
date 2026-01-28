@@ -35,6 +35,8 @@ class SupplyItem implements ListItem {
   SupplyItem({required this.id, required this.name, this.isChecked = false});
 }
 
+enum _EmptyReason { noCourses, noSupplies }
+
 class ListSupply extends ConsumerStatefulWidget {
   @override
   ConsumerState<ListSupply> createState() => _ListSupplyState();
@@ -182,16 +184,43 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
               }
             }
 
+            // If no courses at all and no standalone supplies, show empty state
+            if (coursesWithSupplies.isEmpty && _standaloneSupplies.isEmpty) {
+              return _buildEmptyState(packTime, _EmptyReason.noCourses);
+            }
+
+            // If courses exist but 0 supplies total (no standalone either)
+            if (totalSupplies == 0) {
+              return _buildEmptyState(packTime, _EmptyReason.noSupplies);
+            }
+
             return _buildSupplyList(context, items, checkedSupplies, totalSupplies, packTime);
           },
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, stack) => _buildEmptyState(packTime),
+          error: (error, stack) => _buildEmptyState(packTime, _EmptyReason.noCourses),
         );
       },
     );
   }
 
-  Widget _buildEmptyState(TimeOfDay packTime) {
+  Widget _buildEmptyState(TimeOfDay packTime, _EmptyReason reason) {
+    final accentColor = Theme.of(context).colorScheme.secondary;
+
+    final String title;
+    final String subtitle;
+    final IconData icon;
+
+    switch (reason) {
+      case _EmptyReason.noCourses:
+        title = 'Pas de seance prevue';
+        subtitle = 'Aucune seance n\'est programmee dans votre emploi du temps pour cette date.\nAjoutez des cours dans l\'onglet Calendrier.';
+        icon = Icons.event_busy;
+      case _EmptyReason.noSupplies:
+        title = 'Aucune fourniture renseignee';
+        subtitle = 'Vos seances n\'ont pas de fournitures associees.\nAjoutez des fournitures a vos cours dans l\'onglet Cours.';
+        icon = Icons.inventory_2_outlined;
+    }
+
     return Stack(
       children: [
         Column(
@@ -200,13 +229,42 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
             Expanded(
               child: Center(
                 child: Padding(
-                  padding: const EdgeInsets.all(24.0),
-                  child: Text(
-                    'Aucun cours demain',
-                    style: GoogleFonts.roboto(
-                      fontSize: 16,
-                      color: Colors.grey,
-                    ),
+                  padding: const EdgeInsets.all(32.0),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          color: accentColor.withValues(alpha: 0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          icon,
+                          size: 48,
+                          color: accentColor,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      Text(
+                        title,
+                        style: GoogleFonts.robotoCondensed(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        subtitle,
+                        style: GoogleFonts.roboto(
+                          fontSize: 14,
+                          color: Colors.white54,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -374,6 +432,32 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
     );
   }
 
+  String _formatTargetDate(DateTime? date) {
+    if (date == null) return '';
+
+    const days = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche'];
+    const months = [
+      'janvier', 'fevrier', 'mars', 'avril', 'mai', 'juin',
+      'juillet', 'aout', 'septembre', 'octobre', 'novembre', 'decembre'
+    ];
+
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final tomorrow = today.add(const Duration(days: 1));
+    final targetDay = DateTime(date.year, date.month, date.day);
+
+    String prefix;
+    if (targetDay == today) {
+      prefix = "aujourd'hui";
+    } else if (targetDay == tomorrow) {
+      prefix = "demain";
+    } else {
+      prefix = days[date.weekday - 1];
+    }
+
+    return "pour $prefix ${date.day} ${months[date.month - 1]}";
+  }
+
   Widget _buildHeader(int checked, int total, TimeOfDay packTime) {
     return Container(
       width: double.infinity,
@@ -389,6 +473,14 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
               style: GoogleFonts.robotoCondensed(
                   color: Colors.white38, fontSize: 14),
             ),
+            if (_targetDate != null)
+              Text(
+                _formatTargetDate(_targetDate),
+                style: GoogleFonts.robotoCondensed(
+                    color: Theme.of(context).colorScheme.secondary,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500),
+              ),
             const SizedBox(height: 16),
             Text(
               "$checked/$total fournitures",
@@ -398,7 +490,7 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
                   fontWeight: FontWeight.bold),
             ),
             Text(
-              "Heure de préparation du sac : ${packTime.hour.toString().padLeft(2, '0')}:${packTime.minute.toString().padLeft(2, '0')}",
+              "Heure de preparation du sac : ${packTime.hour.toString().padLeft(2, '0')}:${packTime.minute.toString().padLeft(2, '0')}",
               style: GoogleFonts.roboto(
                   color: Colors.white38,
                   fontSize: 14,
@@ -477,89 +569,111 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
 
   Future<void> _showAddSupplyDialog() async {
     final TextEditingController controller = TextEditingController();
-    final accentColor = Theme.of(context).colorScheme.secondary;
 
-    await showDialog(
+    await showModalBottomSheet<String>(
       context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          backgroundColor: Color(0xFF303030),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+      isScrollControlled: true,
+      backgroundColor: const Color(0xFF303030),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (sheetContext) {
+        final bottomSafeArea = MediaQuery.of(sheetContext).viewPadding.bottom;
+        return Padding(
+          padding: EdgeInsets.only(
+            left: 16,
+            right: 16,
+            top: 16,
+            bottom: MediaQuery.of(sheetContext).viewInsets.bottom + bottomSafeArea + 16,
           ),
-          title: Text(
-            'Ajouter une fourniture',
-            style: GoogleFonts.robotoCondensed(
-              color: Colors.white,
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          content: TextField(
-            controller: controller,
-            autofocus: true,
-            decoration: InputDecoration(
-              filled: false,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: Colors.grey),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: Colors.grey),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: accentColor),
-              ),
-              labelText: "Nom de la fourniture",
-              hintText: "Exemple : Règle",
-              labelStyle: const TextStyle(color: Colors.grey),
-            ),
-            onSubmitted: (value) {
-              if (value.trim().isNotEmpty) {
-                Navigator.of(context).pop(value.trim());
-              }
-            },
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text(
-                'Annuler',
-                style: GoogleFonts.roboto(
-                  color: Colors.white54,
-                  fontSize: 16,
-                ),
-              ),
-            ),
-            FilledButton(
-              onPressed: () {
-                final supplyName = controller.text.trim();
-                if (supplyName.isNotEmpty) {
-                  Navigator.of(context).pop(supplyName);
-                }
-              },
-              style: FilledButton.styleFrom(
-                backgroundColor: accentColor,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              child: Text(
-                'Ajouter',
-                style: GoogleFonts.roboto(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Ajouter une fourniture',
+                style: GoogleFonts.robotoCondensed(
                   color: Colors.white,
-                  fontSize: 16,
+                  fontSize: 18,
                   fontWeight: FontWeight.bold,
                 ),
               ),
-            ),
-          ],
+              const SizedBox(height: 16),
+              TextField(
+                controller: controller,
+                autofocus: true,
+                decoration: InputDecoration(
+                  filled: false,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: Colors.grey),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: Colors.grey),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Theme.of(sheetContext).colorScheme.primary),
+                  ),
+                  labelText: "Nom de la fourniture",
+                  hintText: "Exemple : Règle",
+                  labelStyle: const TextStyle(color: Colors.grey),
+                ),
+                onSubmitted: (value) {
+                  if (value.trim().isNotEmpty) {
+                    Navigator.of(sheetContext).pop(value.trim());
+                  }
+                },
+              ),
+              const SizedBox(height: 32),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton(
+                  onPressed: () {
+                    final supplyName = controller.text.trim();
+                    if (supplyName.isNotEmpty) {
+                      Navigator.of(sheetContext).pop(supplyName);
+                    }
+                  },
+                  style: FilledButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text(
+                    "Ajouter",
+                    style: TextStyle(fontSize: 16),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton(
+                  onPressed: () {
+                    Navigator.of(sheetContext).pop();
+                  },
+                  style: FilledButton.styleFrom(
+                    backgroundColor: Colors.transparent,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text(
+                    "Annuler",
+                    style: TextStyle(fontSize: 16),
+                  ),
+                ),
+              ),
+            ],
+          ),
         );
       },
     ).then((supplyName) async {
-      if (supplyName != null && supplyName is String && supplyName.isNotEmpty) {
+      if (supplyName != null && supplyName.isNotEmpty) {
         await PreferencesService.addStandaloneSupply(supplyName);
         await _loadStandaloneSupplies();
       }

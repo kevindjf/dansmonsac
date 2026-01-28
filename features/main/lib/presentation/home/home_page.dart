@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:common/src/ui/ui.dart';
+import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
+import 'package:common/src/di/riverpod_di.dart';
+import 'package:common/src/services/preferences_service.dart';
 import 'package:main/presentation/home/calendar_page.dart';
 import 'package:main/presentation/home/controller/home_controller.dart';
 import 'package:main/presentation/home/controller/home_state_ui.dart';
@@ -8,20 +10,219 @@ import 'package:course/presentation/list/courses_page.dart';
 import 'package:main/presentation/home/list_supply_page.dart';
 import 'package:main/presentation/home/settings_page.dart';
 
-class HomePage extends ConsumerWidget {
+class HomePage extends ConsumerStatefulWidget {
   static const String routeName = "/home";
 
-  HomePage({super.key});
+  const HomePage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends ConsumerState<HomePage> {
+  // GlobalKeys for tutorial targets
+  final GlobalKey _suppliesNavKey = GlobalKey();
+  final GlobalKey _calendarNavKey = GlobalKey();
+  final GlobalKey _coursesNavKey = GlobalKey();
+  final GlobalKey _settingsNavKey = GlobalKey();
+
+  TutorialCoachMark? _tutorialCoachMark;
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  void _checkAndShowTutorial() {
+    final routerDelegate = ref.read(routerDelegateProvider);
+    final shouldShowTutorial = routerDelegate.consumeShowTutorial();
+
+    if (shouldShowTutorial) {
+      // Wait for the widget tree to be built
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _showNavigationTutorial();
+      });
+    }
+  }
+
+  void _showNavigationTutorial() {
+    final accentColor = Theme.of(context).colorScheme.secondary;
+
+    final targets = [
+      TargetFocus(
+        identify: "courses_tab",
+        keyTarget: _coursesNavKey,
+        contents: [
+          TargetContent(
+            align: ContentAlign.custom,
+            customPosition: CustomTargetContentPosition(
+              top: MediaQuery.of(context).size.height * 0.35,
+            ),
+            builder: (context, controller) {
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text(
+                    "Onglet Cours",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: accentColor,
+                      fontSize: 20.0,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  const Text(
+                    "Nous avons ajouté des cours par défaut pour toi. Tu peux les modifier ou en ajouter d'autres ici.",
+                    style: TextStyle(color: Colors.white, fontSize: 16),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              );
+            },
+          ),
+        ],
+      ),
+      TargetFocus(
+        identify: "supplies_tab",
+        keyTarget: _suppliesNavKey,
+        contents: [
+          TargetContent(
+            align: ContentAlign.custom,
+            customPosition: CustomTargetContentPosition(
+              top: MediaQuery.of(context).size.height * 0.35,
+            ),
+            builder: (context, controller) {
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text(
+                    "Mon Sac",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: accentColor,
+                      fontSize: 20.0,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  const Text(
+                    "Ici tu verras les fournitures à mettre dans ton sac pour demain.",
+                    style: TextStyle(color: Colors.white, fontSize: 16),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              );
+            },
+          ),
+        ],
+      ),
+      TargetFocus(
+        identify: "calendar_tab",
+        keyTarget: _calendarNavKey,
+        contents: [
+          TargetContent(
+            align: ContentAlign.custom,
+            customPosition: CustomTargetContentPosition(
+              top: MediaQuery.of(context).size.height * 0.35,
+            ),
+            builder: (context, controller) {
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text(
+                    "Calendrier",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: accentColor,
+                      fontSize: 20.0,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  const Text(
+                    "Configure ton emploi du temps ici pour voir les bonnes fournitures chaque jour.",
+                    style: TextStyle(color: Colors.white, fontSize: 16),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              );
+            },
+          ),
+        ],
+      ),
+      TargetFocus(
+        identify: "settings_tab",
+        keyTarget: _settingsNavKey,
+        contents: [
+          TargetContent(
+            align: ContentAlign.custom,
+            customPosition: CustomTargetContentPosition(
+              top: MediaQuery.of(context).size.height * 0.35,
+            ),
+            builder: (context, controller) {
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text(
+                    "Paramètres",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: accentColor,
+                      fontSize: 20.0,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  const Text(
+                    "Personnalise l'application et gère tes notifications ici.",
+                    style: TextStyle(color: Colors.white, fontSize: 16),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              );
+            },
+          ),
+        ],
+      ),
+    ];
+
+    _tutorialCoachMark = TutorialCoachMark(
+      targets: targets,
+      colorShadow: Colors.black,
+      opacityShadow: 0.85,
+      textSkip: "PASSER",
+      alignSkip: Alignment.topRight,
+      paddingFocus: 10,
+      onFinish: () async {
+        await PreferencesService.setTutorialSeen(true);
+      },
+      onSkip: () {
+        PreferencesService.setTutorialSeen(true);
+        return true;
+      },
+    );
+
+    _tutorialCoachMark!.show(context: context);
+  }
+
+  /// Public method to show tutorial (called from Settings)
+  void showTutorial() {
+    _showNavigationTutorial();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     var state = ref.watch(homeControllerProvider);
     final accentColor = Theme.of(context).colorScheme.secondary;
 
+    // Check and show tutorial after first build
+    _checkAndShowTutorial();
+
     return Scaffold(
-      backgroundColor: Color(0xFF212121),
+      backgroundColor: const Color(0xFF212121),
       bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: Color(0xFF161616),
+        backgroundColor: const Color(0xFF161616),
         currentIndex: state.currentIndex,
         onTap: (index) {
           HomeViewPage page = HomeViewPage.supplies;
@@ -40,25 +241,28 @@ class HomePage extends ConsumerWidget {
           ref.read(homeControllerProvider.notifier).changePage(index, page);
         },
         selectedItemColor: accentColor,
-        unselectedItemColor: Color(0xFF616161),
+        unselectedItemColor: const Color(0xFF616161),
         showSelectedLabels: true,
         showUnselectedLabels: true,
-        // Couleur des éléments non sélectionnés
-        items: const <BottomNavigationBarItem>[
+        items: <BottomNavigationBarItem>[
           BottomNavigationBarItem(
-            icon: Icon(Icons.backpack),
+            key: _suppliesNavKey,
+            icon: const Icon(Icons.backpack),
             label: 'Mon sac',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.calendar_month),
+            key: _calendarNavKey,
+            icon: const Icon(Icons.calendar_month),
             label: 'Calendrier',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.book),
+            key: _coursesNavKey,
+            icon: const Icon(Icons.book),
             label: 'Cours',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.settings),
+            key: _settingsNavKey,
+            icon: const Icon(Icons.settings),
             label: 'Paramètres',
           ),
         ],
@@ -67,21 +271,7 @@ class HomePage extends ConsumerWidget {
     );
   }
 
-  Widget getItem(String letter, {bool isSelected = false, required Color accentColor}) {
-    return Container(
-        decoration: BoxDecoration(
-          color: isSelected ? accentColor : Colors.black,
-          // Couleur du fond
-          borderRadius:
-              BorderRadius.circular(8.0), // Rayon appliqué aux 4 coins
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Text(letter),
-        ));
-  }
-
-  _getBody(HomeStateUi state) {
+  Widget _getBody(HomeStateUi state) {
     switch (state.currentPage) {
       case HomeViewPage.supplies:
         return ListSupplyPage();

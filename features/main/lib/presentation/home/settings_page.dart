@@ -3,8 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:common/src/ui/ui.dart';
 import 'package:common/src/services.dart';
+import 'package:common/src/di/riverpod_di.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:common/src/providers.dart';
+import 'package:sharing/sharing.dart';
+import 'package:onboarding/onboarding.dart';
+import 'help_page.dart';
 
 class SettingsPage extends ConsumerStatefulWidget {
   const SettingsPage({Key? key}) : super(key: key);
@@ -17,7 +21,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   TimeOfDay _packTime = TimeOfDay(hour: 19, minute: 0);
   DateTime _schoolYearStart = DateTime(2024, 9, 2);
   bool _notificationsEnabled = false;
-  Color _accentColor = const Color(0xFF9C27B0);
+  Color _accentColor = const Color.fromARGB(255, 212, 53, 240);
+  bool _showWeekend = true;
   bool _isLoading = true;
 
   @override
@@ -31,12 +36,14 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     final schoolYearStart = await PreferencesService.getSchoolYearStart();
     final notificationsEnabled = await PreferencesService.getNotificationsEnabled();
     final accentColor = await PreferencesService.getAccentColor();
+    final showWeekend = await PreferencesService.getShowWeekend();
 
     setState(() {
       _packTime = packTime;
       _schoolYearStart = schoolYearStart;
       _notificationsEnabled = notificationsEnabled;
       _accentColor = accentColor;
+      _showWeekend = showWeekend;
       _isLoading = false;
     });
   }
@@ -137,19 +144,44 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                     ),
                   ),
 
+                  _buildSwitchCard(
+                    icon: Icons.weekend_outlined,
+                    title: 'Afficher le weekend',
+                    subtitle: 'Samedi et dimanche dans le calendrier',
+                    value: _showWeekend,
+                    onChanged: _toggleShowWeekend,
+                  ),
+
                   const SizedBox(height: 24),
 
                   // Section: Année scolaire
                   _buildSectionTitle('Année scolaire', context),
                   const SizedBox(height: 8),
 
+                  _buildSchoolYearCard(context),
+
+                  const SizedBox(height: 24),
+
+                  // Section: Partage
+                  _buildSectionTitle('Partage', context),
+                  const SizedBox(height: 8),
+
                   _buildSettingCard(
                     context: context,
-                    icon: Icons.calendar_today,
-                    title: 'Début d\'année scolaire',
-                    subtitle: 'Date de la première semaine A',
-                    value: _formatDate(_schoolYearStart),
-                    onTap: () => _selectSchoolYearStart(context),
+                    icon: Icons.share,
+                    title: 'Partager mon emploi du temps',
+                    subtitle: 'Générer un code pour un ami',
+                    value: '',
+                    onTap: () => _showShareModal(context),
+                  ),
+
+                  _buildSettingCard(
+                    context: context,
+                    icon: Icons.download,
+                    title: 'Importer un emploi du temps',
+                    subtitle: 'Utiliser le code d\'un ami',
+                    value: '',
+                    onTap: () => _navigateToImportPage(),
                   ),
 
                   const SizedBox(height: 24),
@@ -174,8 +206,19 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                     subtitle: 'Besoin d\'assistance ?',
                     value: '',
                     onTap: () {
-                      // TODO: Open help page
+                      Navigator.of(context).push(
+                        MaterialPageRoute(builder: (context) => const HelpPage()),
+                      );
                     },
+                  ),
+
+                  _buildSettingCard(
+                    context: context,
+                    icon: Icons.school_outlined,
+                    title: 'Revoir le tutoriel',
+                    subtitle: 'Revoir le guide de l\'application',
+                    value: '',
+                    onTap: () => _replayTutorial(),
                   ),
                 ],
               ),
@@ -452,6 +495,96 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     );
   }
 
+  Widget _buildSchoolYearCard(BuildContext context) {
+    final accentColor = Theme.of(context).colorScheme.secondary;
+
+    return Card(
+      color: Color(0xFF303030),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      margin: const EdgeInsets.only(bottom: 8.0),
+      child: InkWell(
+        onTap: () => _selectSchoolYearStart(context),
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Top row: Icon and Title
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: accentColor.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(
+                      Icons.calendar_today,
+                      color: accentColor,
+                      size: 24,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Text(
+                      'Debut d\'annee scolaire',
+                      style: GoogleFonts.roboto(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                  Icon(
+                    Icons.chevron_right,
+                    color: Colors.white38,
+                    size: 24,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              // Subtitle
+              Padding(
+                padding: const EdgeInsets.only(left: 58),
+                child: Text(
+                  'Date de la premiere semaine A',
+                  style: GoogleFonts.roboto(
+                    color: Colors.white38,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w300,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              // Date aligned right
+              Align(
+                alignment: Alignment.centerRight,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: accentColor.withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    _formatDate(_schoolYearStart),
+                    style: GoogleFonts.roboto(
+                      color: accentColor,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Future<void> _toggleNotifications(bool enabled) async {
     setState(() {
       _notificationsEnabled = enabled;
@@ -477,6 +610,14 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       await NotificationService.cancelNotification();
       _showSnackBar('Notifications désactivées');
     }
+  }
+
+  Future<void> _toggleShowWeekend(bool show) async {
+    setState(() {
+      _showWeekend = show;
+    });
+    await PreferencesService.setShowWeekend(show);
+    _showSnackBar(show ? 'Weekend affiché dans le calendrier' : 'Weekend masqué du calendrier');
   }
 
   Future<void> _selectAccentColor(BuildContext context) async {
@@ -564,6 +705,37 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8),
+        ),
+      ),
+    );
+  }
+
+  void _replayTutorial() {
+    // Navigate to Courses tab with tutorial enabled
+    ref.read(routerDelegateProvider).goToHome(
+      initialTabIndex: 2,
+      showTutorial: true,
+    );
+  }
+
+  void _showShareModal(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => const SharePage(),
+    );
+  }
+
+  void _navigateToImportPage() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => OnboardingImportStepPage(
+          showBackArrow: true,
+          onImportComplete: () {
+            Navigator.of(context).pop();
+            _showSnackBar('Emploi du temps importe avec succes !');
+          },
         ),
       ),
     );

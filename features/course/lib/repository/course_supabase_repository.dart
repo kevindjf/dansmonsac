@@ -112,4 +112,14 @@ class CourseSupabaseRepository extends CourseRepository {
       await supabaseClient.from('courses').delete().eq('id', id);
     });
   }
+
+  @override
+  Future<Either<Failure, void>> updateCourseName(String id, String newName) {
+    return handleErrors(() async {
+      await supabaseClient
+          .from('courses')
+          .update({'course_name': newName})
+          .eq('id', id);
+    });
+  }
 }

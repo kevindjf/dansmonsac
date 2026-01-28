@@ -15,12 +15,16 @@ import 'package:schedule/presentation/add/controller/add_calendar_couse_state.da
 class AddCalendarCoursePage extends ConsumerStatefulWidget {
   final ValueChanged<CalendarCourse?> onAddCalendarCourse;
   final DateTime selectedDate;
+  final CalendarCourse? existingCourse;
 
   const AddCalendarCoursePage({
     Key? key,
     required this.onAddCalendarCourse,
     required this.selectedDate,
+    this.existingCourse,
   }) : super(key: key);
+
+  bool get isEditMode => existingCourse != null;
 
   @override
   ConsumerState<AddCalendarCoursePage> createState() =>
@@ -31,13 +35,22 @@ class _AddCalendarCoursePageState extends ConsumerState<AddCalendarCoursePage> {
   final TextEditingController _roomController = TextEditingController();
   StreamSubscription? _errorSubscription;
   StreamSubscription? _successSubscription;
-  TimeOfDay _startTime = TimeOfDay(hour: TimeOfDay.now().hour, minute: 0);
-  TimeOfDay _endTime = TimeOfDay(hour: TimeOfDay.now().hour + 1, minute: 0);
+  late TimeOfDay _startTime;
+  late TimeOfDay _endTime;
   bool _hasSetInitialDay = false;
-
   @override
   void initState() {
     super.initState();
+
+    final existing = widget.existingCourse;
+    if (existing != null) {
+      _startTime = existing.startTime;
+      _endTime = existing.endTime;
+      _roomController.text = existing.roomName;
+    } else {
+      _startTime = TimeOfDay(hour: TimeOfDay.now().hour, minute: 0);
+      _endTime = TimeOfDay(hour: TimeOfDay.now().hour + 1, minute: 0);
+    }
 
     _roomController.addListener(() => ref
         .read(addCalendarCourseControllerProvider.notifier)
@@ -118,20 +131,31 @@ class _AddCalendarCoursePageState extends ConsumerState<AddCalendarCoursePage> {
     final colorScheme = Theme.of(context).colorScheme;
     var asyncState = ref.watch(addCalendarCourseControllerProvider);
 
-    // Set initial day of week once when state is loaded
+    // Set initial values once when state is loaded
     ref.listen<AsyncValue<AddCalendarCourseState>>(
       addCalendarCourseControllerProvider,
       (previous, next) {
         if (!_hasSetInitialDay && next is AsyncData) {
           _hasSetInitialDay = true;
+          final existing = widget.existingCourse;
           Future.microtask(() {
-            ref
-                .read(addCalendarCourseControllerProvider.notifier)
-                .dayOfWeekChanged(widget.selectedDate.weekday);
+            final notifier = ref.read(addCalendarCourseControllerProvider.notifier);
+            if (existing != null) {
+              notifier.courseChanged(existing.courseId);
+              notifier.roomNameChanged(existing.roomName);
+              notifier.dayOfWeekChanged(existing.dayOfWeek);
+              notifier.weekTypeChanged(existing.weekType);
+              notifier.startTimeChanged(existing.startTime);
+              notifier.endTimeChanged(existing.endTime);
+            } else {
+              notifier.dayOfWeekChanged(widget.selectedDate.weekday);
+            }
           });
         }
       },
     );
+
+    final bottomSafeArea = MediaQuery.of(context).viewPadding.bottom;
 
     return asyncState.when(
       data: (state) => PopScope(
@@ -141,7 +165,7 @@ class _AddCalendarCoursePageState extends ConsumerState<AddCalendarCoursePage> {
       child: SingleChildScrollView(
         child: Padding(
           padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
+            bottom: MediaQuery.of(context).viewInsets.bottom + bottomSafeArea + 16,
             left: 16,
             right: 16,
             top: 16,
@@ -151,7 +175,7 @@ class _AddCalendarCoursePageState extends ConsumerState<AddCalendarCoursePage> {
             mainAxisSize: MainAxisSize.min,
             children: [
             Text(
-              "Ajouter au calendrier",
+              widget.isEditMode ? "Modifier le cours" : "Ajouter au calendrier",
               style: GoogleFonts.robotoCondensed(
                   color: Colors.white,
                   fontSize: 18,
@@ -427,9 +451,12 @@ class _AddCalendarCoursePageState extends ConsumerState<AddCalendarCoursePage> {
                   width: double.infinity,
                   child: FilledButton(
                     onPressed: () {
-                      ref
-                          .read(addCalendarCourseControllerProvider.notifier)
-                          .store();
+                      final notifier = ref.read(addCalendarCourseControllerProvider.notifier);
+                      if (widget.isEditMode) {
+                        notifier.updateCourse(widget.existingCourse!.id);
+                      } else {
+                        notifier.store();
+                      }
                     },
                     style: FilledButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),
@@ -437,9 +464,9 @@ class _AddCalendarCoursePageState extends ConsumerState<AddCalendarCoursePage> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    child: const Text(
-                      "Ajouter",
-                      style: TextStyle(fontSize: 16),
+                    child: Text(
+                      widget.isEditMode ? "Modifier" : "Ajouter",
+                      style: const TextStyle(fontSize: 16),
                     ),
                   ),
                 ),

@@ -2,6 +2,7 @@ import 'package:common/src/di/riverpod_di.dart';
 import 'package:common/src/services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:onboarding/src/di/riverpod_di.dart';
 
 class OnboardingNotificationPermissionPage extends ConsumerStatefulWidget {
   static const String routeName = "/notification-permission-onboarding";
@@ -25,6 +26,17 @@ class _OnboardingNotificationPermissionPageState
     try {
       // Request notification permissions
       final granted = await NotificationService.requestPermissions();
+
+      if (granted) {
+        // Save notification enabled state and schedule the notification
+        await PreferencesService.setNotificationsEnabled(true);
+        try {
+          await NotificationService.scheduleDailyNotification();
+        } catch (e) {
+          // Ignore errors from notification scheduling (e.g., exact alarm permission denied on Android 12+)
+          debugPrint('Failed to schedule notification: $e');
+        }
+      }
 
       if (!granted && mounted) {
         // Show dialog explaining that permissions are recommended
@@ -50,9 +62,33 @@ class _OnboardingNotificationPermissionPageState
       // Mark onboarding as completed
       await PreferencesService.setOnboardingCompleted(true);
 
-      // Navigate to home using the app's routing system
+      // Create default courses for first-time users
+      await ref.read(onboardingRepositoryProvider).createDefaultCourses();
+
+      // Navigate to Courses tab with tutorial
       if (mounted) {
-        ref.read(routerDelegateProvider).goToHome();
+        ref.read(routerDelegateProvider).goToHome(
+          initialTabIndex: 2, // Courses tab
+          showTutorial: true,
+        );
+      }
+    } catch (e) {
+      // Log error but still try to complete onboarding
+      debugPrint('Error during onboarding completion: $e');
+
+      // Try to complete onboarding anyway
+      try {
+        await PreferencesService.setOnboardingCompleted(true);
+        await ref.read(onboardingRepositoryProvider).createDefaultCourses();
+
+        if (mounted) {
+          ref.read(routerDelegateProvider).goToHome(
+            initialTabIndex: 2,
+            showTutorial: true,
+          );
+        }
+      } catch (e2) {
+        debugPrint('Failed to recover from error: $e2');
       }
     } finally {
       if (mounted) {
@@ -67,9 +103,15 @@ class _OnboardingNotificationPermissionPageState
     // Mark onboarding as completed without requesting permissions
     await PreferencesService.setOnboardingCompleted(true);
 
-    // Navigate to home
+    // Create default courses for first-time users
+    await ref.read(onboardingRepositoryProvider).createDefaultCourses();
+
+    // Navigate to Courses tab with tutorial
     if (mounted) {
-      ref.read(routerDelegateProvider).goToHome();
+      ref.read(routerDelegateProvider).goToHome(
+        initialTabIndex: 2, // Courses tab
+        showTutorial: true,
+      );
     }
   }
 

@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:common/src/ui/ui.dart';
 import 'package:course/models/cours_with_supplies.dart';
 import 'package:course/presentation/add/add_course_controller.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -62,14 +61,14 @@ class _AddCoursePageState extends ConsumerState<AddCoursePage> {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     var state = ref.watch(addCourseControllerProvider);
+    final bottomSafeArea = MediaQuery.of(context).viewPadding.bottom;
 
     return Container(
       width: double.infinity,
       child: Padding(
         padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context)
-              .viewInsets
-              .bottom, // Ajuste le padding selon la hauteur du clavier
+          bottom:
+              MediaQuery.of(context).viewInsets.bottom + bottomSafeArea + 16,
           left: 16,
           right: 16,
           top: 16,
@@ -98,19 +97,19 @@ class _AddCoursePageState extends ConsumerState<AddCoursePage> {
             state.errorCourseName == null
                 ? const SizedBox()
                 : Column(
-              children: [
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    Text("${state.errorCourseName}",
-                        style: TextStyle(
-                            color: colorScheme.error,
-                            fontStyle: FontStyle.italic,
-                            fontSize: 12)),
-                  ],
-                ),
-              ],
-            ),
+                    children: [
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          Text("${state.errorCourseName}",
+                              style: TextStyle(
+                                  color: colorScheme.error,
+                                  fontStyle: FontStyle.italic,
+                                  fontSize: 12)),
+                        ],
+                      ),
+                    ],
+                  ),
             const SizedBox(height: 32),
             Column(
               mainAxisSize: MainAxisSize.min,
@@ -152,7 +151,7 @@ class _AddCoursePageState extends ConsumerState<AddCoursePage> {
                       ),
                     ),
                     child: const Text(
-                      "Plus tard",
+                      "Annuler",
                       style: TextStyle(fontSize: 16),
                     ),
                   ),

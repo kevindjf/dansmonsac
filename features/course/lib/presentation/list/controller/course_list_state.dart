@@ -11,10 +11,10 @@ class CourseItemUI {
       required this.supplies,
       required this.isExpand});
 
-  CourseItemUI copyWith({bool? isExpand, List<SupplyItemUI>? supplies}) {
+  CourseItemUI copyWith({String? title, bool? isExpand, List<SupplyItemUI>? supplies}) {
     return CourseItemUI(
         id: id,
-        title: title,
+        title: title ?? this.title,
         supplies: supplies ?? this.supplies,
         isExpand: isExpand ?? this.isExpand);
   }

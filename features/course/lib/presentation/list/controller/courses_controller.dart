@@ -286,6 +286,55 @@ class CoursesController extends _$CoursesController {
     ref.invalidate(tomorrowSupplyControllerProvider);
   }
 
+  Future<void> onRenameCourse(int courseIndex, String newName) async {
+    final currentState = state.value as DataCourseListState;
+    final currentCourses = List<CourseItemUI>.from(currentState.items);
+
+    final courseToRename = currentCourses[courseIndex];
+
+    // Optimistic update
+    final optimisticCourses = List<CourseItemUI>.from(currentCourses);
+    optimisticCourses[courseIndex] = CourseItemUI(
+      id: courseToRename.id,
+      title: newName,
+      supplies: courseToRename.supplies,
+      isExpand: courseToRename.isExpand,
+    );
+    state = AsyncValue.data(DataCourseListState(optimisticCourses));
+
+    try {
+      final result = await courseRepository.updateCourseName(courseToRename.id, newName);
+
+      if (result.isLeft()) {
+        // Rollback on error
+        state = AsyncValue.data(DataCourseListState(currentCourses));
+        return;
+      }
+
+      // Refresh from API
+      final coursesResult = await courseRepository.fetchCourses();
+      if (coursesResult.isRight()) {
+        final updatedCourses = coursesResult.getOrElse(() => []);
+        final expansionMap = {
+          for (var course in optimisticCourses) course.id: course.isExpand
+        };
+        final updatedUI = apiToUI(updatedCourses).map((course) {
+          return course.copyWith(isExpand: expansionMap[course.id] ?? false);
+        }).toList();
+
+        listCourses
+          ..clear()
+          ..addAll(updatedCourses);
+        state = AsyncValue.data(DataCourseListState(updatedUI));
+      }
+
+      ref.invalidate(coursesProvider);
+      ref.invalidate(tomorrowSupplyControllerProvider);
+    } catch (e) {
+      // Keep optimistic state on network error
+    }
+  }
+
   refreshCourses() async {
     final response = await courseRepository.fetchCourses();
 
