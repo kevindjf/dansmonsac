@@ -14,6 +14,40 @@
 - Les plugins purement Dart ne sont pas concernes
 - En cas de doute, tester en upload test interne sur Play Console
 
+## Git Workflow
+
+- **Branches** :
+  - `main` : branche de production, toujours stable
+  - `staging` : branche de pre-production, contient les modifications validees en cours
+  - `feature/*` ou `fix/*` : branches de travail pour chaque modification
+
+- **Avant toute modification de code**, creer une nouvelle branche a partir de `staging` :
+  ```bash
+  git checkout staging
+  git checkout -b feature/nom-de-la-feature
+  ```
+
+- **Commits** : commiter regulierement sur la branche de travail
+
+- **Merge dans staging** : une fois la feature terminee, merger la branche dans `staging` en fast-forward :
+  ```bash
+  git checkout staging
+  git merge --ff-only feature/nom-de-la-feature
+  ```
+  Si le fast-forward echoue, rebaser la branche sur staging d'abord :
+  ```bash
+  git checkout feature/nom-de-la-feature
+  git rebase staging
+  ```
+
+- **Merge dans main** : uniquement quand tout est valide sur staging, merger staging dans main :
+  ```bash
+  git checkout main
+  git merge staging
+  ```
+
+- **Ne jamais commiter directement sur `main` ou `staging`**
+
 ## Architecture
 
 - Projet modulaire avec feature packages dans `features/` (common, main, course, schedule, supply, onboarding, sharing, splash)

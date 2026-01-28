@@ -6,6 +6,8 @@ import 'package:onboarding/src/presentation/hour/setup_time_page.dart';
 import 'package:onboarding/src/presentation/course/course_page.dart';
 import 'package:onboarding/src/presentation/notifications/notification_permission_page.dart';
 import 'package:onboarding/src/presentation/import/import_step_page.dart';
+// TODO: Remplacer par import_step_page.dart une fois la variante choisie
+import 'package:onboarding/src/presentation/import/import_page_variants.dart';
 import 'package:splash/presentation/splash_page.dart';
 import 'package:main/presentation/home/home_page.dart';
 
@@ -28,7 +30,8 @@ class AppRoutes {
     setupTime: () => OnboardingSetupTimePage(),
     notificationPermission: () => OnboardingNotificationPermissionPage(),
     onboardingCourse: () => OnboardingCoursePage(),
-    onboardingImport: () => OnboardingImportStepPage(),
+    // TODO: Remettre OnboardingImportStepPage() une fois la variante choisie
+    onboardingImport: () => ImportPageWithVariants(),
     splash: () => SplashPage(),
   };
 }
