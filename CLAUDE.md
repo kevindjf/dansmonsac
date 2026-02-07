@@ -48,15 +48,98 @@
 
 - **Ne jamais commiter directement sur `main` ou `staging`**
 
+## Environment Setup
+
+- **Credentials** : Les credentials Supabase sont dans `.env` (gitignored)
+- **Template** : Copier `.env.example` vers `.env` et remplir les valeurs
+- **Variables requises** :
+  ```
+  SUPABASE_URL=https://xxx.supabase.co
+  SUPABASE_ANON_KEY=eyJhbGci...
+  ```
+
 ## Architecture
 
 - Projet modulaire avec feature packages dans `features/` (common, main, course, schedule, supply, onboarding, sharing, splash)
 - State management : Riverpod avec `@riverpod` annotations + code generation
 - Backend : Supabase
 - Pattern Repository avec `Either<Failure, T>` (dartz)
+- **Base de donnees locale** : Drift (SQLite) pour offline-first
+
+## Architecture Offline-First
+
+Le projet utilise une architecture offline-first avec synchronisation automatique :
+
+### Composants cles
+
+1. **AppDatabase** (`features/common/lib/src/database/app_database.dart`)
+   - Tables : Courses, Supplies, CalendarCourses, PendingOperations
+   - Chaque entite a un `remoteId` pour mapper avec Supabase
+   - Schema version 2
+
+2. **SyncManager** (`features/common/lib/src/sync/sync_manager.dart`)
+   - Ecoute les changements de connectivite
+   - Synchronise automatiquement quand le reseau revient
+   - Queue des operations dans `PendingOperations`
+
+3. **Providers** (`features/common/lib/src/providers/database_provider.dart`)
+   - `databaseProvider` : instance AppDatabase
+   - `syncManagerProvider` : instance SyncManager
+   - `syncStatusProvider` : stream du statut de sync
+
+### Flux de donnees
+
+```
+UI → Controller → Local Database → SyncManager → Supabase
+                       ↓
+              PendingOperations (queue)
+```
+
+## Utilitaires
+
+### Logging (`features/common/lib/src/services/log_service.dart`)
+
+Utiliser `LogService` au lieu de `print()` :
+```dart
+LogService.d('Debug message');     // Debug (dev only)
+LogService.i('Info message');      // Info
+LogService.w('Warning message');   // Warning
+LogService.e('Error message', error, stackTrace);  // Error
+```
+
+### Validation (`features/common/lib/src/utils/validators.dart`)
+
+```dart
+// Valider les inputs
+final error = Validators.validateCourseName(name);  // max 50 chars
+final error = Validators.validateSupplyName(name);  // max 100 chars
+final error = Validators.validateRoomName(name);    // max 30 chars
+
+// Nettoyer (trim)
+final cleaned = Validators.clean(input);
+```
+
+### Messages d'erreur (`features/common/lib/src/utils/error_messages.dart`)
+
+```dart
+// Convertir Failure en message utilisateur
+final message = ErrorMessages.getMessageForFailure(failure);
+```
 
 ## Regles UI
 
 - **Edge-to-edge** : toujours utiliser `MediaQuery.of(context).viewPadding.bottom` dans les bottom sheets
 - **Bottom sheets** : preferer `showModalBottomSheet` aux `AlertDialog` pour les formulaires
 - **Theme sombre** : accent `0xFFB9A0FF`, background `0xFF212121`, surface `0xFF424242`
+
+## Code Generation
+
+Apres modification des fichiers avec annotations `@riverpod` ou des tables Drift :
+```bash
+flutter pub run build_runner build --delete-conflicting-outputs
+```
+
+Ou pour le module common specifiquement :
+```bash
+cd features/common && flutter pub run build_runner build --delete-conflicting-outputs
+```

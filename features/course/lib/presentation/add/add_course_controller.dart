@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:ffi';
 import 'package:course/di/riverpod_di.dart';
 import 'package:course/models/add_course_command.dart';
 import 'package:course/models/cours_with_supplies.dart';
@@ -7,6 +6,7 @@ import 'package:course/presentation/add/add_course_state.dart';
 import 'package:course/repository/course_repository.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:common/src/di/riverpod_di.dart';
+import 'package:common/src/utils.dart';
 import 'package:schedule/presentation/add/controller/add_calendar_course_controller.dart';
 
 
@@ -35,19 +35,19 @@ class AddCourseController extends _$AddCourseController {
   }
 
   store() async {
-    if (state.courseName.trim().isEmpty) {
-      state = state.copyWith(
-          errorCourseName: "Le nom du cours ne peut pas être vide");
+    final validationError = Validators.validateCourseName(state.courseName);
+    if (validationError != null) {
+      state = state.copyWith(errorCourseName: validationError);
       return;
     }
 
+    final cleanName = Validators.clean(state.courseName);
     var response = await courseRepository
-        .store(AddCourseCommand(state.courseName, []));
+        .store(AddCourseCommand(cleanName, []));
 
     response.fold((failure) {
       state = state.copyWith(isLoading: false);
-      _errorController
-          .add("Une erreur est survenue, veuillez réessayer ultérieurement !");
+      _errorController.add(ErrorMessages.getMessageForFailure(failure));
     }, (course) {
       _successController.add(course);
       // Invalidate courses provider to refresh course list everywhere

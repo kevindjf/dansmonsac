@@ -14,7 +14,11 @@
       "Bash(xcode-select:*)",
       "Bash(xcodebuild:*)",
       "Bash(xcrun simctl boot:*)",
-      "Bash(git -C /Users/kevin/kappsmobile/projects/interne/dansmonsac status)"
+      "Bash(git -C /Users/kevin/kappsmobile/projects/interne/dansmonsac status)",
+      "Bash(git -C /Users/kevin/kappsmobile/projects/interne/dansmonsac branch:*)",
+      "Bash(git -C /Users/kevin/kappsmobile/projects/interne/dansmonsac status --short)",
+      "Bash(git -C /Users/kevin/kappsmobile/projects/interne/dansmonsac add features/onboarding/lib/src/presentation/import/variants/ features/onboarding/lib/src/presentation/import/import_page_variants.dart features/onboarding/pubspec.yaml features/common/lib/src/navigation/routes.dart CLAUDE.md)",
+      "Bash(pod install:*)"
     ]
   }
 }

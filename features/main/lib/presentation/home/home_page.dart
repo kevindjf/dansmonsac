@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
 import 'package:common/src/di/riverpod_di.dart';
 import 'package:common/src/services/preferences_service.dart';
+import 'package:common/src/services/rating_service.dart';
+import 'package:common/src/ui/ui.dart';
 import 'package:main/presentation/home/calendar_page.dart';
 import 'package:main/presentation/home/controller/home_controller.dart';
 import 'package:main/presentation/home/controller/home_state_ui.dart';
@@ -31,6 +33,18 @@ class _HomePageState extends ConsumerState<HomePage> {
   @override
   void initState() {
     super.initState();
+    _initRatingService();
+  }
+
+  Future<void> _initRatingService() async {
+    // Initialize first launch date tracking
+    await RatingService.initialize();
+
+    // Check and show rating popup after a delay (let UI settle first)
+    await Future.delayed(const Duration(seconds: 2));
+    if (mounted) {
+      RatingPopup.showIfNeeded(context);
+    }
   }
 
   void _checkAndShowTutorial() {

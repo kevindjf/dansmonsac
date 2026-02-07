@@ -11,6 +11,7 @@ part 'app_database.g.dart';
 @DataClassName('CourseEntity')
 class Courses extends Table {
   TextColumn get id => text()();
+  TextColumn get remoteId => text().nullable()(); // ID from Supabase
   TextColumn get name => text()();
   TextColumn get color => text()();
   TextColumn get weekType => text()(); // 'A', 'B', or 'AB'
@@ -26,6 +27,7 @@ class Courses extends Table {
 @DataClassName('SupplyEntity')
 class Supplies extends Table {
   TextColumn get id => text()();
+  TextColumn get remoteId => text().nullable()(); // ID from Supabase
   TextColumn get courseId => text()();
   TextColumn get name => text()();
   BoolColumn get isChecked => boolean().withDefault(const Constant(false))();
@@ -42,12 +44,15 @@ class Supplies extends Table {
 @DataClassName('CalendarCourseEntity')
 class CalendarCourses extends Table {
   TextColumn get id => text()();
+  TextColumn get remoteId => text().nullable()(); // ID from Supabase
   TextColumn get courseId => text()();
+  TextColumn get roomName => text().withDefault(const Constant(''))();
   IntColumn get dayOfWeek => integer()(); // 1-7 (Monday-Sunday)
   IntColumn get startHour => integer()();
   IntColumn get startMinute => integer()();
   IntColumn get endHour => integer()();
   IntColumn get endMinute => integer()();
+  TextColumn get weekType => text().withDefault(const Constant('AB'))(); // 'A', 'B', or 'AB'
   DateTimeColumn get updatedAt => dateTime()();
   BoolColumn get isSynced => boolean().withDefault(const Constant(false))();
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
@@ -77,7 +82,24 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+        onCreate: (Migrator m) async {
+          await m.createAll();
+        },
+        onUpgrade: (Migrator m, int from, int to) async {
+          if (from < 2) {
+            // Add remoteId columns to existing tables using raw SQL
+            await customStatement('ALTER TABLE courses ADD COLUMN remote_id TEXT');
+            await customStatement('ALTER TABLE supplies ADD COLUMN remote_id TEXT');
+            await customStatement('ALTER TABLE calendar_courses ADD COLUMN remote_id TEXT');
+            await customStatement('ALTER TABLE calendar_courses ADD COLUMN room_name TEXT DEFAULT ""');
+            await customStatement('ALTER TABLE calendar_courses ADD COLUMN week_type TEXT DEFAULT "AB"');
+          }
+        },
+      );
 
   // Course operations
   Future<List<CourseEntity>> getAllCourses() => select(courses).get();
@@ -97,6 +119,11 @@ class AppDatabase extends _$AppDatabase {
   Future<int> markCourseAsSynced(String id) {
     return (update(courses)..where((c) => c.id.equals(id)))
         .write(const CoursesCompanion(isSynced: Value(true)));
+  }
+
+  Future<int> updateCourseRemoteId(String localId, String remoteId) {
+    return (update(courses)..where((c) => c.id.equals(localId)))
+        .write(CoursesCompanion(remoteId: Value(remoteId)));
   }
 
   // Supply operations
@@ -123,6 +150,11 @@ class AppDatabase extends _$AppDatabase {
   Future<int> markSupplyAsSynced(String id) {
     return (update(supplies)..where((s) => s.id.equals(id)))
         .write(const SuppliesCompanion(isSynced: Value(true)));
+  }
+
+  Future<int> updateSupplyRemoteId(String localId, String remoteId) {
+    return (update(supplies)..where((s) => s.id.equals(localId)))
+        .write(SuppliesCompanion(remoteId: Value(remoteId)));
   }
 
   // Calendar course operations
@@ -158,6 +190,11 @@ class AppDatabase extends _$AppDatabase {
   Future<int> markCalendarCourseAsSynced(String id) {
     return (update(calendarCourses)..where((c) => c.id.equals(id)))
         .write(const CalendarCoursesCompanion(isSynced: Value(true)));
+  }
+
+  Future<int> updateCalendarCourseRemoteId(String localId, String remoteId) {
+    return (update(calendarCourses)..where((c) => c.id.equals(localId)))
+        .write(CalendarCoursesCompanion(remoteId: Value(remoteId)));
   }
 
   // Pending operation operations

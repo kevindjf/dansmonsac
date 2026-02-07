@@ -3,9 +3,12 @@ import 'dart:convert';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:drift/drift.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
 
 import '../database/app_database.dart';
+import '../repository/preference_repository.dart';
+import '../services/log_service.dart';
 
 /// Sync status enum
 enum SyncStatus {
@@ -31,6 +34,8 @@ class SyncResult {
 /// Manager for handling offline operations and synchronization
 class SyncManager {
   final AppDatabase _database;
+  final SupabaseClient _supabaseClient;
+  final PreferenceRepository _preferenceRepository;
   final Connectivity _connectivity = Connectivity();
   final _uuid = const Uuid();
 
@@ -52,7 +57,9 @@ class SyncManager {
   StreamSubscription<List<ConnectivityResult>>? _connectivitySubscription;
 
   SyncManager(
-    this._database, {
+    this._database,
+    this._supabaseClient,
+    this._preferenceRepository, {
     this.onSyncStatusChanged,
   }) {
     _listenToConnectivity();
@@ -68,7 +75,7 @@ class SyncManager {
 
         if (hasConnection && !_isSyncing) {
           // Network is back, try to sync
-          print('🌐 Network connection restored, starting sync...');
+          LogService.d('🌐 Network connection restored, starting sync...');
           sync();
         }
       },
@@ -106,7 +113,7 @@ class SyncManager {
     );
 
     await _database.insertPendingOperation(operation);
-    print(
+    LogService.d(
         '📝 Queued operation: $operationType $entityType $entityId');
 
     // Try to sync immediately if we have connectivity
@@ -118,7 +125,7 @@ class SyncManager {
   /// Sync all pending operations with the server
   Future<SyncResult> sync() async {
     if (_isSyncing) {
-      print('⚠️ Sync already in progress, skipping...');
+      LogService.d('⚠️ Sync already in progress, skipping...');
       return const SyncResult(success: false, operationsProcessed: 0);
     }
 
@@ -128,7 +135,7 @@ class SyncManager {
     try {
       // Check connectivity
       if (!await hasConnectivity()) {
-        print('❌ No network connectivity, cannot sync');
+        LogService.d('❌ No network connectivity, cannot sync');
         _updateStatus(SyncStatus.idle);
         return const SyncResult(
           success: false,
@@ -141,12 +148,12 @@ class SyncManager {
       final operations = await _database.getAllPendingOperations();
 
       if (operations.isEmpty) {
-        print('✅ No pending operations to sync');
+        LogService.d('✅ No pending operations to sync');
         _updateStatus(SyncStatus.success);
         return const SyncResult(success: true, operationsProcessed: 0);
       }
 
-      print('🔄 Syncing ${operations.length} pending operations...');
+      LogService.d('🔄 Syncing ${operations.length} pending operations...');
 
       int successCount = 0;
       int errorCount = 0;
@@ -160,21 +167,21 @@ class SyncManager {
             // Remove from pending operations
             await _database.deletePendingOperation(operation.id);
             successCount++;
-            print('✅ Synced ${operation.operationType} ${operation.entityType}');
+            LogService.d('✅ Synced ${operation.operationType} ${operation.entityType}');
           } else {
             // Increment retry count
             await _database.incrementRetryCount(operation.id);
             errorCount++;
-            print('❌ Failed to sync ${operation.operationType} ${operation.entityType}');
+            LogService.d('❌ Failed to sync ${operation.operationType} ${operation.entityType}');
           }
         } catch (e) {
-          print('❌ Error processing operation ${operation.id}: $e');
+          LogService.d('❌ Error processing operation ${operation.id}: $e');
           await _database.incrementRetryCount(operation.id);
           errorCount++;
         }
       }
 
-      print('🎉 Sync completed: $successCount succeeded, $errorCount failed');
+      LogService.d('🎉 Sync completed: $successCount succeeded, $errorCount failed');
 
       if (errorCount > 0) {
         _updateStatus(SyncStatus.error);
@@ -188,7 +195,7 @@ class SyncManager {
         return SyncResult(success: true, operationsProcessed: successCount);
       }
     } catch (e) {
-      print('❌ Sync error: $e');
+      LogService.d('❌ Sync error: $e');
       _updateStatus(SyncStatus.error);
       return SyncResult(
         success: false,
@@ -203,16 +210,13 @@ class SyncManager {
   /// Process a single pending operation
   /// Returns true if the operation was successful
   Future<bool> _processOperation(PendingOperationEntity operation) async {
-    // This is where you would implement the actual Supabase sync logic
-    // For now, we'll return a placeholder
-
     // Parse the data if present
     Map<String, dynamic>? dataMap;
     if (operation.data != null) {
       try {
         dataMap = json.decode(operation.data!) as Map<String, dynamic>;
       } catch (e) {
-        print('⚠️ Failed to parse operation data: $e');
+        LogService.d('⚠️ Failed to parse operation data: $e');
         return false;
       }
     }
@@ -240,7 +244,7 @@ class SyncManager {
         );
 
       default:
-        print('⚠️ Unknown entity type: ${operation.entityType}');
+        LogService.d('⚠️ Unknown entity type: ${operation.entityType}');
         return false;
     }
   }
@@ -251,20 +255,112 @@ class SyncManager {
     String operationType,
     Map<String, dynamic>? data,
   ) async {
-    // TODO: Implement actual Supabase sync logic
-    // This is a placeholder that will be implemented in Phase 3
+    LogService.d('🔄 Syncing course $operationType: $entityId');
 
-    print('🔄 Syncing course $operationType: $entityId');
+    try {
+      final deviceId = await _preferenceRepository.getUserId();
 
-    // Simulate network delay
-    await Future.delayed(const Duration(milliseconds: 100));
+      switch (operationType) {
+        case 'insert':
+          if (data == null) {
+            LogService.w('⚠️ No data for course insert operation');
+            return false;
+          }
 
-    // For now, mark as synced in the database
-    if (operationType != 'delete') {
-      await _database.markCourseAsSynced(entityId);
+          // Insert course into Supabase
+          final courseInsertResponse = await _supabaseClient
+              .from('courses')
+              .insert({
+                'course_name': data['course_name'],
+              })
+              .select('id')
+              .single();
+
+          final String remoteId = courseInsertResponse['id'];
+
+          // Link course to user
+          await _supabaseClient.from('courses_user').insert({
+            'device_id': deviceId,
+            'course_id': remoteId,
+          });
+
+          // Update local database with remote ID
+          await _database.updateCourseRemoteId(entityId, remoteId);
+          await _database.markCourseAsSynced(entityId);
+
+          LogService.d('✅ Course inserted with remote ID: $remoteId');
+          return true;
+
+        case 'update':
+          if (data == null) {
+            LogService.w('⚠️ No data for course update operation');
+            return false;
+          }
+
+          // Get the remote ID from local database
+          final course = await _database.getCourseById(entityId);
+          final remoteId = course?.remoteId ?? entityId;
+
+          await _supabaseClient
+              .from('courses')
+              .update({'course_name': data['course_name']})
+              .eq('id', remoteId);
+
+          await _database.markCourseAsSynced(entityId);
+
+          LogService.d('✅ Course updated: $remoteId');
+          return true;
+
+        case 'delete':
+          // Get the remote ID from data or use entityId
+          final remoteId = data?['remote_id'] ?? entityId;
+
+          // Delete course supplies first
+          final suppliesResponse = await _supabaseClient
+              .from('course_supplies')
+              .select('supply_id')
+              .eq('course_id', remoteId);
+
+          final supplyIds = (suppliesResponse as List)
+              .map((item) => item['supply_id'] as String)
+              .toList();
+
+          await _supabaseClient
+              .from('course_supplies')
+              .delete()
+              .eq('course_id', remoteId);
+
+          // Delete supplies
+          for (final supplyId in supplyIds) {
+            await _supabaseClient
+                .from('supplies')
+                .delete()
+                .eq('id', supplyId);
+          }
+
+          // Delete course-user relation
+          await _supabaseClient
+              .from('courses_user')
+              .delete()
+              .eq('course_id', remoteId);
+
+          // Delete course
+          await _supabaseClient
+              .from('courses')
+              .delete()
+              .eq('id', remoteId);
+
+          LogService.d('✅ Course deleted: $remoteId');
+          return true;
+
+        default:
+          LogService.w('⚠️ Unknown operation type for course: $operationType');
+          return false;
+      }
+    } catch (e) {
+      LogService.e('❌ Error syncing course: $e');
+      return false;
     }
-
-    return true; // Placeholder success
   }
 
   /// Sync a supply operation with Supabase
@@ -273,20 +369,94 @@ class SyncManager {
     String operationType,
     Map<String, dynamic>? data,
   ) async {
-    // TODO: Implement actual Supabase sync logic
-    // This is a placeholder that will be implemented in Phase 3
+    LogService.d('🔄 Syncing supply $operationType: $entityId');
 
-    print('🔄 Syncing supply $operationType: $entityId');
+    try {
+      switch (operationType) {
+        case 'insert':
+          if (data == null) {
+            LogService.w('⚠️ No data for supply insert operation');
+            return false;
+          }
 
-    // Simulate network delay
-    await Future.delayed(const Duration(milliseconds: 100));
+          // Insert supply into Supabase
+          final supplyInsertResponse = await _supabaseClient
+              .from('supplies')
+              .insert({
+                'name': data['name'],
+              })
+              .select('id')
+              .single();
 
-    // For now, mark as synced in the database
-    if (operationType != 'delete') {
-      await _database.markSupplyAsSynced(entityId);
+          final String remoteId = supplyInsertResponse['id'];
+
+          // Link supply to course
+          final courseId = data['course_id'];
+          if (courseId != null) {
+            // Get remote course ID if needed
+            final course = await _database.getCourseById(courseId);
+            final remoteCourseId = course?.remoteId ?? courseId;
+
+            await _supabaseClient.from('course_supplies').insert({
+              'course_id': remoteCourseId,
+              'supply_id': remoteId,
+            });
+          }
+
+          // Update local database with remote ID
+          await _database.updateSupplyRemoteId(entityId, remoteId);
+          await _database.markSupplyAsSynced(entityId);
+
+          LogService.d('✅ Supply inserted with remote ID: $remoteId');
+          return true;
+
+        case 'update':
+          if (data == null) {
+            LogService.w('⚠️ No data for supply update operation');
+            return false;
+          }
+
+          // Get the remote ID from local database
+          final supply = await _database.getSupplyById(entityId);
+          final remoteId = supply?.remoteId ?? entityId;
+
+          await _supabaseClient
+              .from('supplies')
+              .update({'name': data['name']})
+              .eq('id', remoteId);
+
+          await _database.markSupplyAsSynced(entityId);
+
+          LogService.d('✅ Supply updated: $remoteId');
+          return true;
+
+        case 'delete':
+          // Get the remote ID from data or use entityId
+          final remoteId = data?['remote_id'] ?? entityId;
+
+          // Delete course_supplies relation first
+          await _supabaseClient
+              .from('course_supplies')
+              .delete()
+              .eq('supply_id', remoteId);
+
+          // Delete supply
+          await _supabaseClient
+              .from('supplies')
+              .delete()
+              .eq('id', remoteId);
+
+          LogService.d('✅ Supply deleted: $remoteId');
+          return true;
+
+        default:
+          LogService.w('⚠️ Unknown operation type for supply: $operationType');
+          return false;
+      }
+    } catch (e) {
+      LogService.e('❌ Error syncing supply: $e');
+      return false;
     }
-
-    return true; // Placeholder success
   }
 
   /// Sync a calendar course operation with Supabase
@@ -295,20 +465,104 @@ class SyncManager {
     String operationType,
     Map<String, dynamic>? data,
   ) async {
-    // TODO: Implement actual Supabase sync logic
-    // This is a placeholder that will be implemented in Phase 3
+    LogService.d('🔄 Syncing calendar course $operationType: $entityId');
 
-    print('🔄 Syncing calendar course $operationType: $entityId');
+    try {
+      final deviceId = await _preferenceRepository.getUserId();
 
-    // Simulate network delay
-    await Future.delayed(const Duration(milliseconds: 100));
+      switch (operationType) {
+        case 'insert':
+          if (data == null) {
+            LogService.w('⚠️ No data for calendar course insert operation');
+            return false;
+          }
 
-    // For now, mark as synced in the database
-    if (operationType != 'delete') {
-      await _database.markCalendarCourseAsSynced(entityId);
+          // Get remote course ID if needed
+          final localCourseId = data['course_id'];
+          final course = await _database.getCourseById(localCourseId);
+          final remoteCourseId = course?.remoteId ?? localCourseId;
+
+          // Insert calendar course into Supabase
+          final response = await _supabaseClient
+              .from('calendar_courses')
+              .insert({
+                'device_id': deviceId,
+                'course_id': remoteCourseId,
+                'room_name': data['room_name'],
+                'start_time_hour': data['start_time_hour'],
+                'start_time_minute': data['start_time_minute'],
+                'end_time_hour': data['end_time_hour'],
+                'end_time_minute': data['end_time_minute'],
+                'week_type': data['week_type'],
+                'day_of_week': data['day_of_week'],
+              })
+              .select('id')
+              .single();
+
+          final String remoteId = response['id'];
+
+          // Update local database with remote ID
+          await _database.updateCalendarCourseRemoteId(entityId, remoteId);
+          await _database.markCalendarCourseAsSynced(entityId);
+
+          LogService.d('✅ Calendar course inserted with remote ID: $remoteId');
+          return true;
+
+        case 'update':
+          if (data == null) {
+            LogService.w('⚠️ No data for calendar course update operation');
+            return false;
+          }
+
+          // Get the remote ID from local database
+          final calendarCourse = await _database.getCalendarCourseById(entityId);
+          final remoteId = calendarCourse?.remoteId ?? entityId;
+
+          // Get remote course ID if needed
+          final localCourseId = data['course_id'];
+          final course = await _database.getCourseById(localCourseId);
+          final remoteCourseId = course?.remoteId ?? localCourseId;
+
+          await _supabaseClient
+              .from('calendar_courses')
+              .update({
+                'course_id': remoteCourseId,
+                'room_name': data['room_name'],
+                'start_time_hour': data['start_time_hour'],
+                'start_time_minute': data['start_time_minute'],
+                'end_time_hour': data['end_time_hour'],
+                'end_time_minute': data['end_time_minute'],
+                'week_type': data['week_type'],
+                'day_of_week': data['day_of_week'],
+              })
+              .eq('id', remoteId)
+              .eq('device_id', deviceId);
+
+          await _database.markCalendarCourseAsSynced(entityId);
+
+          LogService.d('✅ Calendar course updated: $remoteId');
+          return true;
+
+        case 'delete':
+          // Get the remote ID from data or use entityId
+          final remoteId = data?['remote_id'] ?? entityId;
+
+          await _supabaseClient
+              .from('calendar_courses')
+              .delete()
+              .eq('id', remoteId);
+
+          LogService.d('✅ Calendar course deleted: $remoteId');
+          return true;
+
+        default:
+          LogService.w('⚠️ Unknown operation type for calendar course: $operationType');
+          return false;
+      }
+    } catch (e) {
+      LogService.e('❌ Error syncing calendar course: $e');
+      return false;
     }
-
-    return true; // Placeholder success
   }
 
   /// Dispose resources

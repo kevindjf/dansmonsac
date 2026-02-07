@@ -1,5 +1,6 @@
 import 'package:common/src/ui/theme/theme_data.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:common/src/repository/repository_helper.dart';
 import 'package:common/src/navigation/routes.dart';
@@ -10,6 +11,7 @@ import 'package:common/src/providers.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(fileName: '.env');
   await RepositoryHelper.initialize();
   await NotificationService.initialize();
 

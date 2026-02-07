@@ -116,10 +116,15 @@ class CourseSupabaseRepository extends CourseRepository {
   @override
   Future<Either<Failure, void>> updateCourseName(String id, String newName) {
     return handleErrors(() async {
-      await supabaseClient
+      final response = await supabaseClient
           .from('courses')
           .update({'course_name': newName})
-          .eq('id', id);
+          .eq('id', id)
+          .select();
+
+      if ((response as List).isEmpty) {
+        throw Exception('Cours non trouve ou mise a jour non autorisee');
+      }
     });
   }
 }

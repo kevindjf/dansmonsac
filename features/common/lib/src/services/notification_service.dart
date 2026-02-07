@@ -1,9 +1,8 @@
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:common/src/services/preferences_service.dart';
+import 'package:common/src/services/log_service.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
-import 'package:common/src/services/preferences_service.dart';
 
 class NotificationService {
   static final FlutterLocalNotificationsPlugin _notifications =
@@ -17,8 +16,8 @@ class NotificationService {
     // Set local timezone to Europe/Paris for France
     tz.setLocalLocation(tz.getLocation('Europe/Paris'));
 
-    // Use ic_launcher as notification icon (available in all Android projects)
-    const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
+    const androidSettings =
+        AndroidInitializationSettings('@drawable/ic_notification');
     const iosSettings = DarwinInitializationSettings(
       requestAlertPermission: false,
       requestBadgePermission: false,
@@ -48,10 +47,11 @@ class NotificationService {
 
       // Request exact alarm permission for Android 12+
       try {
-        final exactAlarmGranted = await androidPlugin.requestExactAlarmsPermission();
-        print('🔔 Exact alarms permission: ${exactAlarmGranted ?? false}');
+        final exactAlarmGranted =
+            await androidPlugin.requestExactAlarmsPermission();
+        LogService.d('🔔 Exact alarms permission: ${exactAlarmGranted ?? false}');
       } catch (e) {
-        print('⚠️ Exact alarms permission not available or error: $e');
+        LogService.d('⚠️ Exact alarms permission not available or error: $e');
       }
     }
 
@@ -64,7 +64,7 @@ class NotificationService {
     }
 
     final granted = androidGranted ?? iosGranted ?? false;
-    print('🔔 Notification permissions granted: $granted');
+    LogService.d('🔔 Notification permissions granted: $granted');
     return granted;
   }
 
@@ -76,10 +76,10 @@ class NotificationService {
     if (androidPlugin != null) {
       try {
         final canSchedule = await androidPlugin.canScheduleExactNotifications();
-        print('📱 Can schedule exact alarms: ${canSchedule ?? false}');
+        LogService.d('📱 Can schedule exact alarms: ${canSchedule ?? false}');
         return canSchedule ?? false;
       } catch (e) {
-        print('⚠️ Error checking exact alarms permission: $e');
+        LogService.d('⚠️ Error checking exact alarms permission: $e');
         return false;
       }
     }
@@ -92,7 +92,7 @@ class NotificationService {
       // Check if we can schedule exact alarms
       final canSchedule = await canScheduleExactAlarms();
       if (!canSchedule) {
-        print('⚠️ Cannot schedule exact alarms. Please enable in settings.');
+        LogService.d('⚠️ Cannot schedule exact alarms. Please enable in settings.');
         // Still try to schedule, but it might not work
       }
 
@@ -118,10 +118,10 @@ class NotificationService {
         scheduledDate = scheduledDate.add(const Duration(days: 1));
       }
 
-      print('📅 Scheduling notification for: $scheduledDate');
-      print('🕐 Pack time: ${packTime.hour}:${packTime.minute}');
-      print('🌍 Timezone: ${tz.local.name}');
-      print('⏰ Current time: $now');
+      LogService.d('📅 Scheduling notification for: $scheduledDate');
+      LogService.d('🕐 Pack time: ${packTime.hour}:${packTime.minute}');
+      LogService.d('🌍 Timezone: ${tz.local.name}');
+      LogService.d('⏰ Current time: $now');
 
       const androidDetails = AndroidNotificationDetails(
         'daily_reminder',
@@ -129,7 +129,7 @@ class NotificationService {
         channelDescription: 'Rappel pour préparer votre sac',
         importance: Importance.high,
         priority: Priority.high,
-        icon: '@mipmap/ic_launcher',
+        icon: '@drawable/ic_notification',
         enableVibration: true,
         playSound: true,
         enableLights: true,
@@ -158,16 +158,16 @@ class NotificationService {
         matchDateTimeComponents: DateTimeComponents.time,
       );
 
-      print('✅ Notification scheduled successfully');
+      LogService.d('✅ Notification scheduled successfully');
 
       // Show pending notifications for debugging
       final pending = await _notifications.pendingNotificationRequests();
-      print('📋 Pending notifications: ${pending.length}');
+      LogService.d('📋 Pending notifications: ${pending.length}');
       for (final notification in pending) {
-        print('  - ID: ${notification.id}, Title: ${notification.title}');
+        LogService.d('  - ID: ${notification.id}, Title: ${notification.title}');
       }
     } catch (e) {
-      print('❌ Error scheduling notification: $e');
+      LogService.d('❌ Error scheduling notification: $e');
       rethrow;
     }
   }

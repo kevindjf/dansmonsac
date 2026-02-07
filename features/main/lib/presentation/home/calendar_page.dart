@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:common/src/ui/ui.dart';
 import 'package:common/src/services.dart';
+import 'package:common/src/utils/week_utils.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:main/presentation/home/calendar_body_widget.dart';
 import 'package:schedule/presentation/add/add_calendar_course_page.dart';
@@ -21,11 +22,23 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
   DateTime _selectedDate = DateTime.now();
   WeekFilter _weekFilter = WeekFilter.all; // Default to show all courses
   bool _showWeekend = true;
+  String? _currentWeekType;
 
   @override
   void initState() {
     super.initState();
     _loadWeekendPreference();
+    _loadWeekType();
+  }
+
+  Future<void> _loadWeekType() async {
+    final schoolYearStart = await PreferencesService.getSchoolYearStart();
+    final weekType = WeekUtils.getCurrentWeekType(schoolYearStart);
+    if (mounted) {
+      setState(() {
+        _currentWeekType = weekType;
+      });
+    }
   }
 
   Future<void> _loadWeekendPreference() async {
@@ -78,28 +91,47 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
                 ),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        "Vos cours de la journée",
-                        style: GoogleFonts.robotoCondensed(
-                            color: Colors.white38, fontSize: 14),
-                      ),
-                      // Week filter buttons
-                      Container(
-                        decoration: BoxDecoration(
-                          color: Colors.black26,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            _buildWeekFilterButton("Complet", WeekFilter.all),
-                            _buildWeekFilterButton("Sem. A", WeekFilter.weekA),
-                            _buildWeekFilterButton("Sem. B", WeekFilter.weekB),
-                          ],
-                        ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "Vos cours de la journée",
+                                style: GoogleFonts.robotoCondensed(
+                                    color: Colors.white38, fontSize: 14),
+                              ),
+                              if (_currentWeekType != null)
+                                Text(
+                                  "Semaine $_currentWeekType",
+                                  style: GoogleFonts.robotoCondensed(
+                                    color: Theme.of(context).colorScheme.secondary,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                            ],
+                          ),
+                          // Week filter buttons
+                          Container(
+                            decoration: BoxDecoration(
+                              color: Colors.black26,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                _buildWeekFilterButton("Complet", WeekFilter.all),
+                                _buildWeekFilterButton("Sem. A", WeekFilter.weekA),
+                                _buildWeekFilterButton("Sem. B", WeekFilter.weekB),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),

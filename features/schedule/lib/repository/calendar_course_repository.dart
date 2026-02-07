@@ -64,7 +64,9 @@ class CalendarCourseSupabaseRepository extends CalendarCourseRepository {
   @override
   Future<Either<Failure, void>> updateCalendarCourse(CalendarCourse calendarCourse) {
     return handleErrors(() async {
-      await supabaseClient
+      final deviceId = await preferenceRepository.getUserId();
+
+      final response = await supabaseClient
           .from('calendar_courses')
           .update({
             'course_id': calendarCourse.courseId,
@@ -76,7 +78,13 @@ class CalendarCourseSupabaseRepository extends CalendarCourseRepository {
             'week_type': calendarCourse.weekType.value,
             'day_of_week': calendarCourse.dayOfWeek,
           })
-          .eq('id', calendarCourse.id);
+          .eq('id', calendarCourse.id)
+          .eq('device_id', deviceId)
+          .select();
+
+      if ((response as List).isEmpty) {
+        throw Exception('Cours non trouve ou mise a jour non autorisee');
+      }
     });
   }
 

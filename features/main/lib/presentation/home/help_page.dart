@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class HelpPage extends StatelessWidget {
   const HelpPage({Key? key}) : super(key: key);
@@ -150,14 +151,30 @@ class HelpPage extends StatelessWidget {
                   ),
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  'Contacte-nous a support@dansmonsac.app',
-                  style: GoogleFonts.roboto(
-                    fontSize: 14,
-                    color: accentColor,
+                const SizedBox(height: 12),
+                ElevatedButton.icon(
+                  onPressed: () async {
+                    final Uri emailUri = Uri(
+                      scheme: 'mailto',
+                      path: 'support@kappsmobile.fr',
+                      queryParameters: {
+                        'subject': 'DansMonSac - Support',
+                      },
+                    );
+                    if (await canLaunchUrl(emailUri)) {
+                      await launchUrl(emailUri);
+                    }
+                  },
+                  icon: const Icon(Icons.email, size: 18),
+                  label: const Text('support@kappsmobile.fr'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: accentColor,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(25),
+                    ),
                   ),
-                  textAlign: TextAlign.center,
                 ),
               ],
             ),

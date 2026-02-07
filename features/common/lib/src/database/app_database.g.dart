@@ -14,6 +14,12 @@ class $CoursesTable extends Courses
   late final GeneratedColumn<String> id = GeneratedColumn<String>(
       'id', aliasedName, false,
       type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _remoteIdMeta =
+      const VerificationMeta('remoteId');
+  @override
+  late final GeneratedColumn<String> remoteId = GeneratedColumn<String>(
+      'remote_id', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
   static const VerificationMeta _nameMeta = const VerificationMeta('name');
   @override
   late final GeneratedColumn<String> name = GeneratedColumn<String>(
@@ -56,7 +62,7 @@ class $CoursesTable extends Courses
       defaultValue: currentDateAndTime);
   @override
   List<GeneratedColumn> get $columns =>
-      [id, name, color, weekType, updatedAt, isSynced, createdAt];
+      [id, remoteId, name, color, weekType, updatedAt, isSynced, createdAt];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -71,6 +77,10 @@ class $CoursesTable extends Courses
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
     } else if (isInserting) {
       context.missing(_idMeta);
+    }
+    if (data.containsKey('remote_id')) {
+      context.handle(_remoteIdMeta,
+          remoteId.isAcceptableOrUnknown(data['remote_id']!, _remoteIdMeta));
     }
     if (data.containsKey('name')) {
       context.handle(
@@ -115,6 +125,8 @@ class $CoursesTable extends Courses
     return CourseEntity(
       id: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}id'])!,
+      remoteId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}remote_id']),
       name: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
       color: attachedDatabase.typeMapping
@@ -138,6 +150,7 @@ class $CoursesTable extends Courses
 
 class CourseEntity extends DataClass implements Insertable<CourseEntity> {
   final String id;
+  final String? remoteId;
   final String name;
   final String color;
   final String weekType;
@@ -146,6 +159,7 @@ class CourseEntity extends DataClass implements Insertable<CourseEntity> {
   final DateTime createdAt;
   const CourseEntity(
       {required this.id,
+      this.remoteId,
       required this.name,
       required this.color,
       required this.weekType,
@@ -156,6 +170,9 @@ class CourseEntity extends DataClass implements Insertable<CourseEntity> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<String>(id);
+    if (!nullToAbsent || remoteId != null) {
+      map['remote_id'] = Variable<String>(remoteId);
+    }
     map['name'] = Variable<String>(name);
     map['color'] = Variable<String>(color);
     map['week_type'] = Variable<String>(weekType);
@@ -168,6 +185,9 @@ class CourseEntity extends DataClass implements Insertable<CourseEntity> {
   CoursesCompanion toCompanion(bool nullToAbsent) {
     return CoursesCompanion(
       id: Value(id),
+      remoteId: remoteId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(remoteId),
       name: Value(name),
       color: Value(color),
       weekType: Value(weekType),
@@ -182,6 +202,7 @@ class CourseEntity extends DataClass implements Insertable<CourseEntity> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return CourseEntity(
       id: serializer.fromJson<String>(json['id']),
+      remoteId: serializer.fromJson<String?>(json['remoteId']),
       name: serializer.fromJson<String>(json['name']),
       color: serializer.fromJson<String>(json['color']),
       weekType: serializer.fromJson<String>(json['weekType']),
@@ -195,6 +216,7 @@ class CourseEntity extends DataClass implements Insertable<CourseEntity> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<String>(id),
+      'remoteId': serializer.toJson<String?>(remoteId),
       'name': serializer.toJson<String>(name),
       'color': serializer.toJson<String>(color),
       'weekType': serializer.toJson<String>(weekType),
@@ -206,6 +228,7 @@ class CourseEntity extends DataClass implements Insertable<CourseEntity> {
 
   CourseEntity copyWith(
           {String? id,
+          Value<String?> remoteId = const Value.absent(),
           String? name,
           String? color,
           String? weekType,
@@ -214,6 +237,7 @@ class CourseEntity extends DataClass implements Insertable<CourseEntity> {
           DateTime? createdAt}) =>
       CourseEntity(
         id: id ?? this.id,
+        remoteId: remoteId.present ? remoteId.value : this.remoteId,
         name: name ?? this.name,
         color: color ?? this.color,
         weekType: weekType ?? this.weekType,
@@ -224,6 +248,7 @@ class CourseEntity extends DataClass implements Insertable<CourseEntity> {
   CourseEntity copyWithCompanion(CoursesCompanion data) {
     return CourseEntity(
       id: data.id.present ? data.id.value : this.id,
+      remoteId: data.remoteId.present ? data.remoteId.value : this.remoteId,
       name: data.name.present ? data.name.value : this.name,
       color: data.color.present ? data.color.value : this.color,
       weekType: data.weekType.present ? data.weekType.value : this.weekType,
@@ -237,6 +262,7 @@ class CourseEntity extends DataClass implements Insertable<CourseEntity> {
   String toString() {
     return (StringBuffer('CourseEntity(')
           ..write('id: $id, ')
+          ..write('remoteId: $remoteId, ')
           ..write('name: $name, ')
           ..write('color: $color, ')
           ..write('weekType: $weekType, ')
@@ -248,13 +274,14 @@ class CourseEntity extends DataClass implements Insertable<CourseEntity> {
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, name, color, weekType, updatedAt, isSynced, createdAt);
+  int get hashCode => Object.hash(
+      id, remoteId, name, color, weekType, updatedAt, isSynced, createdAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is CourseEntity &&
           other.id == this.id &&
+          other.remoteId == this.remoteId &&
           other.name == this.name &&
           other.color == this.color &&
           other.weekType == this.weekType &&
@@ -265,6 +292,7 @@ class CourseEntity extends DataClass implements Insertable<CourseEntity> {
 
 class CoursesCompanion extends UpdateCompanion<CourseEntity> {
   final Value<String> id;
+  final Value<String?> remoteId;
   final Value<String> name;
   final Value<String> color;
   final Value<String> weekType;
@@ -274,6 +302,7 @@ class CoursesCompanion extends UpdateCompanion<CourseEntity> {
   final Value<int> rowid;
   const CoursesCompanion({
     this.id = const Value.absent(),
+    this.remoteId = const Value.absent(),
     this.name = const Value.absent(),
     this.color = const Value.absent(),
     this.weekType = const Value.absent(),
@@ -284,6 +313,7 @@ class CoursesCompanion extends UpdateCompanion<CourseEntity> {
   });
   CoursesCompanion.insert({
     required String id,
+    this.remoteId = const Value.absent(),
     required String name,
     required String color,
     required String weekType,
@@ -298,6 +328,7 @@ class CoursesCompanion extends UpdateCompanion<CourseEntity> {
         updatedAt = Value(updatedAt);
   static Insertable<CourseEntity> custom({
     Expression<String>? id,
+    Expression<String>? remoteId,
     Expression<String>? name,
     Expression<String>? color,
     Expression<String>? weekType,
@@ -308,6 +339,7 @@ class CoursesCompanion extends UpdateCompanion<CourseEntity> {
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
+      if (remoteId != null) 'remote_id': remoteId,
       if (name != null) 'name': name,
       if (color != null) 'color': color,
       if (weekType != null) 'week_type': weekType,
@@ -320,6 +352,7 @@ class CoursesCompanion extends UpdateCompanion<CourseEntity> {
 
   CoursesCompanion copyWith(
       {Value<String>? id,
+      Value<String?>? remoteId,
       Value<String>? name,
       Value<String>? color,
       Value<String>? weekType,
@@ -329,6 +362,7 @@ class CoursesCompanion extends UpdateCompanion<CourseEntity> {
       Value<int>? rowid}) {
     return CoursesCompanion(
       id: id ?? this.id,
+      remoteId: remoteId ?? this.remoteId,
       name: name ?? this.name,
       color: color ?? this.color,
       weekType: weekType ?? this.weekType,
@@ -344,6 +378,9 @@ class CoursesCompanion extends UpdateCompanion<CourseEntity> {
     final map = <String, Expression>{};
     if (id.present) {
       map['id'] = Variable<String>(id.value);
+    }
+    if (remoteId.present) {
+      map['remote_id'] = Variable<String>(remoteId.value);
     }
     if (name.present) {
       map['name'] = Variable<String>(name.value);
@@ -373,6 +410,7 @@ class CoursesCompanion extends UpdateCompanion<CourseEntity> {
   String toString() {
     return (StringBuffer('CoursesCompanion(')
           ..write('id: $id, ')
+          ..write('remoteId: $remoteId, ')
           ..write('name: $name, ')
           ..write('color: $color, ')
           ..write('weekType: $weekType, ')
@@ -396,6 +434,12 @@ class $SuppliesTable extends Supplies
   late final GeneratedColumn<String> id = GeneratedColumn<String>(
       'id', aliasedName, false,
       type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _remoteIdMeta =
+      const VerificationMeta('remoteId');
+  @override
+  late final GeneratedColumn<String> remoteId = GeneratedColumn<String>(
+      'remote_id', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
   static const VerificationMeta _courseIdMeta =
       const VerificationMeta('courseId');
   @override
@@ -450,6 +494,7 @@ class $SuppliesTable extends Supplies
   @override
   List<GeneratedColumn> get $columns => [
         id,
+        remoteId,
         courseId,
         name,
         isChecked,
@@ -472,6 +517,10 @@ class $SuppliesTable extends Supplies
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
     } else if (isInserting) {
       context.missing(_idMeta);
+    }
+    if (data.containsKey('remote_id')) {
+      context.handle(_remoteIdMeta,
+          remoteId.isAcceptableOrUnknown(data['remote_id']!, _remoteIdMeta));
     }
     if (data.containsKey('course_id')) {
       context.handle(_courseIdMeta,
@@ -520,6 +569,8 @@ class $SuppliesTable extends Supplies
     return SupplyEntity(
       id: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}id'])!,
+      remoteId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}remote_id']),
       courseId: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}course_id'])!,
       name: attachedDatabase.typeMapping
@@ -545,6 +596,7 @@ class $SuppliesTable extends Supplies
 
 class SupplyEntity extends DataClass implements Insertable<SupplyEntity> {
   final String id;
+  final String? remoteId;
   final String courseId;
   final String name;
   final bool isChecked;
@@ -554,6 +606,7 @@ class SupplyEntity extends DataClass implements Insertable<SupplyEntity> {
   final DateTime createdAt;
   const SupplyEntity(
       {required this.id,
+      this.remoteId,
       required this.courseId,
       required this.name,
       required this.isChecked,
@@ -565,6 +618,9 @@ class SupplyEntity extends DataClass implements Insertable<SupplyEntity> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<String>(id);
+    if (!nullToAbsent || remoteId != null) {
+      map['remote_id'] = Variable<String>(remoteId);
+    }
     map['course_id'] = Variable<String>(courseId);
     map['name'] = Variable<String>(name);
     map['is_checked'] = Variable<bool>(isChecked);
@@ -580,6 +636,9 @@ class SupplyEntity extends DataClass implements Insertable<SupplyEntity> {
   SuppliesCompanion toCompanion(bool nullToAbsent) {
     return SuppliesCompanion(
       id: Value(id),
+      remoteId: remoteId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(remoteId),
       courseId: Value(courseId),
       name: Value(name),
       isChecked: Value(isChecked),
@@ -597,6 +656,7 @@ class SupplyEntity extends DataClass implements Insertable<SupplyEntity> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return SupplyEntity(
       id: serializer.fromJson<String>(json['id']),
+      remoteId: serializer.fromJson<String?>(json['remoteId']),
       courseId: serializer.fromJson<String>(json['courseId']),
       name: serializer.fromJson<String>(json['name']),
       isChecked: serializer.fromJson<bool>(json['isChecked']),
@@ -611,6 +671,7 @@ class SupplyEntity extends DataClass implements Insertable<SupplyEntity> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<String>(id),
+      'remoteId': serializer.toJson<String?>(remoteId),
       'courseId': serializer.toJson<String>(courseId),
       'name': serializer.toJson<String>(name),
       'isChecked': serializer.toJson<bool>(isChecked),
@@ -623,6 +684,7 @@ class SupplyEntity extends DataClass implements Insertable<SupplyEntity> {
 
   SupplyEntity copyWith(
           {String? id,
+          Value<String?> remoteId = const Value.absent(),
           String? courseId,
           String? name,
           bool? isChecked,
@@ -632,6 +694,7 @@ class SupplyEntity extends DataClass implements Insertable<SupplyEntity> {
           DateTime? createdAt}) =>
       SupplyEntity(
         id: id ?? this.id,
+        remoteId: remoteId.present ? remoteId.value : this.remoteId,
         courseId: courseId ?? this.courseId,
         name: name ?? this.name,
         isChecked: isChecked ?? this.isChecked,
@@ -643,6 +706,7 @@ class SupplyEntity extends DataClass implements Insertable<SupplyEntity> {
   SupplyEntity copyWithCompanion(SuppliesCompanion data) {
     return SupplyEntity(
       id: data.id.present ? data.id.value : this.id,
+      remoteId: data.remoteId.present ? data.remoteId.value : this.remoteId,
       courseId: data.courseId.present ? data.courseId.value : this.courseId,
       name: data.name.present ? data.name.value : this.name,
       isChecked: data.isChecked.present ? data.isChecked.value : this.isChecked,
@@ -658,6 +722,7 @@ class SupplyEntity extends DataClass implements Insertable<SupplyEntity> {
   String toString() {
     return (StringBuffer('SupplyEntity(')
           ..write('id: $id, ')
+          ..write('remoteId: $remoteId, ')
           ..write('courseId: $courseId, ')
           ..write('name: $name, ')
           ..write('isChecked: $isChecked, ')
@@ -670,13 +735,14 @@ class SupplyEntity extends DataClass implements Insertable<SupplyEntity> {
   }
 
   @override
-  int get hashCode => Object.hash(id, courseId, name, isChecked, checkedDate,
-      updatedAt, isSynced, createdAt);
+  int get hashCode => Object.hash(id, remoteId, courseId, name, isChecked,
+      checkedDate, updatedAt, isSynced, createdAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is SupplyEntity &&
           other.id == this.id &&
+          other.remoteId == this.remoteId &&
           other.courseId == this.courseId &&
           other.name == this.name &&
           other.isChecked == this.isChecked &&
@@ -688,6 +754,7 @@ class SupplyEntity extends DataClass implements Insertable<SupplyEntity> {
 
 class SuppliesCompanion extends UpdateCompanion<SupplyEntity> {
   final Value<String> id;
+  final Value<String?> remoteId;
   final Value<String> courseId;
   final Value<String> name;
   final Value<bool> isChecked;
@@ -698,6 +765,7 @@ class SuppliesCompanion extends UpdateCompanion<SupplyEntity> {
   final Value<int> rowid;
   const SuppliesCompanion({
     this.id = const Value.absent(),
+    this.remoteId = const Value.absent(),
     this.courseId = const Value.absent(),
     this.name = const Value.absent(),
     this.isChecked = const Value.absent(),
@@ -709,6 +777,7 @@ class SuppliesCompanion extends UpdateCompanion<SupplyEntity> {
   });
   SuppliesCompanion.insert({
     required String id,
+    this.remoteId = const Value.absent(),
     required String courseId,
     required String name,
     this.isChecked = const Value.absent(),
@@ -723,6 +792,7 @@ class SuppliesCompanion extends UpdateCompanion<SupplyEntity> {
         updatedAt = Value(updatedAt);
   static Insertable<SupplyEntity> custom({
     Expression<String>? id,
+    Expression<String>? remoteId,
     Expression<String>? courseId,
     Expression<String>? name,
     Expression<bool>? isChecked,
@@ -734,6 +804,7 @@ class SuppliesCompanion extends UpdateCompanion<SupplyEntity> {
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
+      if (remoteId != null) 'remote_id': remoteId,
       if (courseId != null) 'course_id': courseId,
       if (name != null) 'name': name,
       if (isChecked != null) 'is_checked': isChecked,
@@ -747,6 +818,7 @@ class SuppliesCompanion extends UpdateCompanion<SupplyEntity> {
 
   SuppliesCompanion copyWith(
       {Value<String>? id,
+      Value<String?>? remoteId,
       Value<String>? courseId,
       Value<String>? name,
       Value<bool>? isChecked,
@@ -757,6 +829,7 @@ class SuppliesCompanion extends UpdateCompanion<SupplyEntity> {
       Value<int>? rowid}) {
     return SuppliesCompanion(
       id: id ?? this.id,
+      remoteId: remoteId ?? this.remoteId,
       courseId: courseId ?? this.courseId,
       name: name ?? this.name,
       isChecked: isChecked ?? this.isChecked,
@@ -773,6 +846,9 @@ class SuppliesCompanion extends UpdateCompanion<SupplyEntity> {
     final map = <String, Expression>{};
     if (id.present) {
       map['id'] = Variable<String>(id.value);
+    }
+    if (remoteId.present) {
+      map['remote_id'] = Variable<String>(remoteId.value);
     }
     if (courseId.present) {
       map['course_id'] = Variable<String>(courseId.value);
@@ -805,6 +881,7 @@ class SuppliesCompanion extends UpdateCompanion<SupplyEntity> {
   String toString() {
     return (StringBuffer('SuppliesCompanion(')
           ..write('id: $id, ')
+          ..write('remoteId: $remoteId, ')
           ..write('courseId: $courseId, ')
           ..write('name: $name, ')
           ..write('isChecked: $isChecked, ')
@@ -829,12 +906,26 @@ class $CalendarCoursesTable extends CalendarCourses
   late final GeneratedColumn<String> id = GeneratedColumn<String>(
       'id', aliasedName, false,
       type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _remoteIdMeta =
+      const VerificationMeta('remoteId');
+  @override
+  late final GeneratedColumn<String> remoteId = GeneratedColumn<String>(
+      'remote_id', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
   static const VerificationMeta _courseIdMeta =
       const VerificationMeta('courseId');
   @override
   late final GeneratedColumn<String> courseId = GeneratedColumn<String>(
       'course_id', aliasedName, false,
       type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _roomNameMeta =
+      const VerificationMeta('roomName');
+  @override
+  late final GeneratedColumn<String> roomName = GeneratedColumn<String>(
+      'room_name', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(''));
   static const VerificationMeta _dayOfWeekMeta =
       const VerificationMeta('dayOfWeek');
   @override
@@ -865,6 +956,14 @@ class $CalendarCoursesTable extends CalendarCourses
   late final GeneratedColumn<int> endMinute = GeneratedColumn<int>(
       'end_minute', aliasedName, false,
       type: DriftSqlType.int, requiredDuringInsert: true);
+  static const VerificationMeta _weekTypeMeta =
+      const VerificationMeta('weekType');
+  @override
+  late final GeneratedColumn<String> weekType = GeneratedColumn<String>(
+      'week_type', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      defaultValue: const Constant('AB'));
   static const VerificationMeta _updatedAtMeta =
       const VerificationMeta('updatedAt');
   @override
@@ -892,12 +991,15 @@ class $CalendarCoursesTable extends CalendarCourses
   @override
   List<GeneratedColumn> get $columns => [
         id,
+        remoteId,
         courseId,
+        roomName,
         dayOfWeek,
         startHour,
         startMinute,
         endHour,
         endMinute,
+        weekType,
         updatedAt,
         isSynced,
         createdAt
@@ -918,11 +1020,19 @@ class $CalendarCoursesTable extends CalendarCourses
     } else if (isInserting) {
       context.missing(_idMeta);
     }
+    if (data.containsKey('remote_id')) {
+      context.handle(_remoteIdMeta,
+          remoteId.isAcceptableOrUnknown(data['remote_id']!, _remoteIdMeta));
+    }
     if (data.containsKey('course_id')) {
       context.handle(_courseIdMeta,
           courseId.isAcceptableOrUnknown(data['course_id']!, _courseIdMeta));
     } else if (isInserting) {
       context.missing(_courseIdMeta);
+    }
+    if (data.containsKey('room_name')) {
+      context.handle(_roomNameMeta,
+          roomName.isAcceptableOrUnknown(data['room_name']!, _roomNameMeta));
     }
     if (data.containsKey('day_of_week')) {
       context.handle(
@@ -958,6 +1068,10 @@ class $CalendarCoursesTable extends CalendarCourses
     } else if (isInserting) {
       context.missing(_endMinuteMeta);
     }
+    if (data.containsKey('week_type')) {
+      context.handle(_weekTypeMeta,
+          weekType.isAcceptableOrUnknown(data['week_type']!, _weekTypeMeta));
+    }
     if (data.containsKey('updated_at')) {
       context.handle(_updatedAtMeta,
           updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta));
@@ -983,8 +1097,12 @@ class $CalendarCoursesTable extends CalendarCourses
     return CalendarCourseEntity(
       id: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}id'])!,
+      remoteId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}remote_id']),
       courseId: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}course_id'])!,
+      roomName: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}room_name'])!,
       dayOfWeek: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}day_of_week'])!,
       startHour: attachedDatabase.typeMapping
@@ -995,6 +1113,8 @@ class $CalendarCoursesTable extends CalendarCourses
           .read(DriftSqlType.int, data['${effectivePrefix}end_hour'])!,
       endMinute: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}end_minute'])!,
+      weekType: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}week_type'])!,
       updatedAt: attachedDatabase.typeMapping
           .read(DriftSqlType.dateTime, data['${effectivePrefix}updated_at'])!,
       isSynced: attachedDatabase.typeMapping
@@ -1013,23 +1133,29 @@ class $CalendarCoursesTable extends CalendarCourses
 class CalendarCourseEntity extends DataClass
     implements Insertable<CalendarCourseEntity> {
   final String id;
+  final String? remoteId;
   final String courseId;
+  final String roomName;
   final int dayOfWeek;
   final int startHour;
   final int startMinute;
   final int endHour;
   final int endMinute;
+  final String weekType;
   final DateTime updatedAt;
   final bool isSynced;
   final DateTime createdAt;
   const CalendarCourseEntity(
       {required this.id,
+      this.remoteId,
       required this.courseId,
+      required this.roomName,
       required this.dayOfWeek,
       required this.startHour,
       required this.startMinute,
       required this.endHour,
       required this.endMinute,
+      required this.weekType,
       required this.updatedAt,
       required this.isSynced,
       required this.createdAt});
@@ -1037,12 +1163,17 @@ class CalendarCourseEntity extends DataClass
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<String>(id);
+    if (!nullToAbsent || remoteId != null) {
+      map['remote_id'] = Variable<String>(remoteId);
+    }
     map['course_id'] = Variable<String>(courseId);
+    map['room_name'] = Variable<String>(roomName);
     map['day_of_week'] = Variable<int>(dayOfWeek);
     map['start_hour'] = Variable<int>(startHour);
     map['start_minute'] = Variable<int>(startMinute);
     map['end_hour'] = Variable<int>(endHour);
     map['end_minute'] = Variable<int>(endMinute);
+    map['week_type'] = Variable<String>(weekType);
     map['updated_at'] = Variable<DateTime>(updatedAt);
     map['is_synced'] = Variable<bool>(isSynced);
     map['created_at'] = Variable<DateTime>(createdAt);
@@ -1052,12 +1183,17 @@ class CalendarCourseEntity extends DataClass
   CalendarCoursesCompanion toCompanion(bool nullToAbsent) {
     return CalendarCoursesCompanion(
       id: Value(id),
+      remoteId: remoteId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(remoteId),
       courseId: Value(courseId),
+      roomName: Value(roomName),
       dayOfWeek: Value(dayOfWeek),
       startHour: Value(startHour),
       startMinute: Value(startMinute),
       endHour: Value(endHour),
       endMinute: Value(endMinute),
+      weekType: Value(weekType),
       updatedAt: Value(updatedAt),
       isSynced: Value(isSynced),
       createdAt: Value(createdAt),
@@ -1069,12 +1205,15 @@ class CalendarCourseEntity extends DataClass
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return CalendarCourseEntity(
       id: serializer.fromJson<String>(json['id']),
+      remoteId: serializer.fromJson<String?>(json['remoteId']),
       courseId: serializer.fromJson<String>(json['courseId']),
+      roomName: serializer.fromJson<String>(json['roomName']),
       dayOfWeek: serializer.fromJson<int>(json['dayOfWeek']),
       startHour: serializer.fromJson<int>(json['startHour']),
       startMinute: serializer.fromJson<int>(json['startMinute']),
       endHour: serializer.fromJson<int>(json['endHour']),
       endMinute: serializer.fromJson<int>(json['endMinute']),
+      weekType: serializer.fromJson<String>(json['weekType']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
       isSynced: serializer.fromJson<bool>(json['isSynced']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
@@ -1085,12 +1224,15 @@ class CalendarCourseEntity extends DataClass
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<String>(id),
+      'remoteId': serializer.toJson<String?>(remoteId),
       'courseId': serializer.toJson<String>(courseId),
+      'roomName': serializer.toJson<String>(roomName),
       'dayOfWeek': serializer.toJson<int>(dayOfWeek),
       'startHour': serializer.toJson<int>(startHour),
       'startMinute': serializer.toJson<int>(startMinute),
       'endHour': serializer.toJson<int>(endHour),
       'endMinute': serializer.toJson<int>(endMinute),
+      'weekType': serializer.toJson<String>(weekType),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
       'isSynced': serializer.toJson<bool>(isSynced),
       'createdAt': serializer.toJson<DateTime>(createdAt),
@@ -1099,23 +1241,29 @@ class CalendarCourseEntity extends DataClass
 
   CalendarCourseEntity copyWith(
           {String? id,
+          Value<String?> remoteId = const Value.absent(),
           String? courseId,
+          String? roomName,
           int? dayOfWeek,
           int? startHour,
           int? startMinute,
           int? endHour,
           int? endMinute,
+          String? weekType,
           DateTime? updatedAt,
           bool? isSynced,
           DateTime? createdAt}) =>
       CalendarCourseEntity(
         id: id ?? this.id,
+        remoteId: remoteId.present ? remoteId.value : this.remoteId,
         courseId: courseId ?? this.courseId,
+        roomName: roomName ?? this.roomName,
         dayOfWeek: dayOfWeek ?? this.dayOfWeek,
         startHour: startHour ?? this.startHour,
         startMinute: startMinute ?? this.startMinute,
         endHour: endHour ?? this.endHour,
         endMinute: endMinute ?? this.endMinute,
+        weekType: weekType ?? this.weekType,
         updatedAt: updatedAt ?? this.updatedAt,
         isSynced: isSynced ?? this.isSynced,
         createdAt: createdAt ?? this.createdAt,
@@ -1123,13 +1271,16 @@ class CalendarCourseEntity extends DataClass
   CalendarCourseEntity copyWithCompanion(CalendarCoursesCompanion data) {
     return CalendarCourseEntity(
       id: data.id.present ? data.id.value : this.id,
+      remoteId: data.remoteId.present ? data.remoteId.value : this.remoteId,
       courseId: data.courseId.present ? data.courseId.value : this.courseId,
+      roomName: data.roomName.present ? data.roomName.value : this.roomName,
       dayOfWeek: data.dayOfWeek.present ? data.dayOfWeek.value : this.dayOfWeek,
       startHour: data.startHour.present ? data.startHour.value : this.startHour,
       startMinute:
           data.startMinute.present ? data.startMinute.value : this.startMinute,
       endHour: data.endHour.present ? data.endHour.value : this.endHour,
       endMinute: data.endMinute.present ? data.endMinute.value : this.endMinute,
+      weekType: data.weekType.present ? data.weekType.value : this.weekType,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
       isSynced: data.isSynced.present ? data.isSynced.value : this.isSynced,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
@@ -1140,12 +1291,15 @@ class CalendarCourseEntity extends DataClass
   String toString() {
     return (StringBuffer('CalendarCourseEntity(')
           ..write('id: $id, ')
+          ..write('remoteId: $remoteId, ')
           ..write('courseId: $courseId, ')
+          ..write('roomName: $roomName, ')
           ..write('dayOfWeek: $dayOfWeek, ')
           ..write('startHour: $startHour, ')
           ..write('startMinute: $startMinute, ')
           ..write('endHour: $endHour, ')
           ..write('endMinute: $endMinute, ')
+          ..write('weekType: $weekType, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('isSynced: $isSynced, ')
           ..write('createdAt: $createdAt')
@@ -1154,19 +1308,34 @@ class CalendarCourseEntity extends DataClass
   }
 
   @override
-  int get hashCode => Object.hash(id, courseId, dayOfWeek, startHour,
-      startMinute, endHour, endMinute, updatedAt, isSynced, createdAt);
+  int get hashCode => Object.hash(
+      id,
+      remoteId,
+      courseId,
+      roomName,
+      dayOfWeek,
+      startHour,
+      startMinute,
+      endHour,
+      endMinute,
+      weekType,
+      updatedAt,
+      isSynced,
+      createdAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is CalendarCourseEntity &&
           other.id == this.id &&
+          other.remoteId == this.remoteId &&
           other.courseId == this.courseId &&
+          other.roomName == this.roomName &&
           other.dayOfWeek == this.dayOfWeek &&
           other.startHour == this.startHour &&
           other.startMinute == this.startMinute &&
           other.endHour == this.endHour &&
           other.endMinute == this.endMinute &&
+          other.weekType == this.weekType &&
           other.updatedAt == this.updatedAt &&
           other.isSynced == this.isSynced &&
           other.createdAt == this.createdAt);
@@ -1174,24 +1343,30 @@ class CalendarCourseEntity extends DataClass
 
 class CalendarCoursesCompanion extends UpdateCompanion<CalendarCourseEntity> {
   final Value<String> id;
+  final Value<String?> remoteId;
   final Value<String> courseId;
+  final Value<String> roomName;
   final Value<int> dayOfWeek;
   final Value<int> startHour;
   final Value<int> startMinute;
   final Value<int> endHour;
   final Value<int> endMinute;
+  final Value<String> weekType;
   final Value<DateTime> updatedAt;
   final Value<bool> isSynced;
   final Value<DateTime> createdAt;
   final Value<int> rowid;
   const CalendarCoursesCompanion({
     this.id = const Value.absent(),
+    this.remoteId = const Value.absent(),
     this.courseId = const Value.absent(),
+    this.roomName = const Value.absent(),
     this.dayOfWeek = const Value.absent(),
     this.startHour = const Value.absent(),
     this.startMinute = const Value.absent(),
     this.endHour = const Value.absent(),
     this.endMinute = const Value.absent(),
+    this.weekType = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.isSynced = const Value.absent(),
     this.createdAt = const Value.absent(),
@@ -1199,12 +1374,15 @@ class CalendarCoursesCompanion extends UpdateCompanion<CalendarCourseEntity> {
   });
   CalendarCoursesCompanion.insert({
     required String id,
+    this.remoteId = const Value.absent(),
     required String courseId,
+    this.roomName = const Value.absent(),
     required int dayOfWeek,
     required int startHour,
     required int startMinute,
     required int endHour,
     required int endMinute,
+    this.weekType = const Value.absent(),
     required DateTime updatedAt,
     this.isSynced = const Value.absent(),
     this.createdAt = const Value.absent(),
@@ -1219,12 +1397,15 @@ class CalendarCoursesCompanion extends UpdateCompanion<CalendarCourseEntity> {
         updatedAt = Value(updatedAt);
   static Insertable<CalendarCourseEntity> custom({
     Expression<String>? id,
+    Expression<String>? remoteId,
     Expression<String>? courseId,
+    Expression<String>? roomName,
     Expression<int>? dayOfWeek,
     Expression<int>? startHour,
     Expression<int>? startMinute,
     Expression<int>? endHour,
     Expression<int>? endMinute,
+    Expression<String>? weekType,
     Expression<DateTime>? updatedAt,
     Expression<bool>? isSynced,
     Expression<DateTime>? createdAt,
@@ -1232,12 +1413,15 @@ class CalendarCoursesCompanion extends UpdateCompanion<CalendarCourseEntity> {
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
+      if (remoteId != null) 'remote_id': remoteId,
       if (courseId != null) 'course_id': courseId,
+      if (roomName != null) 'room_name': roomName,
       if (dayOfWeek != null) 'day_of_week': dayOfWeek,
       if (startHour != null) 'start_hour': startHour,
       if (startMinute != null) 'start_minute': startMinute,
       if (endHour != null) 'end_hour': endHour,
       if (endMinute != null) 'end_minute': endMinute,
+      if (weekType != null) 'week_type': weekType,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (isSynced != null) 'is_synced': isSynced,
       if (createdAt != null) 'created_at': createdAt,
@@ -1247,24 +1431,30 @@ class CalendarCoursesCompanion extends UpdateCompanion<CalendarCourseEntity> {
 
   CalendarCoursesCompanion copyWith(
       {Value<String>? id,
+      Value<String?>? remoteId,
       Value<String>? courseId,
+      Value<String>? roomName,
       Value<int>? dayOfWeek,
       Value<int>? startHour,
       Value<int>? startMinute,
       Value<int>? endHour,
       Value<int>? endMinute,
+      Value<String>? weekType,
       Value<DateTime>? updatedAt,
       Value<bool>? isSynced,
       Value<DateTime>? createdAt,
       Value<int>? rowid}) {
     return CalendarCoursesCompanion(
       id: id ?? this.id,
+      remoteId: remoteId ?? this.remoteId,
       courseId: courseId ?? this.courseId,
+      roomName: roomName ?? this.roomName,
       dayOfWeek: dayOfWeek ?? this.dayOfWeek,
       startHour: startHour ?? this.startHour,
       startMinute: startMinute ?? this.startMinute,
       endHour: endHour ?? this.endHour,
       endMinute: endMinute ?? this.endMinute,
+      weekType: weekType ?? this.weekType,
       updatedAt: updatedAt ?? this.updatedAt,
       isSynced: isSynced ?? this.isSynced,
       createdAt: createdAt ?? this.createdAt,
@@ -1278,8 +1468,14 @@ class CalendarCoursesCompanion extends UpdateCompanion<CalendarCourseEntity> {
     if (id.present) {
       map['id'] = Variable<String>(id.value);
     }
+    if (remoteId.present) {
+      map['remote_id'] = Variable<String>(remoteId.value);
+    }
     if (courseId.present) {
       map['course_id'] = Variable<String>(courseId.value);
+    }
+    if (roomName.present) {
+      map['room_name'] = Variable<String>(roomName.value);
     }
     if (dayOfWeek.present) {
       map['day_of_week'] = Variable<int>(dayOfWeek.value);
@@ -1295,6 +1491,9 @@ class CalendarCoursesCompanion extends UpdateCompanion<CalendarCourseEntity> {
     }
     if (endMinute.present) {
       map['end_minute'] = Variable<int>(endMinute.value);
+    }
+    if (weekType.present) {
+      map['week_type'] = Variable<String>(weekType.value);
     }
     if (updatedAt.present) {
       map['updated_at'] = Variable<DateTime>(updatedAt.value);
@@ -1315,12 +1514,15 @@ class CalendarCoursesCompanion extends UpdateCompanion<CalendarCourseEntity> {
   String toString() {
     return (StringBuffer('CalendarCoursesCompanion(')
           ..write('id: $id, ')
+          ..write('remoteId: $remoteId, ')
           ..write('courseId: $courseId, ')
+          ..write('roomName: $roomName, ')
           ..write('dayOfWeek: $dayOfWeek, ')
           ..write('startHour: $startHour, ')
           ..write('startMinute: $startMinute, ')
           ..write('endHour: $endHour, ')
           ..write('endMinute: $endMinute, ')
+          ..write('weekType: $weekType, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('isSynced: $isSynced, ')
           ..write('createdAt: $createdAt, ')
@@ -1742,6 +1944,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
 
 typedef $$CoursesTableCreateCompanionBuilder = CoursesCompanion Function({
   required String id,
+  Value<String?> remoteId,
   required String name,
   required String color,
   required String weekType,
@@ -1752,6 +1955,7 @@ typedef $$CoursesTableCreateCompanionBuilder = CoursesCompanion Function({
 });
 typedef $$CoursesTableUpdateCompanionBuilder = CoursesCompanion Function({
   Value<String> id,
+  Value<String?> remoteId,
   Value<String> name,
   Value<String> color,
   Value<String> weekType,
@@ -1772,6 +1976,9 @@ class $$CoursesTableFilterComposer
   });
   ColumnFilters<String> get id => $composableBuilder(
       column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get remoteId => $composableBuilder(
+      column: $table.remoteId, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<String> get name => $composableBuilder(
       column: $table.name, builder: (column) => ColumnFilters(column));
@@ -1804,6 +2011,9 @@ class $$CoursesTableOrderingComposer
   ColumnOrderings<String> get id => $composableBuilder(
       column: $table.id, builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<String> get remoteId => $composableBuilder(
+      column: $table.remoteId, builder: (column) => ColumnOrderings(column));
+
   ColumnOrderings<String> get name => $composableBuilder(
       column: $table.name, builder: (column) => ColumnOrderings(column));
 
@@ -1834,6 +2044,9 @@ class $$CoursesTableAnnotationComposer
   });
   GeneratedColumn<String> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get remoteId =>
+      $composableBuilder(column: $table.remoteId, builder: (column) => column);
 
   GeneratedColumn<String> get name =>
       $composableBuilder(column: $table.name, builder: (column) => column);
@@ -1878,6 +2091,7 @@ class $$CoursesTableTableManager extends RootTableManager<
               $$CoursesTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             Value<String> id = const Value.absent(),
+            Value<String?> remoteId = const Value.absent(),
             Value<String> name = const Value.absent(),
             Value<String> color = const Value.absent(),
             Value<String> weekType = const Value.absent(),
@@ -1888,6 +2102,7 @@ class $$CoursesTableTableManager extends RootTableManager<
           }) =>
               CoursesCompanion(
             id: id,
+            remoteId: remoteId,
             name: name,
             color: color,
             weekType: weekType,
@@ -1898,6 +2113,7 @@ class $$CoursesTableTableManager extends RootTableManager<
           ),
           createCompanionCallback: ({
             required String id,
+            Value<String?> remoteId = const Value.absent(),
             required String name,
             required String color,
             required String weekType,
@@ -1908,6 +2124,7 @@ class $$CoursesTableTableManager extends RootTableManager<
           }) =>
               CoursesCompanion.insert(
             id: id,
+            remoteId: remoteId,
             name: name,
             color: color,
             weekType: weekType,
@@ -1937,6 +2154,7 @@ typedef $$CoursesTableProcessedTableManager = ProcessedTableManager<
     PrefetchHooks Function()>;
 typedef $$SuppliesTableCreateCompanionBuilder = SuppliesCompanion Function({
   required String id,
+  Value<String?> remoteId,
   required String courseId,
   required String name,
   Value<bool> isChecked,
@@ -1948,6 +2166,7 @@ typedef $$SuppliesTableCreateCompanionBuilder = SuppliesCompanion Function({
 });
 typedef $$SuppliesTableUpdateCompanionBuilder = SuppliesCompanion Function({
   Value<String> id,
+  Value<String?> remoteId,
   Value<String> courseId,
   Value<String> name,
   Value<bool> isChecked,
@@ -1969,6 +2188,9 @@ class $$SuppliesTableFilterComposer
   });
   ColumnFilters<String> get id => $composableBuilder(
       column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get remoteId => $composableBuilder(
+      column: $table.remoteId, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<String> get courseId => $composableBuilder(
       column: $table.courseId, builder: (column) => ColumnFilters(column));
@@ -2004,6 +2226,9 @@ class $$SuppliesTableOrderingComposer
   ColumnOrderings<String> get id => $composableBuilder(
       column: $table.id, builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<String> get remoteId => $composableBuilder(
+      column: $table.remoteId, builder: (column) => ColumnOrderings(column));
+
   ColumnOrderings<String> get courseId => $composableBuilder(
       column: $table.courseId, builder: (column) => ColumnOrderings(column));
 
@@ -2037,6 +2262,9 @@ class $$SuppliesTableAnnotationComposer
   });
   GeneratedColumn<String> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get remoteId =>
+      $composableBuilder(column: $table.remoteId, builder: (column) => column);
 
   GeneratedColumn<String> get courseId =>
       $composableBuilder(column: $table.courseId, builder: (column) => column);
@@ -2084,6 +2312,7 @@ class $$SuppliesTableTableManager extends RootTableManager<
               $$SuppliesTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             Value<String> id = const Value.absent(),
+            Value<String?> remoteId = const Value.absent(),
             Value<String> courseId = const Value.absent(),
             Value<String> name = const Value.absent(),
             Value<bool> isChecked = const Value.absent(),
@@ -2095,6 +2324,7 @@ class $$SuppliesTableTableManager extends RootTableManager<
           }) =>
               SuppliesCompanion(
             id: id,
+            remoteId: remoteId,
             courseId: courseId,
             name: name,
             isChecked: isChecked,
@@ -2106,6 +2336,7 @@ class $$SuppliesTableTableManager extends RootTableManager<
           ),
           createCompanionCallback: ({
             required String id,
+            Value<String?> remoteId = const Value.absent(),
             required String courseId,
             required String name,
             Value<bool> isChecked = const Value.absent(),
@@ -2117,6 +2348,7 @@ class $$SuppliesTableTableManager extends RootTableManager<
           }) =>
               SuppliesCompanion.insert(
             id: id,
+            remoteId: remoteId,
             courseId: courseId,
             name: name,
             isChecked: isChecked,
@@ -2148,12 +2380,15 @@ typedef $$SuppliesTableProcessedTableManager = ProcessedTableManager<
 typedef $$CalendarCoursesTableCreateCompanionBuilder = CalendarCoursesCompanion
     Function({
   required String id,
+  Value<String?> remoteId,
   required String courseId,
+  Value<String> roomName,
   required int dayOfWeek,
   required int startHour,
   required int startMinute,
   required int endHour,
   required int endMinute,
+  Value<String> weekType,
   required DateTime updatedAt,
   Value<bool> isSynced,
   Value<DateTime> createdAt,
@@ -2162,12 +2397,15 @@ typedef $$CalendarCoursesTableCreateCompanionBuilder = CalendarCoursesCompanion
 typedef $$CalendarCoursesTableUpdateCompanionBuilder = CalendarCoursesCompanion
     Function({
   Value<String> id,
+  Value<String?> remoteId,
   Value<String> courseId,
+  Value<String> roomName,
   Value<int> dayOfWeek,
   Value<int> startHour,
   Value<int> startMinute,
   Value<int> endHour,
   Value<int> endMinute,
+  Value<String> weekType,
   Value<DateTime> updatedAt,
   Value<bool> isSynced,
   Value<DateTime> createdAt,
@@ -2186,8 +2424,14 @@ class $$CalendarCoursesTableFilterComposer
   ColumnFilters<String> get id => $composableBuilder(
       column: $table.id, builder: (column) => ColumnFilters(column));
 
+  ColumnFilters<String> get remoteId => $composableBuilder(
+      column: $table.remoteId, builder: (column) => ColumnFilters(column));
+
   ColumnFilters<String> get courseId => $composableBuilder(
       column: $table.courseId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get roomName => $composableBuilder(
+      column: $table.roomName, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<int> get dayOfWeek => $composableBuilder(
       column: $table.dayOfWeek, builder: (column) => ColumnFilters(column));
@@ -2203,6 +2447,9 @@ class $$CalendarCoursesTableFilterComposer
 
   ColumnFilters<int> get endMinute => $composableBuilder(
       column: $table.endMinute, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get weekType => $composableBuilder(
+      column: $table.weekType, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<DateTime> get updatedAt => $composableBuilder(
       column: $table.updatedAt, builder: (column) => ColumnFilters(column));
@@ -2226,8 +2473,14 @@ class $$CalendarCoursesTableOrderingComposer
   ColumnOrderings<String> get id => $composableBuilder(
       column: $table.id, builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<String> get remoteId => $composableBuilder(
+      column: $table.remoteId, builder: (column) => ColumnOrderings(column));
+
   ColumnOrderings<String> get courseId => $composableBuilder(
       column: $table.courseId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get roomName => $composableBuilder(
+      column: $table.roomName, builder: (column) => ColumnOrderings(column));
 
   ColumnOrderings<int> get dayOfWeek => $composableBuilder(
       column: $table.dayOfWeek, builder: (column) => ColumnOrderings(column));
@@ -2243,6 +2496,9 @@ class $$CalendarCoursesTableOrderingComposer
 
   ColumnOrderings<int> get endMinute => $composableBuilder(
       column: $table.endMinute, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get weekType => $composableBuilder(
+      column: $table.weekType, builder: (column) => ColumnOrderings(column));
 
   ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
       column: $table.updatedAt, builder: (column) => ColumnOrderings(column));
@@ -2266,8 +2522,14 @@ class $$CalendarCoursesTableAnnotationComposer
   GeneratedColumn<String> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
 
+  GeneratedColumn<String> get remoteId =>
+      $composableBuilder(column: $table.remoteId, builder: (column) => column);
+
   GeneratedColumn<String> get courseId =>
       $composableBuilder(column: $table.courseId, builder: (column) => column);
+
+  GeneratedColumn<String> get roomName =>
+      $composableBuilder(column: $table.roomName, builder: (column) => column);
 
   GeneratedColumn<int> get dayOfWeek =>
       $composableBuilder(column: $table.dayOfWeek, builder: (column) => column);
@@ -2283,6 +2545,9 @@ class $$CalendarCoursesTableAnnotationComposer
 
   GeneratedColumn<int> get endMinute =>
       $composableBuilder(column: $table.endMinute, builder: (column) => column);
+
+  GeneratedColumn<String> get weekType =>
+      $composableBuilder(column: $table.weekType, builder: (column) => column);
 
   GeneratedColumn<DateTime> get updatedAt =>
       $composableBuilder(column: $table.updatedAt, builder: (column) => column);
@@ -2322,12 +2587,15 @@ class $$CalendarCoursesTableTableManager extends RootTableManager<
               $$CalendarCoursesTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             Value<String> id = const Value.absent(),
+            Value<String?> remoteId = const Value.absent(),
             Value<String> courseId = const Value.absent(),
+            Value<String> roomName = const Value.absent(),
             Value<int> dayOfWeek = const Value.absent(),
             Value<int> startHour = const Value.absent(),
             Value<int> startMinute = const Value.absent(),
             Value<int> endHour = const Value.absent(),
             Value<int> endMinute = const Value.absent(),
+            Value<String> weekType = const Value.absent(),
             Value<DateTime> updatedAt = const Value.absent(),
             Value<bool> isSynced = const Value.absent(),
             Value<DateTime> createdAt = const Value.absent(),
@@ -2335,12 +2603,15 @@ class $$CalendarCoursesTableTableManager extends RootTableManager<
           }) =>
               CalendarCoursesCompanion(
             id: id,
+            remoteId: remoteId,
             courseId: courseId,
+            roomName: roomName,
             dayOfWeek: dayOfWeek,
             startHour: startHour,
             startMinute: startMinute,
             endHour: endHour,
             endMinute: endMinute,
+            weekType: weekType,
             updatedAt: updatedAt,
             isSynced: isSynced,
             createdAt: createdAt,
@@ -2348,12 +2619,15 @@ class $$CalendarCoursesTableTableManager extends RootTableManager<
           ),
           createCompanionCallback: ({
             required String id,
+            Value<String?> remoteId = const Value.absent(),
             required String courseId,
+            Value<String> roomName = const Value.absent(),
             required int dayOfWeek,
             required int startHour,
             required int startMinute,
             required int endHour,
             required int endMinute,
+            Value<String> weekType = const Value.absent(),
             required DateTime updatedAt,
             Value<bool> isSynced = const Value.absent(),
             Value<DateTime> createdAt = const Value.absent(),
@@ -2361,12 +2635,15 @@ class $$CalendarCoursesTableTableManager extends RootTableManager<
           }) =>
               CalendarCoursesCompanion.insert(
             id: id,
+            remoteId: remoteId,
             courseId: courseId,
+            roomName: roomName,
             dayOfWeek: dayOfWeek,
             startHour: startHour,
             startMinute: startMinute,
             endHour: endHour,
             endMinute: endMinute,
+            weekType: weekType,
             updatedAt: updatedAt,
             isSynced: isSynced,
             createdAt: createdAt,

@@ -15,6 +15,10 @@ class PreferencesService {
   static const String _keyShareCode = 'share_code';
   static const String _keySharerName = 'sharer_name';
   static const String _keyShowWeekend = 'show_weekend';
+  static const String _keyFirstLaunchDate = 'first_launch_date';
+  static const String _keyHasRated = 'has_rated';
+  static const String _keyRatingDismissedDate = 'rating_dismissed_date';
+  static const String _keyRatingDismissCount = 'rating_dismiss_count';
 
   static Future<void> setPackTime(TimeOfDay time) async {
     final prefs = await SharedPreferences.getInstance();
@@ -218,5 +222,67 @@ class PreferencesService {
   static Future<bool> getShowWeekend() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getBool(_keyShowWeekend) ?? true;
+  }
+
+  // ===== Rating Popup Methods =====
+
+  /// Set first launch date (called once on first app launch)
+  static Future<void> setFirstLaunchDate(DateTime date) async {
+    final prefs = await SharedPreferences.getInstance();
+    // Only set if not already set
+    if (!prefs.containsKey(_keyFirstLaunchDate)) {
+      await prefs.setString(_keyFirstLaunchDate, date.toIso8601String());
+    }
+  }
+
+  /// Get first launch date
+  static Future<DateTime?> getFirstLaunchDate() async {
+    final prefs = await SharedPreferences.getInstance();
+    final dateString = prefs.getString(_keyFirstLaunchDate);
+    if (dateString != null) {
+      return DateTime.parse(dateString);
+    }
+    return null;
+  }
+
+  /// Set whether user has rated the app
+  static Future<void> setHasRated(bool hasRated) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_keyHasRated, hasRated);
+  }
+
+  /// Get whether user has rated the app
+  static Future<bool> getHasRated() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_keyHasRated) ?? false;
+  }
+
+  /// Set the date when user dismissed the rating popup
+  static Future<void> setRatingDismissedDate(DateTime date) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_keyRatingDismissedDate, date.toIso8601String());
+  }
+
+  /// Get the date when user last dismissed the rating popup
+  static Future<DateTime?> getRatingDismissedDate() async {
+    final prefs = await SharedPreferences.getInstance();
+    final dateString = prefs.getString(_keyRatingDismissedDate);
+    if (dateString != null) {
+      return DateTime.parse(dateString);
+    }
+    return null;
+  }
+
+  /// Increment rating dismiss count
+  static Future<void> incrementRatingDismissCount() async {
+    final prefs = await SharedPreferences.getInstance();
+    final count = prefs.getInt(_keyRatingDismissCount) ?? 0;
+    await prefs.setInt(_keyRatingDismissCount, count + 1);
+  }
+
+  /// Get rating dismiss count
+  static Future<int> getRatingDismissCount() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getInt(_keyRatingDismissCount) ?? 0;
   }
 }

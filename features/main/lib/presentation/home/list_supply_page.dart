@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:common/src/ui/ui.dart';
 import 'package:common/src/services.dart';
+import 'package:common/src/utils/week_utils.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:schedule/presentation/supply_list/controller/tomorrow_supply_controller.dart';
 
@@ -48,6 +49,7 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
   DateTime? _targetDate;
   bool _isLoaded = false;
   List<String> _standaloneSupplies = [];
+  String? _currentWeekType;
   final ScrollController _scrollController = ScrollController();
   bool _isScrolling = false;
   Timer? _scrollTimer;
@@ -57,7 +59,18 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
     super.initState();
     _loadCheckedState();
     _loadStandaloneSupplies();
+    _loadWeekType();
     _scrollController.addListener(_onScroll);
+  }
+
+  Future<void> _loadWeekType() async {
+    final schoolYearStart = await PreferencesService.getSchoolYearStart();
+    final weekType = WeekUtils.getCurrentWeekType(schoolYearStart);
+    if (mounted) {
+      setState(() {
+        _currentWeekType = weekType;
+      });
+    }
   }
 
   @override
@@ -459,6 +472,8 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
   }
 
   Widget _buildHeader(int checked, int total, TimeOfDay packTime) {
+    final accentColor = Theme.of(context).colorScheme.secondary;
+
     return Container(
       width: double.infinity,
       color: Color(0xFF303030),
@@ -468,16 +483,38 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 8),
-            Text(
-              "A mettre dans votre sac",
-              style: GoogleFonts.robotoCondensed(
-                  color: Colors.white38, fontSize: 14),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  "A mettre dans votre sac",
+                  style: GoogleFonts.robotoCondensed(
+                      color: Colors.white38, fontSize: 14),
+                ),
+                if (_currentWeekType != null)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: accentColor.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: accentColor.withValues(alpha: 0.4)),
+                    ),
+                    child: Text(
+                      "Semaine $_currentWeekType",
+                      style: GoogleFonts.robotoCondensed(
+                        color: accentColor,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+              ],
             ),
             if (_targetDate != null)
               Text(
                 _formatTargetDate(_targetDate),
                 style: GoogleFonts.robotoCondensed(
-                    color: Theme.of(context).colorScheme.secondary,
+                    color: accentColor,
                     fontSize: 16,
                     fontWeight: FontWeight.w500),
               ),

@@ -473,9 +473,8 @@ ${hasName ? '$sharerName partage' : 'Je partage'} mon emploi du temps avec toi !
 
 Code : $code
 
-1. Telecharge DansMonSac :
-   iOS : https://apps.apple.com/app/dansmonsac/id123456789
-   Android : https://play.google.com/store/apps/details?id=com.dansmonsac
+1. Telecharge DansMonSac sur Android :
+   https://play.google.com/store/apps/details?id=fr.kappsmobile.dansmonsac
 
 2. Ouvre l'app et entre le code $code dans l'ecran d'import
 ''';
