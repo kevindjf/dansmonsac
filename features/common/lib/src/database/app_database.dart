@@ -76,13 +76,64 @@ class PendingOperations extends Table {
   Set<Column> get primaryKey => {id};
 }
 
+/// Table for daily supply checks (Epic 2: Bag Preparation)
+@DataClassName('DailyCheckEntity')
+class DailyChecks extends Table {
+  TextColumn get id => text()();
+  DateTimeColumn get date => dateTime()(); // The date for which supplies are checked
+  TextColumn get supplyId => text()();
+  TextColumn get courseId => text()();
+  BoolColumn get isChecked => boolean().withDefault(const Constant(false))();
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+/// Table for bag completion tracking (Epic 2: Streak System)
+@DataClassName('BagCompletionEntity')
+class BagCompletions extends Table {
+  TextColumn get id => text()();
+  DateTimeColumn get date => dateTime()(); // The date for which bag was prepared
+  DateTimeColumn get completedAt => dateTime()(); // Timestamp of completion
+  TextColumn get deviceId => text()();
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+/// Table for premium status (Epic 4: Premium Personalization)
+@DataClassName('PremiumStatusEntity')
+class PremiumStatus extends Table {
+  TextColumn get id => text()();
+  BoolColumn get hasPurchased => boolean().withDefault(const Constant(false))();
+  TextColumn get linkedParentId => text().nullable()(); // Parent device ID if linked (Epic 5)
+  DateTimeColumn get updatedAt => dateTime()();
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
 /// Main database class
-@DriftDatabase(tables: [Courses, Supplies, CalendarCourses, PendingOperations])
+@DriftDatabase(tables: [
+  Courses,
+  Supplies,
+  CalendarCourses,
+  PendingOperations,
+  DailyChecks,
+  BagCompletions,
+  PremiumStatus,
+])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
+  // Test constructor for in-memory database
+  AppDatabase.forTesting(QueryExecutor executor) : super(executor);
+
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -91,12 +142,18 @@ class AppDatabase extends _$AppDatabase {
         },
         onUpgrade: (Migrator m, int from, int to) async {
           if (from < 2) {
-            // Add remoteId columns to existing tables using raw SQL
+            // Migration v1 → v2: Add remoteId columns to existing tables
             await customStatement('ALTER TABLE courses ADD COLUMN remote_id TEXT');
             await customStatement('ALTER TABLE supplies ADD COLUMN remote_id TEXT');
             await customStatement('ALTER TABLE calendar_courses ADD COLUMN remote_id TEXT');
             await customStatement('ALTER TABLE calendar_courses ADD COLUMN room_name TEXT DEFAULT ""');
             await customStatement('ALTER TABLE calendar_courses ADD COLUMN week_type TEXT DEFAULT "AB"');
+          }
+          if (from < 3) {
+            // Migration v2 → v3: Add new tables for Epic 2 (Bag Preparation & Streak)
+            await m.createTable(dailyChecks);
+            await m.createTable(bagCompletions);
+            await m.createTable(premiumStatus);
           }
         },
       );
@@ -220,8 +277,96 @@ class AppDatabase extends _$AppDatabase {
             retryCount: Value(operation.retryCount + 1)));
   }
 
+  // DailyChecks operations (Epic 2: Bag Preparation)
+  Future<List<DailyCheckEntity>> getDailyChecksByDate(DateTime date) {
+    final startOfDay = DateTime(date.year, date.month, date.day);
+    final endOfDay = DateTime(date.year, date.month, date.day, 23, 59, 59);
+    return (select(dailyChecks)
+          ..where((c) =>
+              c.date.isBiggerOrEqualValue(startOfDay) &
+              c.date.isSmallerOrEqualValue(endOfDay)))
+        .get();
+  }
+
+  Future<DailyCheckEntity?> getDailyCheckBySupply(
+      String supplyId, DateTime date) {
+    final startOfDay = DateTime(date.year, date.month, date.day);
+    final endOfDay = DateTime(date.year, date.month, date.day, 23, 59, 59);
+    return (select(dailyChecks)
+          ..where((c) =>
+              c.supplyId.equals(supplyId) &
+              c.date.isBiggerOrEqualValue(startOfDay) &
+              c.date.isSmallerOrEqualValue(endOfDay)))
+        .getSingleOrNull();
+  }
+
+  Future<int> insertDailyCheck(DailyChecksCompanion check) =>
+      into(dailyChecks).insert(check);
+
+  Future<bool> updateDailyCheck(DailyChecksCompanion check) =>
+      update(dailyChecks).replace(check);
+
+  Future<int> deleteDailyCheck(String id) =>
+      (delete(dailyChecks)..where((c) => c.id.equals(id))).go();
+
+  // BagCompletions operations (Epic 2: Streak System)
+  Future<List<BagCompletionEntity>> getAllBagCompletions() =>
+      select(bagCompletions).get();
+
+  Future<BagCompletionEntity?> getBagCompletionByDate(DateTime date) {
+    final startOfDay = DateTime(date.year, date.month, date.day);
+    final endOfDay = DateTime(date.year, date.month, date.day, 23, 59, 59);
+    return (select(bagCompletions)
+          ..where((b) =>
+              b.date.isBiggerOrEqualValue(startOfDay) &
+              b.date.isSmallerOrEqualValue(endOfDay)))
+        .getSingleOrNull();
+  }
+
+  Future<List<BagCompletionEntity>> getBagCompletionsInRange(
+      DateTime start, DateTime end) {
+    return (select(bagCompletions)
+          ..where(
+              (b) => b.date.isBiggerOrEqualValue(start) & b.date.isSmallerOrEqualValue(end))
+          ..orderBy([(b) => OrderingTerm.desc(b.date)]))
+        .get();
+  }
+
+  Future<int> insertBagCompletion(BagCompletionsCompanion completion) =>
+      into(bagCompletions).insert(completion);
+
+  Future<int> deleteBagCompletion(String id) =>
+      (delete(bagCompletions)..where((b) => b.id.equals(id))).go();
+
+  // PremiumStatus operations (Epic 4: Premium)
+  Future<PremiumStatusEntity?> getPremiumStatus() =>
+      select(premiumStatus).getSingleOrNull();
+
+  Future<int> insertPremiumStatus(PremiumStatusCompanion status) =>
+      into(premiumStatus).insert(status);
+
+  Future<bool> updatePremiumStatus(PremiumStatusCompanion status) =>
+      update(premiumStatus).replace(status);
+
+  Future<int> setPurchased(bool purchased) {
+    return (update(premiumStatus)..where((p) => p.id.isNotNull())).write(
+        PremiumStatusCompanion(
+            hasPurchased: Value(purchased),
+            updatedAt: Value(DateTime.now())));
+  }
+
+  Future<int> setLinkedParent(String? parentId) {
+    return (update(premiumStatus)..where((p) => p.id.isNotNull())).write(
+        PremiumStatusCompanion(
+            linkedParentId: Value(parentId),
+            updatedAt: Value(DateTime.now())));
+  }
+
   // Clear all data (useful for testing or logout)
   Future<void> clearAllData() async {
+    await delete(premiumStatus).go();
+    await delete(bagCompletions).go();
+    await delete(dailyChecks).go();
     await delete(pendingOperations).go();
     await delete(calendarCourses).go();
     await delete(supplies).go();

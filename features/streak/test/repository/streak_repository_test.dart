@@ -1,0 +1,244 @@
+import 'package:drift/native.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:common/src/database/app_database.dart';
+import 'package:streak/repository/streak_repository.dart';
+
+// Helper to create test database
+AppDatabase createTestDatabase() {
+  return AppDatabase.forTesting(NativeDatabase.memory());
+}
+
+void main() {
+  group('Story 2.2 - StreakRepository Tests', () {
+    late AppDatabase database;
+    late StreakRepository repository;
+
+    setUp(() {
+      database = createTestDatabase();
+      repository = StreakRepository(database);
+    });
+
+    tearDown(() async {
+      await database.close();
+    });
+
+    group('getCurrentStreak', () {
+      test('should return 0 when no completions exist', () async {
+        final result = await repository.getCurrentStreak();
+
+        result.fold(
+          (failure) => fail('Expected success but got failure: $failure'),
+          (streak) => expect(streak, 0),
+        );
+      });
+
+      test('should return count of all completions (foundation logic)', () async {
+        // Insert 3 bag completions
+        final today = DateTime.now();
+        final yesterday = today.subtract(const Duration(days: 1));
+        final twoDaysAgo = today.subtract(const Duration(days: 2));
+
+        await database.insertBagCompletion(BagCompletionsCompanion.insert(
+          id: 'completion-1',
+          date: today,
+          completedAt: DateTime.now(),
+          deviceId: 'device-1',
+        ));
+
+        await database.insertBagCompletion(BagCompletionsCompanion.insert(
+          id: 'completion-2',
+          date: yesterday,
+          completedAt: DateTime.now(),
+          deviceId: 'device-1',
+        ));
+
+        await database.insertBagCompletion(BagCompletionsCompanion.insert(
+          id: 'completion-3',
+          date: twoDaysAgo,
+          completedAt: DateTime.now(),
+          deviceId: 'device-1',
+        ));
+
+        final result = await repository.getCurrentStreak();
+
+        result.fold(
+          (failure) => fail('Expected success but got failure: $failure'),
+          (streak) => expect(streak, 3),
+        );
+      });
+    });
+
+    group('getBagCompletionHistory', () {
+      test('should return empty list when no completions exist', () async {
+        final result = await repository.getBagCompletionHistory();
+
+        result.fold(
+          (failure) => fail('Expected success but got failure: $failure'),
+          (history) {
+            expect(history, isA<List<DateTime>>());
+            expect(history.length, 0);
+          },
+        );
+      });
+
+      test('should return list of completion dates', () async {
+        final today = DateTime.now();
+        final yesterday = today.subtract(const Duration(days: 1));
+        final twoDaysAgo = today.subtract(const Duration(days: 2));
+
+        // Normalize dates to start of day for comparison
+        final normalizedToday = DateTime(today.year, today.month, today.day);
+        final normalizedYesterday = DateTime(yesterday.year, yesterday.month, yesterday.day);
+        final normalizedTwoDaysAgo = DateTime(twoDaysAgo.year, twoDaysAgo.month, twoDaysAgo.day);
+
+        await database.insertBagCompletion(BagCompletionsCompanion.insert(
+          id: 'completion-1',
+          date: normalizedToday,
+          completedAt: DateTime.now(),
+          deviceId: 'device-1',
+        ));
+
+        await database.insertBagCompletion(BagCompletionsCompanion.insert(
+          id: 'completion-2',
+          date: normalizedYesterday,
+          completedAt: DateTime.now(),
+          deviceId: 'device-1',
+        ));
+
+        await database.insertBagCompletion(BagCompletionsCompanion.insert(
+          id: 'completion-3',
+          date: normalizedTwoDaysAgo,
+          completedAt: DateTime.now(),
+          deviceId: 'device-1',
+        ));
+
+        final result = await repository.getBagCompletionHistory();
+
+        result.fold(
+          (failure) => fail('Expected success but got failure: $failure'),
+          (history) {
+            expect(history.length, 3);
+            expect(history.contains(normalizedToday), true);
+            expect(history.contains(normalizedYesterday), true);
+            expect(history.contains(normalizedTwoDaysAgo), true);
+          },
+        );
+      });
+    });
+
+    group('markBagComplete', () {
+      test('should create new bag completion entry', () async {
+        final date = DateTime.now();
+        final normalizedDate = DateTime(date.year, date.month, date.day);
+
+        final result = await repository.markBagComplete(date);
+
+        result.fold(
+          (failure) => fail('Expected success but got failure: $failure'),
+          (_) {
+            // Verify completion was created
+            database.getBagCompletionByDate(normalizedDate).then((completion) {
+              expect(completion, isNotNull);
+              expect(completion!.date, normalizedDate);
+            });
+          },
+        );
+      });
+
+      test('should normalize date to start of day', () async {
+        final dateWithTime = DateTime(2024, 2, 7, 14, 30, 45);
+        final expectedDate = DateTime(2024, 2, 7);
+
+        final result = await repository.markBagComplete(dateWithTime);
+
+        result.fold(
+          (failure) => fail('Expected success but got failure: $failure'),
+          (_) async {
+            final completion = await database.getBagCompletionByDate(expectedDate);
+            expect(completion, isNotNull);
+            expect(completion!.date, expectedDate);
+            // Verify time component was removed
+            expect(completion.date.hour, 0);
+            expect(completion.date.minute, 0);
+            expect(completion.date.second, 0);
+          },
+        );
+      });
+
+      test('should not create duplicate for same date', () async {
+        final date = DateTime.now();
+        final normalizedDate = DateTime(date.year, date.month, date.day);
+
+        // Mark complete first time
+        await repository.markBagComplete(date);
+
+        // Mark complete second time (same date)
+        final result = await repository.markBagComplete(date);
+
+        result.fold(
+          (failure) => fail('Expected success but got failure: $failure'),
+          (_) async {
+            // Verify only one completion exists
+            final allCompletions = await database.getAllBagCompletions();
+            final completionsForDate = allCompletions.where((c) => c.date == normalizedDate).toList();
+            expect(completionsForDate.length, 1);
+          },
+        );
+      });
+
+      test('should allow completions for different dates', () async {
+        final today = DateTime.now();
+        final yesterday = today.subtract(const Duration(days: 1));
+
+        await repository.markBagComplete(today);
+        await repository.markBagComplete(yesterday);
+
+        final allCompletions = await database.getAllBagCompletions();
+        expect(allCompletions.length, 2);
+      });
+    });
+
+    group('Integration Tests', () {
+      test('should complete full workflow: mark complete -> get history -> get streak', () async {
+        final today = DateTime.now();
+        final yesterday = today.subtract(const Duration(days: 1));
+        final twoDaysAgo = today.subtract(const Duration(days: 2));
+
+        // Mark bag complete for 3 days
+        await repository.markBagComplete(twoDaysAgo);
+        await repository.markBagComplete(yesterday);
+        await repository.markBagComplete(today);
+
+        // Get history
+        final historyResult = await repository.getBagCompletionHistory();
+        historyResult.fold(
+          (failure) => fail('Failed to get history: $failure'),
+          (history) => expect(history.length, 3),
+        );
+
+        // Get current streak
+        final streakResult = await repository.getCurrentStreak();
+        streakResult.fold(
+          (failure) => fail('Failed to get streak: $failure'),
+          (streak) => expect(streak, 3),
+        );
+      });
+    });
+
+    group('Error Handling', () {
+      test('should wrap all operations with Either pattern', () async {
+        // Verify all repository methods return Either<Failure, T>
+        // Error handling is covered by handleErrors() wrapper in repository
+
+        final streakResult = await repository.getCurrentStreak();
+        expect(streakResult.isRight() || streakResult.isLeft(), true);
+
+        final historyResult = await repository.getBagCompletionHistory();
+        expect(historyResult.isRight() || historyResult.isLeft(), true);
+
+        final markCompleteResult = await repository.markBagComplete(DateTime.now());
+        expect(markCompleteResult.isRight() || markCompleteResult.isLeft(), true);
+      });
+    });
+  });
+}

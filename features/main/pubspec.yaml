@@ -32,6 +32,9 @@ dependencies:
   onboarding:
     path: ../onboarding
 
+  streak:
+    path: ../streak
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
