@@ -26,30 +26,76 @@ class DefaultSupplies {
     return List.unmodifiable(_frenchSchoolSubjects);
   }
 
-  /// Returns supplies for a specific subject name (case-insensitive match)
+  /// Returns supplies for a specific subject name
   ///
   /// Returns null if subject not found.
-  /// Matching is case-insensitive and preserves French accents.
+  /// Matching is case-insensitive, accent-insensitive, and supports aliases.
   ///
-  /// Example:
+  /// Examples:
   /// ```dart
-  /// final supplies = DefaultSupplies.getSuppliesBySubjectName('Mathématiques');
-  /// // Returns: ['Cahier de maths', 'Calculatrice', 'Règle', 'Compas']
+  /// DefaultSupplies.getSuppliesBySubjectName('Mathématiques'); // ✓
+  /// DefaultSupplies.getSuppliesBySubjectName('mathematiques'); // ✓ (no accent)
+  /// DefaultSupplies.getSuppliesBySubjectName('maths');         // ✓ (alias)
+  /// DefaultSupplies.getSuppliesBySubjectName('MATH');          // ✓ (uppercase alias)
   /// ```
   static List<String>? getSuppliesBySubjectName(String name) {
     if (name.isEmpty) return null;
 
-    final normalizedName = name.toLowerCase();
+    final normalized = _normalize(name);
 
+    // Try exact match first (normalized)
     try {
       final subject = _frenchSchoolSubjects.firstWhere(
-        (s) => s.name.toLowerCase() == normalizedName,
+        (s) => _normalize(s.name) == normalized,
       );
       return List.unmodifiable(subject.supplies);
-    } catch (_) {
-      return null;
+    } catch (_) {}
+
+    // Try aliases
+    final canonicalName = _subjectAliases[normalized];
+    if (canonicalName != null) {
+      try {
+        final subject = _frenchSchoolSubjects.firstWhere(
+          (s) => _normalize(s.name) == _normalize(canonicalName),
+        );
+        return List.unmodifiable(subject.supplies);
+      } catch (_) {}
     }
+
+    return null;
   }
+
+  /// Normalize string by removing accents and converting to lowercase
+  static String _normalize(String text) {
+    const withAccents = 'àâäéèêëïîôùûüÿçÀÂÄÉÈÊËÏÎÔÙÛÜŸÇ';
+    const withoutAccents = 'aaaeeeeiioouuycAAAEEEEIIOUUUYC';
+
+    var result = text;
+    for (var i = 0; i < withAccents.length; i++) {
+      result = result.replaceAll(withAccents[i], withoutAccents[i]);
+    }
+
+    return result.toLowerCase().trim();
+  }
+
+  /// Map of aliases to canonical subject names
+  static const Map<String, String> _subjectAliases = {
+    'maths': 'Mathématiques',
+    'math': 'Mathématiques',
+    'mathematiques': 'Mathématiques',
+    'francais': 'Français',
+    'hg': 'Histoire-Géographie',
+    'histoire': 'Histoire-Géographie',
+    'geographie': 'Histoire-Géographie',
+    'geo': 'Histoire-Géographie',
+    'svt': 'Sciences',
+    'science': 'Sciences',
+    'physique': 'Sciences',
+    'biologie': 'Sciences',
+    'anglais': 'Anglais',
+    'english': 'Anglais',
+    'sport': 'EPS',
+  };
 
   // Private: actual data storage
   static const List<DefaultSubject> _frenchSchoolSubjects = [

@@ -43,7 +43,7 @@ development_status:
   # Epic 1: Onboarding Enhancement with Suggested Supplies
   epic-1: in-progress
   1-1-extract-default-supplies-utility: done
-  1-2-implement-supply-suggestions-at-course-creation: backlog
+  1-2-implement-supply-suggestions-at-course-creation: done
   1-3-integrate-suggested-supplies-in-onboarding: backlog
   epic-1-retrospective: optional
 

@@ -2,6 +2,7 @@ import 'package:common/src/models/network/network_failure.dart';
 import 'package:course/models/add_course_command.dart';
 import 'package:course/models/cours_with_supplies.dart';
 import 'package:course/repository/course_repository.dart';
+import 'package:supply/models/supply.dart';
 import 'package:dartz/dartz.dart';
 import 'package:common/src/repository/preference_repository.dart';
 import 'package:common/src/models/network/network_failure.dart';
@@ -35,6 +36,8 @@ class CourseSupabaseRepository extends CourseRepository {
         'course_id': courseId,
       });
 
+      List<Supply> createdSupplies = [];
+
       if (command.supplies.isNotEmpty) {
         List<Map<String, dynamic>> newSupplies =
             command.supplies.map((supply) => {'name': supply}).toList();
@@ -43,6 +46,11 @@ class CourseSupabaseRepository extends CourseRepository {
             .from('supplies')
             .insert(newSupplies)
             .select('id, name');
+
+        // Convert response to Supply objects
+        createdSupplies = (suppliesResponse as List)
+            .map((s) => Supply(id: s['id'], name: s['name']))
+            .toList();
 
         List<Map<String, dynamic>> supplyMappings = [];
         for (var supply in suppliesResponse) {
@@ -54,7 +62,12 @@ class CourseSupabaseRepository extends CourseRepository {
 
         await supabaseClient.from('course_supplies').insert(supplyMappings);
       }
-      return CourseWithSupplies(id: courseId, name: command.courseName, supplies: []);
+
+      return CourseWithSupplies(
+        id: courseId,
+        name: command.courseName,
+        supplies: createdSupplies,
+      );
     });
   }
 
