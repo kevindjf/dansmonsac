@@ -48,6 +48,43 @@
 
 - **Ne jamais commiter directement sur `main` ou `staging`**
 
+## Git Workflow pour Stories BMAD (IMPORTANT)
+
+- **REGLE CRITIQUE** : Chaque story BMAD doit avoir sa propre branche Git dediee
+- **Avant de commencer une story** :
+  1. Verifier si une branche dediee existe pour la story
+  2. Si NON, **demander a Kevin de creer la branche** avant de commencer l'implementation
+  3. Ne JAMAIS implementer une story sur une branche partagee avec d'autres features
+
+- **Naming convention pour branches story** :
+  - Format : `feature/{story-key}`
+  - Exemple : `feature/1-1-extract-default-supplies-utility`
+  - Le story-key correspond au nom du fichier story (sans .md)
+
+- **Pourquoi c'est important** :
+  - Facilite les code reviews (seuls les fichiers de la story sont modifies)
+  - Permet des commits atomiques par story
+  - Evite la confusion entre stories multiples
+  - Simplifie le tracking git des changements
+
+- **Workflow complet pour une story** :
+  ```bash
+  # Kevin cree la branche
+  git checkout staging
+  git checkout -b feature/1-2-supply-suggestions
+
+  # Agent implemente la story
+  # ... code changes ...
+
+  # Agent commite atomiquement
+  git add <fichiers de la story uniquement>
+  git commit -m "Story 1.2: Implement supply suggestions at course creation"
+
+  # Merge dans staging quand story est done
+  git checkout staging
+  git merge --ff-only feature/1-2-supply-suggestions
+  ```
+
 ## Environment Setup
 
 - **Credentials** : Les credentials Supabase sont dans `.env` (gitignored)
