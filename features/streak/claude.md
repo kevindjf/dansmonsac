@@ -1,73 +1,73 @@
-# Module Streak
+# Streak Module
 
 ## Description
-Module de suivi des streaks (séries) de préparation de sac. Permet de calculer et afficher le nombre de jours consécutifs où l'élève a préparé son sac, créant ainsi une motivation par la formation d'habitudes.
+Streak tracking module for bag preparation. Calculates and displays the number of consecutive days where the student prepared their bag, creating motivation through habit formation.
 
-## Responsabilités
-- Calcul du streak actuel (jours consécutifs de préparation)
-- Accès à l'historique des préparations de sac (BagCompletions)
-- Enregistrement des complétions de préparation de sac
-- Détection des jours d'école vs jours sans cours (weekends, vacances)
-- Gestion de la rupture de streak et reset
+## Responsibilities
+- Calculate current streak (consecutive preparation days)
+- Access bag completion history (BagCompletions)
+- Record bag preparation completions
+- Detect school days vs non-school days (weekends, holidays)
+- Manage streak breaks and resets
 
 ## Architecture
-- **Pattern Repository** avec `StreakRepository` pour la logique métier
-- **Gestion d'erreurs** via `Either<Failure, T>` (package dartz)
-- **Data source** : Table Drift `BagCompletions` (locale, synchro via SyncManager)
-- **Models** :
-  - `StreakData` - Données de streak (count, last completion, history)
+- **Repository Pattern** with `StreakRepository` for business logic
+- **Error handling** via `Either<Failure, T>` (dartz package)
+- **Data source**: Drift `BagCompletions` table (local, synced via SyncManager)
+- **Models**:
+  - `StreakData` - Streak data (count, last completion, history)
 
 ## State Management
-- **Riverpod** avec `@riverpod` annotations
-- Providers :
-  - `streakRepositoryProvider` - Instance du repository
-  - `currentStreakProvider` - Streak actuel (compteur)
+- **Riverpod** with `@riverpod` annotations
+- Providers:
+  - `streakRepositoryProvider` - Repository instance
+  - `currentStreakProvider` - Current streak (counter)
 
-## Fichiers clés
-- `repository/streak_repository.dart` - Logique de calcul de streak
-- `di/riverpod_di.dart` - Providers Riverpod
-- `models/streak_data.dart` - Model de données de streak
-- `presentation/widgets/streak_counter_widget.dart` - Widget d'affichage du compteur (Story 2.5)
-- `presentation/controller/streak_controller.dart` - Contrôleur UI (Story 2.5)
+## Key Files
+- `repository/streak_repository.dart` - Streak calculation logic
+- `di/riverpod_di.dart` - Riverpod providers
+- `models/streak_data.dart` - Streak data model
+- `presentation/widgets/streak_counter_widget.dart` - Counter display widget (Story 2.5)
+- `presentation/controller/streak_controller.dart` - UI controller (Story 2.5)
 
-## Dépendances principales
+## Main Dependencies
 - `flutter_riverpod` / `riverpod_annotation`
 - `dartz` (Either<Failure, T>)
-- `common` (pour `AppDatabase`, `LogService`, `handleErrors`, `Failure`)
+- `common` (for `AppDatabase`, `LogService`, `handleErrors`, `Failure`, `PreferenceRepository`)
 
-## Tables Drift (via common/AppDatabase)
-- `BagCompletions` - Historique des préparations complétées (id, date, completedAt, deviceId)
-  - Utilisé pour calculer le streak actuel
-  - Une entrée par jour où le sac a été préparé
-- `DailyChecks` - Fournitures cochées par jour (non utilisé directement dans streak, mais sert à détecter la complétion)
+## Drift Tables (via common/AppDatabase)
+- `BagCompletions` - Completed preparation history (id, date, completedAt, deviceId)
+  - Used to calculate current streak
+  - One entry per day where bag was prepared
+- `DailyChecks` - Supplies checked per day (not directly used in streak, but serves to detect completion)
 
-## Logique de Streak
-**Calcul du streak actuel :**
-1. Récupérer toutes les BagCompletions triées par date DESC
-2. Filtrer uniquement les jours d'école (ignorer weekends/vacances via timetable)
-3. Compter les jours consécutifs depuis aujourd'hui
-4. Si un jour d'école est manquant → streak rompu → reset à 0
+## Streak Logic
+**Current streak calculation:**
+1. Retrieve all BagCompletions sorted by date DESC
+2. Filter only school days (ignore weekends/holidays via timetable)
+3. Count consecutive days from today
+4. If a school day is missing → streak broken → reset to 0
 
-**Jours d'école vs non-école :**
-- Un jour est considéré "jour d'école" si le timetable contient au moins un cours pour ce jour
-- Weekends sans cours ne cassent PAS le streak
-- Vacances sans cours ne cassent PAS le streak
+**School days vs non-school days:**
+- A day is considered a "school day" if the timetable contains at least one course for that day
+- Weekends without courses do NOT break the streak
+- Holidays without courses do NOT break the streak
 
-## Stories associées
-- **Story 2.2** : Create Streak Module Foundation (current - foundation)
-- **Story 2.3** : Implement Daily Checklist Persistence (DailyChecks)
-- **Story 2.4** : Implement Streak Calculation Logic (calcul complet)
-- **Story 2.5** : Create Streak Counter UI Widget (UI)
-- **Story 2.6** : Implement Bag Ready Confirmation (trigger streak increment)
+## Associated Stories
+- **Story 2.2**: Create Streak Module Foundation (current - foundation)
+- **Story 2.3**: Implement Daily Checklist Persistence (DailyChecks)
+- **Story 2.4**: Implement Streak Calculation Logic (full calculation)
+- **Story 2.5**: Create Streak Counter UI Widget (UI)
+- **Story 2.6**: Implement Bag Ready Confirmation (trigger streak increment)
 
 ## Offline-First
-- Toutes les opérations fonctionnent offline (Drift local)
-- BagCompletions synchronisé avec Supabase via SyncManager (common)
-- Pas de dépendance réseau pour calculer ou afficher le streak
+- All operations work offline (local Drift)
+- BagCompletions synchronized with Supabase via SyncManager (common)
+- No network dependency to calculate or display streak
 
-## Règles d'implémentation (CRITICAL)
-- **Logging** : TOUJOURS utiliser `LogService`, JAMAIS `print()`
-- **Error handling** : Utiliser `handleErrors()` pour toutes les opérations async
-- **Naming** : snake_case pour fichiers, PascalCase pour classes, camelCase pour variables
-- **Tests** : 100% de tests requis avant de marquer une task complète
-- **Code generation** : Exécuter `build_runner` après modifications des `@riverpod` annotations
+## Implementation Rules (CRITICAL)
+- **Logging**: ALWAYS use `LogService`, NEVER `print()`
+- **Error handling**: Use `handleErrors()` for all async operations
+- **Naming**: snake_case for files, PascalCase for classes, camelCase for variables
+- **Tests**: 100% tests required before marking a task complete
+- **Code generation**: Run `build_runner` after modifying `@riverpod` annotations

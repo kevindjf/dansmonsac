@@ -1,5 +1,6 @@
 import 'package:common/src/providers/database_provider.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:common/src/repository/sharedPreferences_repository.dart';
+import 'package:riverpod/riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:streak/repository/streak_repository.dart';
 
@@ -14,7 +15,8 @@ part 'riverpod_di.g.dart';
 @riverpod
 StreakRepository streakRepository(Ref ref) {
   final database = ref.watch(databaseProvider);
-  return StreakRepository(database);
+  final preferenceRepository = SharedPreferencesRepository();
+  return StreakRepository(database, preferenceRepository);
 }
 
 /// Provider for the current streak count

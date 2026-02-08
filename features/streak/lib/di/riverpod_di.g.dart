@@ -6,7 +6,7 @@ part of 'riverpod_di.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$streakRepositoryHash() => r'673e77df478977d7ee532225edd786ef5e4bf900';
+String _$streakRepositoryHash() => r'54ade0e5c6f67dfd4055db08cbb8153fb93ea038';
 
 /// Provider for the StreakRepository
 ///

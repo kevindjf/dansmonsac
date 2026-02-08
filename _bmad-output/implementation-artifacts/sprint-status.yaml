@@ -50,7 +50,7 @@ development_status:
   # Epic 2: Daily Bag Preparation with Smart Streak System
   epic-2: in-progress
   2-1-drift-schema-v3-migration: done
-  2-2-create-streak-module-foundation: review
+  2-2-create-streak-module-foundation: done
   2-3-implement-daily-checklist-persistence: backlog
   2-4-implement-streak-calculation-logic: backlog
   2-5-create-streak-counter-ui-widget: backlog

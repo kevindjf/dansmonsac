@@ -1,7 +1,26 @@
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:common/src/database/app_database.dart';
+import 'package:common/src/repository/preference_repository.dart';
 import 'package:streak/repository/streak_repository.dart';
+
+// Mock PreferenceRepository for testing
+class MockPreferenceRepository extends PreferenceRepository {
+  @override
+  Future<String> getUserId() async {
+    return 'test-device-id';
+  }
+
+  @override
+  Future<bool> showingOnboarding() async {
+    return false;
+  }
+
+  @override
+  Future<void> storeFinishOnboarding() async {
+    // No-op for tests
+  }
+}
 
 // Helper to create test database
 AppDatabase createTestDatabase() {
@@ -15,7 +34,8 @@ void main() {
 
     setUp(() {
       database = createTestDatabase();
-      repository = StreakRepository(database);
+      final preferenceRepository = MockPreferenceRepository();
+      repository = StreakRepository(database, preferenceRepository);
     });
 
     tearDown(() async {

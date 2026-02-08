@@ -1,5 +1,6 @@
 import 'package:common/src/database/app_database.dart';
 import 'package:common/src/models/network/network_failure.dart';
+import 'package:common/src/repository/preference_repository.dart';
 import 'package:common/src/repository/repository_helper.dart';
 import 'package:common/src/services/log_service.dart';
 import 'package:dartz/dartz.dart';
@@ -14,8 +15,9 @@ import 'package:uuid/uuid.dart';
 /// - Mark bag as complete for a given date
 class StreakRepository {
   final AppDatabase _database;
+  final PreferenceRepository _preferenceRepository;
 
-  StreakRepository(this._database);
+  StreakRepository(this._database, this._preferenceRepository);
 
   /// Get the current streak count
   ///
@@ -26,19 +28,14 @@ class StreakRepository {
     return handleErrors(() async {
       LogService.d('StreakRepository.getCurrentStreak: Calculating streak');
 
-      try {
-        final completions = await _database.getAllBagCompletions();
+      final completions = await _database.getAllBagCompletions();
 
-        // Foundation logic: count total completions
-        // Story 2.4 will add school-day filtering and consecutive calculation
-        final streakCount = completions.length;
+      // Foundation logic: count total completions
+      // Story 2.4 will add school-day filtering and consecutive calculation
+      final streakCount = completions.length;
 
-        LogService.d('StreakRepository.getCurrentStreak: Streak count = $streakCount');
-        return streakCount;
-      } catch (e, stackTrace) {
-        LogService.e('StreakRepository.getCurrentStreak: Error', e, stackTrace);
-        rethrow;
-      }
+      LogService.d('StreakRepository.getCurrentStreak: Streak count = $streakCount');
+      return streakCount;
     });
   }
 
@@ -49,17 +46,12 @@ class StreakRepository {
     return handleErrors(() async {
       LogService.d('StreakRepository.getBagCompletionHistory: Fetching history');
 
-      try {
-        final completions = await _database.getAllBagCompletions();
+      final completions = await _database.getAllBagCompletions();
 
-        final dates = completions.map((c) => c.date).toList();
+      final dates = completions.map((c) => c.date).toList();
 
-        LogService.d('StreakRepository.getBagCompletionHistory: Found ${dates.length} completions');
-        return dates;
-      } catch (e, stackTrace) {
-        LogService.e('StreakRepository.getBagCompletionHistory: Error', e, stackTrace);
-        rethrow;
-      }
+      LogService.d('StreakRepository.getBagCompletionHistory: Found ${dates.length} completions');
+      return dates;
     });
   }
 
@@ -73,34 +65,32 @@ class StreakRepository {
     return handleErrors(() async {
       LogService.d('StreakRepository.markBagComplete: Marking bag complete for $date');
 
-      try {
-        // Normalize date to start of day (remove time component)
-        final normalizedDate = DateTime(date.year, date.month, date.day);
+      // Normalize date to start of day (remove time component)
+      final normalizedDate = DateTime(date.year, date.month, date.day);
 
-        // Check if completion already exists for this date
-        final existingCompletion = await _database.getBagCompletionByDate(normalizedDate);
+      // Check if completion already exists for this date
+      final existingCompletion = await _database.getBagCompletionByDate(normalizedDate);
 
-        if (existingCompletion != null) {
-          LogService.d('StreakRepository.markBagComplete: Completion already exists for $normalizedDate');
-          return; // Already completed, no need to insert again
-        }
-
-        // Create new completion entry
-        final companion = BagCompletionsCompanion(
-          id: drift.Value(const Uuid().v4()),
-          date: drift.Value(normalizedDate),
-          completedAt: drift.Value(DateTime.now()),
-          deviceId: drift.Value(''), // Will be set by SyncManager when syncing
-          createdAt: drift.Value(DateTime.now()),
-        );
-
-        await _database.insertBagCompletion(companion);
-
-        LogService.d('StreakRepository.markBagComplete: Bag marked complete for $normalizedDate');
-      } catch (e, stackTrace) {
-        LogService.e('StreakRepository.markBagComplete: Error', e, stackTrace);
-        rethrow;
+      if (existingCompletion != null) {
+        LogService.d('StreakRepository.markBagComplete: Completion already exists for $normalizedDate');
+        return; // Already completed, no need to insert again
       }
+
+      // Get device ID from preferences
+      final deviceId = await _preferenceRepository.getUserId();
+
+      // Create new completion entry
+      final companion = BagCompletionsCompanion(
+        id: drift.Value(const Uuid().v4()),
+        date: drift.Value(normalizedDate),
+        completedAt: drift.Value(DateTime.now()),
+        deviceId: drift.Value(deviceId),
+        createdAt: drift.Value(DateTime.now()),
+      );
+
+      await _database.insertBagCompletion(companion);
+
+      LogService.d('StreakRepository.markBagComplete: Bag marked complete for $normalizedDate');
     });
   }
 }
