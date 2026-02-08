@@ -51,7 +51,7 @@ development_status:
   epic-2: in-progress
   2-1-drift-schema-v3-migration: done
   2-2-create-streak-module-foundation: done
-  2-3-implement-daily-checklist-persistence: backlog
+  2-3-implement-daily-checklist-persistence: done
   2-4-implement-streak-calculation-logic: backlog
   2-5-create-streak-counter-ui-widget: backlog
   2-6-implement-bag-ready-confirmation: backlog

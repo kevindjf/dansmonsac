@@ -243,6 +243,13 @@ class SyncManager {
           dataMap,
         );
 
+      case 'daily_check':
+        return await _syncDailyCheck(
+          operation.entityId,
+          operation.operationType,
+          dataMap,
+        );
+
       default:
         LogService.d('⚠️ Unknown entity type: ${operation.entityType}');
         return false;
@@ -561,6 +568,69 @@ class SyncManager {
       }
     } catch (e) {
       LogService.e('❌ Error syncing calendar course: $e');
+      return false;
+    }
+  }
+
+  /// Sync a daily check operation with Supabase
+  Future<bool> _syncDailyCheck(
+    String entityId,
+    String operationType,
+    Map<String, dynamic>? data,
+  ) async {
+    LogService.d('🔄 Syncing daily_check $operationType: $entityId');
+
+    try {
+      switch (operationType) {
+        case 'insert':
+          if (data == null) {
+            LogService.w('⚠️ No data for daily_check insert operation');
+            return false;
+          }
+
+          // Insert daily check into Supabase
+          await _supabaseClient.from('daily_checks').insert({
+            'id': entityId, // Use local UUID as remote ID
+            'supply_id': data['supply_id'],
+            'course_id': data['course_id'],
+            'date': data['date'],
+            'is_checked': data['is_checked'] ?? true,
+          });
+
+          LogService.d('✅ DailyCheck inserted: $entityId');
+          return true;
+
+        case 'update':
+          if (data == null) {
+            LogService.w('⚠️ No data for daily_check update operation');
+            return false;
+          }
+
+          // Update daily check in Supabase
+          await _supabaseClient
+              .from('daily_checks')
+              .update({'is_checked': data['is_checked']})
+              .eq('id', entityId);
+
+          LogService.d('✅ DailyCheck updated: $entityId');
+          return true;
+
+        case 'delete':
+          // Delete daily check from Supabase
+          await _supabaseClient
+              .from('daily_checks')
+              .delete()
+              .eq('id', entityId);
+
+          LogService.d('✅ DailyCheck deleted: $entityId');
+          return true;
+
+        default:
+          LogService.w('⚠️ Unknown operation type for daily_check: $operationType');
+          return false;
+      }
+    } catch (e) {
+      LogService.e('❌ Error syncing daily_check: $e');
       return false;
     }
   }

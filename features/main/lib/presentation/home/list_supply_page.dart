@@ -5,6 +5,7 @@ import 'package:common/src/ui/ui.dart';
 import 'package:common/src/services.dart';
 import 'package:common/src/utils/week_utils.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:main/presentation/home/controller/daily_check_controller.dart';
 import 'package:schedule/presentation/supply_list/controller/tomorrow_supply_controller.dart';
 
 class ListSupplyPage extends ConsumerWidget {
@@ -22,18 +23,29 @@ abstract class ListItem {}
 /// Item pour le titre d'un cours
 class CourseTitleItem implements ListItem {
   final String title;
+  final String courseId; // Course ID for persistence
   final List<String> supplyIds; // IDs of supplies for this course
 
-  CourseTitleItem({required this.title, required this.supplyIds});
+  CourseTitleItem({
+    required this.title,
+    required this.courseId,
+    required this.supplyIds,
+  });
 }
 
 /// Item pour une fourniture avec checkbox
 class SupplyItem implements ListItem {
   final String id;
+  final String courseId; // Course ID for persistence (empty for standalone)
   final String name;
   bool isChecked;
 
-  SupplyItem({required this.id, required this.name, this.isChecked = false});
+  SupplyItem({
+    required this.id,
+    required this.courseId,
+    required this.name,
+    this.isChecked = false,
+  });
 }
 
 enum _EmptyReason { noCourses, noSupplies }
@@ -113,8 +125,9 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
 
     _targetDate = targetDate;
 
-    // Load saved state for this date
-    final savedState = await PreferencesService.loadSupplyCheckedState(targetDate);
+    // Load saved state from Drift database via DailyCheckController
+    final controller = ref.read(dailyCheckControllerProvider.notifier);
+    final savedState = await controller.loadChecksForDate(_targetDate!);
 
     if (mounted) {
       setState(() {
@@ -123,8 +136,6 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
       });
     }
 
-    // Clean old states
-    PreferencesService.clearOldSupplyStates();
   }
 
   Future<void> _loadStandaloneSupplies() async {
@@ -136,11 +147,7 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
     }
   }
 
-  Future<void> _saveCheckedState() async {
-    if (_targetDate != null) {
-      await PreferencesService.saveSupplyCheckedState(_targetDate!, _checkedState);
-    }
-  }
+  // Removed: _saveCheckedState() - now handled by DailyCheckController.toggleCheck() inline
 
   @override
   Widget build(BuildContext context) {
@@ -161,7 +168,11 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
             for (final course in coursesWithSupplies) {
               // Collect supply IDs for this course
               final supplyIds = course.supplies.map((s) => s.id).toList();
-              items.add(CourseTitleItem(title: course.courseName, supplyIds: supplyIds));
+              items.add(CourseTitleItem(
+                title: course.courseName,
+                courseId: course.courseId,
+                supplyIds: supplyIds,
+              ));
 
               for (final supply in course.supplies) {
                 totalSupplies++;
@@ -170,6 +181,7 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
 
                 items.add(SupplyItem(
                   id: supply.id,
+                  courseId: course.courseId,
                   name: supply.name,
                   isChecked: isChecked,
                 ));
@@ -180,7 +192,11 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
             if (_standaloneSupplies.isNotEmpty) {
               // Add section title
               final standaloneIds = _standaloneSupplies.map((name) => 'standalone_$name').toList();
-              items.add(CourseTitleItem(title: "Autres fournitures", supplyIds: standaloneIds));
+              items.add(CourseTitleItem(
+                title: "Autres fournitures",
+                courseId: '', // Empty for standalone supplies
+                supplyIds: standaloneIds,
+              ));
 
               // Add standalone supplies
               for (final supplyName in _standaloneSupplies) {
@@ -191,6 +207,7 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
 
                 items.add(SupplyItem(
                   id: id,
+                  courseId: '', // Empty for standalone supplies
                   name: supplyName,
                   isChecked: isChecked,
                 ));
@@ -339,14 +356,23 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
                             fontWeight: FontWeight.bold),
                       ),
                       value: allChecked,
-                      onChanged: item.supplyIds.isEmpty ? null : (value) {
+                      onChanged: item.supplyIds.isEmpty ? null : (value) async {
+                        final controller = ref.read(dailyCheckControllerProvider.notifier);
                         setState(() {
                           // Check or uncheck all supplies for this course
                           for (final supplyId in item.supplyIds) {
                             _checkedState[supplyId] = value ?? false;
                           }
                         });
-                        _saveCheckedState();
+                        // Save each supply state to Drift via controller
+                        for (final supplyId in item.supplyIds) {
+                          await controller.toggleCheck(
+                            supplyId,
+                            item.courseId,
+                            _targetDate!,
+                            value ?? false,
+                          );
+                        }
                       },
                     );
                   } else if (item is SupplyItem) {
@@ -376,11 +402,18 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
                         style: GoogleFonts.roboto(color: Colors.white70),
                       ),
                       value: item.isChecked,
-                      onChanged: (value) {
+                      onChanged: (value) async {
+                        final controller = ref.read(dailyCheckControllerProvider.notifier);
                         setState(() {
                           _checkedState[item.id] = value ?? false;
                         });
-                        _saveCheckedState();
+                        // Save to Drift via controller
+                        await controller.toggleCheck(
+                          item.id,
+                          item.courseId,
+                          _targetDate!,
+                          value ?? false,
+                        );
                       },
                     );
                   }
