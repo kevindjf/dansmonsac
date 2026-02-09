@@ -7,6 +7,7 @@ import 'package:common/src/utils/week_utils.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:main/presentation/home/controller/daily_check_controller.dart';
 import 'package:schedule/presentation/supply_list/controller/tomorrow_supply_controller.dart';
+import 'package:streak/presentation/widgets/streak_counter_widget.dart';
 
 class ListSupplyPage extends ConsumerWidget {
   ListSupplyPage({super.key});
@@ -516,6 +517,9 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 8),
+            // Streak counter widget
+            const StreakCounterWidget(),
+            const SizedBox(height: 16),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
