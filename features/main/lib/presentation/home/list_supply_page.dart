@@ -8,6 +8,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:main/presentation/home/controller/daily_check_controller.dart';
 import 'package:schedule/presentation/supply_list/controller/tomorrow_supply_controller.dart';
 import 'package:streak/presentation/widgets/streak_counter_widget.dart';
+import 'package:streak/di/riverpod_di.dart';
 
 class ListSupplyPage extends ConsumerWidget {
   ListSupplyPage({super.key});
@@ -66,6 +67,7 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
   final ScrollController _scrollController = ScrollController();
   bool _isScrolling = false;
   Timer? _scrollTimer;
+  bool _bagCompletionMarked = false; // Track if bag completion was already marked for today
 
   @override
   void initState() {
@@ -149,6 +151,55 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
   }
 
   // Removed: _saveCheckedState() - now handled by DailyCheckController.toggleCheck() inline
+
+  /// Check if all supplies are checked and mark bag as completed
+  Future<void> _checkAndMarkBagCompletion(int totalSupplies) async {
+    // Count currently checked supplies
+    int checkedCount = _checkedState.values.where((checked) => checked).length;
+
+    // If all supplies are checked and we haven't marked completion yet
+    if (totalSupplies > 0 && checkedCount == totalSupplies && !_bagCompletionMarked) {
+      _bagCompletionMarked = true;
+
+      // Insert into BagCompletions via StreakRepository
+      final streakRepository = ref.read(streakRepositoryProvider);
+      final result = await streakRepository.markBagComplete(_targetDate ?? DateTime.now());
+
+      result.fold(
+        (failure) {
+          // Log error but don't show to user (non-critical)
+          LogService.e('Failed to mark bag completion', failure);
+        },
+        (_) {
+          // Success - invalidate streak provider to refresh UI
+          ref.invalidate(currentStreakProvider);
+
+          // Show a celebratory snackbar
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Row(
+                  children: [
+                    const Icon(Icons.celebration, color: Colors.white),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        'Ton sac est prêt ! Ton streak a été mis à jour 🔥',
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ],
+                ),
+                backgroundColor: Theme.of(context).colorScheme.secondary,
+                duration: const Duration(seconds: 3),
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+          }
+        },
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -374,6 +425,15 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
                             value ?? false,
                           );
                         }
+
+                        // Check if bag is now complete
+                        final tomorrowSupplies = await ref.read(tomorrowSupplyControllerProvider.future);
+                        int totalSupplies = 0;
+                        for (final course in tomorrowSupplies) {
+                          totalSupplies += course.supplies.length;
+                        }
+                        totalSupplies += _standaloneSupplies.length;
+                        await _checkAndMarkBagCompletion(totalSupplies);
                       },
                     );
                   } else if (item is SupplyItem) {
@@ -415,6 +475,15 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
                           _targetDate!,
                           value ?? false,
                         );
+
+                        // Check if bag is now complete
+                        final tomorrowSupplies = await ref.read(tomorrowSupplyControllerProvider.future);
+                        int totalSupplies = 0;
+                        for (final course in tomorrowSupplies) {
+                          totalSupplies += course.supplies.length;
+                        }
+                        totalSupplies += _standaloneSupplies.length;
+                        await _checkAndMarkBagCompletion(totalSupplies);
                       },
                     );
                   }
