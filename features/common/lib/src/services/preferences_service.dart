@@ -19,6 +19,8 @@ class PreferencesService {
   static const String _keyHasRated = 'has_rated';
   static const String _keyRatingDismissedDate = 'rating_dismissed_date';
   static const String _keyRatingDismissCount = 'rating_dismiss_count';
+  static const String _keyPreviousStreak = 'previous_streak';
+  static const String _keyLastStreakCheckDate = 'last_streak_check_date';
 
   static Future<void> setPackTime(TimeOfDay time) async {
     final prefs = await SharedPreferences.getInstance();
@@ -284,5 +286,38 @@ class PreferencesService {
   static Future<int> getRatingDismissCount() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getInt(_keyRatingDismissCount) ?? 0;
+  }
+
+  // ===== Streak Tracking Methods =====
+
+  /// Get the previous streak value (before last break)
+  /// Returns 0 if no previous streak exists
+  static Future<int> getPreviousStreak() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getInt(_keyPreviousStreak) ?? 0;
+  }
+
+  /// Set the previous streak value
+  /// Called when a streak break is detected to preserve the streak count
+  static Future<void> setPreviousStreak(int streak) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(_keyPreviousStreak, streak);
+  }
+
+  /// Get the last date when streak was checked
+  /// Used to detect if a streak break occurred between app sessions
+  static Future<DateTime?> getLastStreakCheckDate() async {
+    final prefs = await SharedPreferences.getInstance();
+    final dateString = prefs.getString(_keyLastStreakCheckDate);
+    if (dateString != null) {
+      return DateTime.parse(dateString);
+    }
+    return null;
+  }
+
+  /// Set the last date when streak was checked
+  static Future<void> setLastStreakCheckDate(DateTime date) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_keyLastStreakCheckDate, date.toIso8601String());
   }
 }

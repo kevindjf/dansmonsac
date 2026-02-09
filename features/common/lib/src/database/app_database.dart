@@ -222,6 +222,19 @@ class AppDatabase extends _$AppDatabase {
       (select(calendarCourses)..where((c) => c.dayOfWeek.equals(dayOfWeek)))
           .get();
 
+  /// Get calendar courses for a specific day and week type
+  /// Week type can be 'A', 'B', or courses with 'AB' (both weeks)
+  Future<List<CalendarCourseEntity>> getCalendarCoursesByDayAndWeek(
+    int dayOfWeek,
+    String weekType,
+  ) {
+    return (select(calendarCourses)
+          ..where((c) =>
+              c.dayOfWeek.equals(dayOfWeek) &
+              (c.weekType.equals('AB') | c.weekType.equals(weekType))))
+        .get();
+  }
+
   Future<List<CalendarCourseEntity>> getCalendarCoursesByCourse(
           String courseId) =>
       (select(calendarCourses)..where((c) => c.courseId.equals(courseId)))
