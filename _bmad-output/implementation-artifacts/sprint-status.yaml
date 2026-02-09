@@ -53,9 +53,9 @@ development_status:
   2-2-create-streak-module-foundation: done
   2-3-implement-daily-checklist-persistence: done
   2-4-implement-streak-calculation-logic: done
-  2-5-create-streak-counter-ui-widget: backlog
-  2-6-implement-bag-ready-confirmation: backlog
-  2-7-implement-streak-break-detection-reset: backlog
+  2-5-create-streak-counter-ui-widget: done
+  2-6-implement-bag-ready-confirmation: done
+  2-7-implement-streak-break-detection-reset: ready-for-dev
   2-8-implement-tomorrows-schedule-detection: backlog
   2-9-enhance-notification-with-contextual-text: backlog
   2-10-integrate-streak-with-bag-completion-workflow: backlog
