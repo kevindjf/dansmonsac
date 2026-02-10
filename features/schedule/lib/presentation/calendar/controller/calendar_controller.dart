@@ -1,5 +1,6 @@
 import 'package:common/src/utils/week_utils.dart';
 import 'package:common/src/services.dart';
+import 'package:common/src/services/log_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -80,9 +81,13 @@ class CalendarController extends _$CalendarController {
   Future<List<CalendarEvent>> _fetchCoursesForDate(DateTime targetDate, WeekFilter weekFilter) async {
     final repository = ref.watch(calendarCourseRepositoryProvider);
 
+    LogService.d('CalendarController._fetchCoursesForDate: targetDate=$targetDate, weekFilter=$weekFilter');
+
     // Fetch all courses for name lookup
     final allCourses = await ref.watch(coursesProvider.future);
     final courseMap = {for (var c in allCourses) c.id: c};
+
+    LogService.d('CalendarController._fetchCoursesForDate: Found ${allCourses.length} courses for name lookup');
 
     // Fetch all calendar courses
     final result = await repository.fetchCalendarCourses();
@@ -93,11 +98,15 @@ class CalendarController extends _$CalendarController {
     return result.fold(
       (failure) {
         // Handle error - return empty list
+        LogService.e('CalendarController._fetchCoursesForDate: Error fetching courses', failure, null);
         return [];
       },
       (courses) {
+        LogService.d('CalendarController._fetchCoursesForDate: Received ${courses.length} calendar courses from repository');
+
         // Get target date's day of week
         final targetWeekday = targetDate.weekday; // 1=Monday, 7=Sunday
+        LogService.d('CalendarController._fetchCoursesForDate: Target weekday=$targetWeekday (1=Mon, 7=Sun)');
 
         // Filter courses for target date
         final dateCourses = courses.where((course) {
@@ -118,6 +127,8 @@ class CalendarController extends _$CalendarController {
             return true;
           }
         }).toList();
+
+        LogService.d('CalendarController._fetchCoursesForDate: After filtering by day/week: ${dateCourses.length} courses');
 
         // Convert to CalendarEvent
         final events = <CalendarEvent>[];
@@ -164,6 +175,7 @@ class CalendarController extends _$CalendarController {
         // Sort by start time
         events.sort((a, b) => a.startTime.compareTo(b.startTime));
 
+        LogService.d('CalendarController._fetchCoursesForDate: Returning ${events.length} calendar events');
         return events;
       },
     );

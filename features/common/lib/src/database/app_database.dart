@@ -4,6 +4,8 @@ import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
+import 'package:supabase_flutter/supabase_flutter.dart';
+import '../services/log_service.dart';
 
 part 'app_database.g.dart';
 
@@ -227,12 +229,24 @@ class AppDatabase extends _$AppDatabase {
   Future<List<CalendarCourseEntity>> getCalendarCoursesByDayAndWeek(
     int dayOfWeek,
     String weekType,
-  ) {
-    return (select(calendarCourses)
+  ) async {
+    LogService.d('AppDatabase.getCalendarCoursesByDayAndWeek: Query with dayOfWeek=$dayOfWeek, weekType=$weekType');
+
+    // Get all courses first to debug
+    final allCourses = await select(calendarCourses).get();
+    LogService.d('AppDatabase.getCalendarCoursesByDayAndWeek: Total courses in DB = ${allCourses.length}');
+    for (final course in allCourses) {
+      LogService.d('  Course: id=${course.id}, dayOfWeek=${course.dayOfWeek}, weekType=${course.weekType}, courseId=${course.courseId}');
+    }
+
+    final result = await (select(calendarCourses)
           ..where((c) =>
               c.dayOfWeek.equals(dayOfWeek) &
-              (c.weekType.equals('AB') | c.weekType.equals(weekType))))
+              (c.weekType.equals('BOTH') | c.weekType.equals(weekType))))
         .get();
+
+    LogService.d('AppDatabase.getCalendarCoursesByDayAndWeek: Filtered result = ${result.length} courses');
+    return result;
   }
 
   Future<List<CalendarCourseEntity>> getCalendarCoursesByCourse(
@@ -373,6 +387,67 @@ class AppDatabase extends _$AppDatabase {
         PremiumStatusCompanion(
             linkedParentId: Value(parentId),
             updatedAt: Value(DateTime.now())));
+  }
+
+  /// Migrate calendar courses from Supabase to local Drift DB
+  /// This is a one-time migration for users who imported before the fix
+  Future<void> migrateCalendarCoursesFromSupabase(
+    SupabaseClient supabaseClient,
+    String deviceId,
+  ) async {
+    LogService.d('AppDatabase.migrateCalendarCoursesFromSupabase: Starting migration');
+
+    try {
+      // 1. Check if Drift table is empty
+      final localCourses = await select(calendarCourses).get();
+      if (localCourses.isNotEmpty) {
+        LogService.d('AppDatabase.migrateCalendarCoursesFromSupabase: Local DB not empty (${localCourses.length} courses), skipping migration');
+        return;
+      }
+
+      // 2. Fetch from Supabase
+      LogService.d('AppDatabase.migrateCalendarCoursesFromSupabase: Fetching from Supabase');
+      final response = await supabaseClient
+          .from('calendar_courses')
+          .select()
+          .eq('device_id', deviceId);
+
+      if (response.isEmpty) {
+        LogService.d('AppDatabase.migrateCalendarCoursesFromSupabase: No courses in Supabase, migration complete');
+        return;
+      }
+
+      LogService.d('AppDatabase.migrateCalendarCoursesFromSupabase: Found ${response.length} courses in Supabase');
+
+      // 3. Insert into Drift
+      // IMPORTANT: Always provide updatedAt field to avoid silent insertion failures
+      int migratedCount = 0;
+      for (final json in response) {
+        final createdAt = DateTime.parse(json['created_at'] as String);
+        final companion = CalendarCoursesCompanion(
+          id: Value(json['id'] as String),
+          remoteId: Value(json['id'] as String),
+          courseId: Value(json['course_id'] as String),
+          roomName: Value(json['room_name'] as String),
+          startHour: Value(json['start_time_hour'] as int),
+          startMinute: Value(json['start_time_minute'] as int),
+          endHour: Value(json['end_time_hour'] as int),
+          endMinute: Value(json['end_time_minute'] as int),
+          weekType: Value(json['week_type'] as String),
+          dayOfWeek: Value(json['day_of_week'] as int),
+          createdAt: Value(createdAt),
+          updatedAt: Value(createdAt),
+        );
+
+        await into(calendarCourses).insert(companion);
+        migratedCount++;
+      }
+
+      LogService.d('AppDatabase.migrateCalendarCoursesFromSupabase: Migrated $migratedCount courses successfully');
+    } catch (e, stackTrace) {
+      LogService.e('AppDatabase.migrateCalendarCoursesFromSupabase: Migration failed', e, stackTrace);
+      // Don't rethrow - migration is optional and shouldn't block app startup
+    }
   }
 
   // Clear all data (useful for testing or logout)

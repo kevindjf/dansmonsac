@@ -42,9 +42,19 @@ class StreakRepository {
         return DateTime(d.year, d.month, d.day);
       }).toSet();
 
-      // Start from today and count backwards
+      // Start from today, or from the latest completion date if it's in the future
+      // (handles preparing bag tonight for tomorrow's school day)
       var currentDate = DateTime.now();
       currentDate = DateTime(currentDate.year, currentDate.month, currentDate.day);
+
+      if (completedDates.isNotEmpty) {
+        final latestCompletion = completedDates.reduce(
+          (a, b) => a.isAfter(b) ? a : b,
+        );
+        if (latestCompletion.isAfter(currentDate)) {
+          currentDate = latestCompletion;
+        }
+      }
 
       int streak = 0;
       int daysChecked = 0;
@@ -146,28 +156,37 @@ class StreakRepository {
   ///
   /// This method is used by streak calculation to skip non-school days.
   Future<bool> _isSchoolDay(DateTime date) async {
+    LogService.d('StreakRepository._isSchoolDay: === START CHECK FOR $date ===');
+
     // 1. Normalize date to start of day
     final normalizedDate = DateTime(date.year, date.month, date.day);
+    LogService.d('StreakRepository._isSchoolDay: Normalized date = $normalizedDate');
 
     // 2. Check if weekend (Saturday=6, Sunday=7 in ISO 8601)
     final dayOfWeek = normalizedDate.weekday;
+    LogService.d('StreakRepository._isSchoolDay: dayOfWeek = $dayOfWeek (1=Mon, 7=Sun)');
+
     if (dayOfWeek == 6 || dayOfWeek == 7) {
-      LogService.d('StreakRepository._isSchoolDay: $normalizedDate is weekend (day=$dayOfWeek)');
+      LogService.d('StreakRepository._isSchoolDay: $normalizedDate is weekend (day=$dayOfWeek) → FALSE');
       return false; // Weekends are not school days
     }
 
     // 3. Get week type (A or B) using WeekUtils
     final schoolYearStart = await PreferencesService.getSchoolYearStart();
-    final weekType = WeekUtils.getCurrentWeekType(schoolYearStart, normalizedDate);
+    LogService.d('StreakRepository._isSchoolDay: schoolYearStart = $schoolYearStart');
 
-    LogService.d('StreakRepository._isSchoolDay: Checking $normalizedDate (week=$weekType, day=$dayOfWeek)');
+    final weekType = WeekUtils.getCurrentWeekType(schoolYearStart, normalizedDate);
+    LogService.d('StreakRepository._isSchoolDay: weekType calculated = $weekType');
+
+    LogService.d('StreakRepository._isSchoolDay: Querying DB with dayOfWeek=$dayOfWeek, weekType=$weekType');
 
     // 4. Query calendar_courses for this day and week type
     final courses = await _database.getCalendarCoursesByDayAndWeek(dayOfWeek, weekType);
 
     // 5. If no courses, it's not a school day (holiday or empty day)
     final isSchoolDay = courses.isNotEmpty;
-    LogService.d('StreakRepository._isSchoolDay: $normalizedDate isSchoolDay=$isSchoolDay (${courses.length} courses)');
+    LogService.d('StreakRepository._isSchoolDay: Found ${courses.length} courses');
+    LogService.d('StreakRepository._isSchoolDay: === RESULT: $normalizedDate isSchoolDay=$isSchoolDay ===');
 
     return isSchoolDay;
   }
@@ -196,6 +215,20 @@ class StreakRepository {
       await PreferencesService.setPreviousStreak(streakValue);
 
       LogService.d('StreakRepository.savePreviousStreak: Previous streak saved');
+    });
+  }
+
+  /// Gets the best streak ever achieved
+  ///
+  /// Returns 0 if no best streak exists.
+  Future<Either<Failure, int>> getBestStreak() {
+    return handleErrors(() async {
+      LogService.d('StreakRepository.getBestStreak: Fetching best streak');
+
+      final bestStreak = await PreferencesService.getBestStreak();
+
+      LogService.d('StreakRepository.getBestStreak: Best streak = $bestStreak');
+      return bestStreak;
     });
   }
 
@@ -240,6 +273,13 @@ class StreakRepository {
       final today = DateTime.now();
       final normalizedToday = DateTime(today.year, today.month, today.day);
 
+      // Load all completions once for O(1) lookup (avoid N+1 queries)
+      final completions = await _database.getAllBagCompletions();
+      final completedDates = completions.map((c) {
+        final d = c.date;
+        return DateTime(d.year, d.month, d.day);
+      }).toSet();
+
       bool streakWasBroken = false;
       int lastValidStreak = currentStreak;
 
@@ -248,18 +288,19 @@ class StreakRepository {
 
         if (isSchool) {
           // Found a school day - check if bag was completed
-          final completions = await _database.getAllBagCompletions();
-          final hasCompletion = completions.any((c) {
-            final d = c.date;
-            final normalized = DateTime(d.year, d.month, d.day);
-            return normalized.isAtSameMomentAs(checkDate);
-          });
+          final hasCompletion = completedDates.contains(checkDate);
 
           if (!hasCompletion) {
             // School day without completion - streak is broken
             if (!streakWasBroken && lastValidStreak > 0) {
               // Save the streak value before the break
               await PreferencesService.setPreviousStreak(lastValidStreak);
+              // Update best streak if this was a new personal best
+              final currentBest = await PreferencesService.getBestStreak();
+              if (lastValidStreak > currentBest) {
+                await PreferencesService.setBestStreak(lastValidStreak);
+                LogService.d('StreakRepository.detectBrokenStreak: New best streak=$lastValidStreak');
+              }
               LogService.d('StreakRepository.detectBrokenStreak: Streak broken on $checkDate, saved previous=$lastValidStreak');
               streakWasBroken = true;
             }

@@ -7,7 +7,7 @@ part of 'riverpod_di.dart';
 // **************************************************************************
 
 String _$calendarCourseRepositoryHash() =>
-    r'daa2b0e5ea55441bfc1a90bceac09603ec323fea';
+    r'c3f572cebeafd62e3d8a6fcbcc7e0637eacfcb5b';
 
 /// See also [calendarCourseRepository].
 @ProviderFor(calendarCourseRepository)

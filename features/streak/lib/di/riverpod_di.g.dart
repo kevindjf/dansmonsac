@@ -62,5 +62,69 @@ final currentStreakProvider = AutoDisposeFutureProvider<int>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef CurrentStreakRef = AutoDisposeFutureProviderRef<int>;
+String _$previousStreakHash() => r'61866932ad1dc5c5d3e13077e22b336557d11a8f';
+
+/// Provider for the previous streak count (before last break)
+///
+/// Returns the previous streak value stored in preferences.
+/// Returns 0 if no previous streak exists.
+///
+/// Copied from [previousStreak].
+@ProviderFor(previousStreak)
+final previousStreakProvider = AutoDisposeFutureProvider<int>.internal(
+  previousStreak,
+  name: r'previousStreakProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$previousStreakHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef PreviousStreakRef = AutoDisposeFutureProviderRef<int>;
+String _$bestStreakHash() => r'91ff35241d901c32df2c8ce5f3cf985f16fb81e9';
+
+/// Provider for the best streak ever achieved
+///
+/// Returns the highest streak value the user has ever reached.
+/// Returns 0 if no best streak exists.
+///
+/// Copied from [bestStreak].
+@ProviderFor(bestStreak)
+final bestStreakProvider = AutoDisposeFutureProvider<int>.internal(
+  bestStreak,
+  name: r'bestStreakProvider',
+  debugGetCreateSourceHash:
+      const bool.fromEnvironment('dart.vm.product') ? null : _$bestStreakHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef BestStreakRef = AutoDisposeFutureProviderRef<int>;
+String _$brokenStreakHash() => r'767221b03059bd07d76cac1ed5d5944dcfb8a817';
+
+/// Provider for detecting broken streaks
+///
+/// Returns true if the streak was broken since last check.
+/// This provider checks for missed school days without bag completion.
+///
+/// Copied from [brokenStreak].
+@ProviderFor(brokenStreak)
+final brokenStreakProvider = AutoDisposeFutureProvider<bool>.internal(
+  brokenStreak,
+  name: r'brokenStreakProvider',
+  debugGetCreateSourceHash:
+      const bool.fromEnvironment('dart.vm.product') ? null : _$brokenStreakHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef BrokenStreakRef = AutoDisposeFutureProviderRef<bool>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

@@ -6,6 +6,7 @@ library;
 
 // Export presentation widgets
 export 'presentation/widgets/streak_counter_widget.dart';
+export 'presentation/widgets/streak_break_dialog.dart';
 
 // Export providers for external use
 export 'di/riverpod_di.dart';

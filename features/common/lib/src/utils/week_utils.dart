@@ -6,10 +6,16 @@ class WeekUtils {
     final date = checkDate ?? DateTime.now();
 
     // Calculer le nombre de semaines écoulées depuis le début de l'année scolaire
-    final weeksDiff = date.difference(schoolYearStart).inDays ~/ 7;
+    final daysDiff = date.difference(schoolYearStart).inDays;
+    final weeksDiff = daysDiff ~/ 7;
 
     // Si le nombre de semaines est pair, c'est semaine A, sinon semaine B
-    return weeksDiff % 2 == 0 ? 'A' : 'B';
+    final weekType = weeksDiff % 2 == 0 ? 'A' : 'B';
+
+    print('WeekUtils.getCurrentWeekType: schoolYearStart=$schoolYearStart, date=$date');
+    print('WeekUtils.getCurrentWeekType: daysDiff=$daysDiff, weeksDiff=$weeksDiff, weekType=$weekType');
+
+    return weekType;
   }
 
   /// Vérifie si un cours doit être affiché pour une date donnée

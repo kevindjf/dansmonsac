@@ -20,7 +20,9 @@ class PreferencesService {
   static const String _keyRatingDismissedDate = 'rating_dismissed_date';
   static const String _keyRatingDismissCount = 'rating_dismiss_count';
   static const String _keyPreviousStreak = 'previous_streak';
+  static const String _keyBestStreak = 'best_streak';
   static const String _keyLastStreakCheckDate = 'last_streak_check_date';
+  static const String _keyCalendarMigrationDone = 'calendar_migration_done';
 
   static Future<void> setPackTime(TimeOfDay time) async {
     final prefs = await SharedPreferences.getInstance();
@@ -304,6 +306,20 @@ class PreferencesService {
     await prefs.setInt(_keyPreviousStreak, streak);
   }
 
+  /// Get the best streak ever achieved
+  /// Returns 0 if no best streak exists
+  static Future<int> getBestStreak() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getInt(_keyBestStreak) ?? 0;
+  }
+
+  /// Set the best streak value
+  /// Called when a streak break is detected and the current streak exceeds the best
+  static Future<void> setBestStreak(int streak) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(_keyBestStreak, streak);
+  }
+
   /// Get the last date when streak was checked
   /// Used to detect if a streak break occurred between app sessions
   static Future<DateTime?> getLastStreakCheckDate() async {
@@ -319,5 +335,19 @@ class PreferencesService {
   static Future<void> setLastStreakCheckDate(DateTime date) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_keyLastStreakCheckDate, date.toIso8601String());
+  }
+
+  // ===== Migration Methods =====
+
+  /// Check if calendar courses migration from Supabase to Drift is done
+  static Future<bool> getCalendarMigrationDone() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_keyCalendarMigrationDone) ?? false;
+  }
+
+  /// Mark calendar courses migration as done
+  static Future<void> setCalendarMigrationDone(bool done) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_keyCalendarMigrationDone, done);
   }
 }

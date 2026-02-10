@@ -8,6 +8,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:main/presentation/home/controller/daily_check_controller.dart';
 import 'package:schedule/presentation/supply_list/controller/tomorrow_supply_controller.dart';
 import 'package:streak/presentation/widgets/streak_counter_widget.dart';
+import 'package:streak/presentation/widgets/streak_break_dialog.dart';
 import 'package:streak/di/riverpod_di.dart';
 
 class ListSupplyPage extends ConsumerWidget {
@@ -139,6 +140,38 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
       });
     }
 
+    // Check for streak break after load completes
+    await _checkForStreakBreak();
+  }
+
+  Future<void> _checkForStreakBreak() async {
+    final streakRepository = ref.read(streakRepositoryProvider);
+    final breakResult = await streakRepository.detectBrokenStreak();
+
+    breakResult.fold(
+      (failure) => LogService.e('Failed to detect streak break', failure),
+      (isBroken) async {
+        if (isBroken) {
+          final previousResult = await streakRepository.getPreviousStreak();
+          final previousStreak = previousResult.fold(
+            (failure) => 0,
+            (streak) => streak,
+          );
+
+          if (previousStreak > 0 && mounted) {
+            await showDialog(
+              context: context,
+              barrierDismissible: false,
+              builder: (context) => StreakBreakDialog(
+                previousStreak: previousStreak,
+              ),
+            );
+            // After dismiss, refresh streak counter
+            ref.invalidate(currentStreakProvider);
+          }
+        }
+      },
+    );
   }
 
   Future<void> _loadStandaloneSupplies() async {
@@ -170,9 +203,13 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
           // Log error but don't show to user (non-critical)
           LogService.e('Failed to mark bag completion', failure);
         },
-        (_) {
+        (_) async {
           // Success - invalidate streak provider to refresh UI
           ref.invalidate(currentStreakProvider);
+
+          // Log new streak value for debugging
+          final newStreak = await ref.read(currentStreakProvider.future);
+          LogService.d('BagCompletion: targetDate=$_targetDate, new streak=$newStreak');
 
           // Show a celebratory snackbar
           if (mounted) {
@@ -505,10 +542,10 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: accentColor.withOpacity(0.15),
+        color: accentColor.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: accentColor.withOpacity(0.3),
+          color: accentColor.withValues(alpha: 0.3),
           width: 1,
         ),
       ),

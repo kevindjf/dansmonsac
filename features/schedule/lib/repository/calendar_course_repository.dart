@@ -1,9 +1,14 @@
+import 'package:common/src/database/app_database.dart';
 import 'package:common/src/models/network/network_failure.dart';
 import 'package:common/src/repository/preference_repository.dart';
 import 'package:common/src/repository/repository_helper.dart';
+import 'package:common/src/services/log_service.dart';
 import 'package:dartz/dartz.dart';
+import 'package:drift/drift.dart' as drift;
+import 'package:flutter/material.dart';
 import 'package:schedule/models/calendar_course.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:uuid/uuid.dart';
 
 abstract class CalendarCourseRepository {
   Future<Either<Failure, CalendarCourse>> addCalendarCourse(CalendarCourse calendarCourse);
@@ -15,49 +20,109 @@ abstract class CalendarCourseRepository {
 class CalendarCourseSupabaseRepository extends CalendarCourseRepository {
   final SupabaseClient supabaseClient;
   final PreferenceRepository preferenceRepository;
+  final AppDatabase database;
 
-  CalendarCourseSupabaseRepository(this.supabaseClient, this.preferenceRepository);
+  CalendarCourseSupabaseRepository(
+    this.supabaseClient,
+    this.preferenceRepository,
+    this.database,
+  );
 
   @override
   Future<Either<Failure, CalendarCourse>> addCalendarCourse(CalendarCourse calendarCourse) {
     return handleErrors(() async {
       final deviceId = await preferenceRepository.getUserId();
+      final id = const Uuid().v4();
 
-      final response = await supabaseClient
-          .from('calendar_courses')
-          .insert({
-            'device_id': deviceId,
-            'course_id': calendarCourse.courseId,
-            'room_name': calendarCourse.roomName,
-            'start_time_hour': calendarCourse.startTime.hour,
-            'start_time_minute': calendarCourse.startTime.minute,
-            'end_time_hour': calendarCourse.endTime.hour,
-            'end_time_minute': calendarCourse.endTime.minute,
-            'week_type': calendarCourse.weekType.value,
-            'day_of_week': calendarCourse.dayOfWeek,
-          })
-          .select()
-          .single();
+      LogService.d('CalendarCourseRepository.addCalendarCourse: Adding course (double write)');
 
-      return CalendarCourse.fromJson(response);
+      // 1. INSERT INTO DRIFT (local DB) - CRITICAL for offline-first
+      // IMPORTANT: Always provide updatedAt field to avoid silent insertion failures
+      final now = DateTime.now();
+      final companion = CalendarCoursesCompanion(
+        id: drift.Value(id),
+        courseId: drift.Value(calendarCourse.courseId),
+        roomName: drift.Value(calendarCourse.roomName),
+        startHour: drift.Value(calendarCourse.startTime.hour),
+        startMinute: drift.Value(calendarCourse.startTime.minute),
+        endHour: drift.Value(calendarCourse.endTime.hour),
+        endMinute: drift.Value(calendarCourse.endTime.minute),
+        weekType: drift.Value(calendarCourse.weekType.value),
+        dayOfWeek: drift.Value(calendarCourse.dayOfWeek),
+        createdAt: drift.Value(now),
+        updatedAt: drift.Value(now),
+      );
+
+      await database.into(database.calendarCourses).insert(companion);
+      LogService.d('CalendarCourseRepository.addCalendarCourse: Inserted into Drift (local)');
+
+      // 2. INSERT INTO SUPABASE (remote sync)
+      try {
+        final response = await supabaseClient
+            .from('calendar_courses')
+            .insert({
+              'id': id,
+              'device_id': deviceId,
+              'course_id': calendarCourse.courseId,
+              'room_name': calendarCourse.roomName,
+              'start_time_hour': calendarCourse.startTime.hour,
+              'start_time_minute': calendarCourse.startTime.minute,
+              'end_time_hour': calendarCourse.endTime.hour,
+              'end_time_minute': calendarCourse.endTime.minute,
+              'week_type': calendarCourse.weekType.value,
+              'day_of_week': calendarCourse.dayOfWeek,
+            })
+            .select()
+            .single();
+
+        LogService.d('CalendarCourseRepository.addCalendarCourse: Synced to Supabase');
+        return CalendarCourse.fromJson(response);
+      } catch (e) {
+        LogService.w('CalendarCourseRepository.addCalendarCourse: Supabase sync failed (will retry later): $e');
+        // Return local data even if Supabase sync fails (offline-first)
+        return CalendarCourse(
+          id: id,
+          courseId: calendarCourse.courseId,
+          roomName: calendarCourse.roomName,
+          startTime: calendarCourse.startTime,
+          endTime: calendarCourse.endTime,
+          weekType: calendarCourse.weekType,
+          dayOfWeek: calendarCourse.dayOfWeek,
+        );
+      }
     });
   }
 
   @override
   Future<Either<Failure, List<CalendarCourse>>> fetchCalendarCourses() async {
-    final deviceId = await preferenceRepository.getUserId();
-
     return handleErrors(() async {
-      final response = await supabaseClient
-          .from('calendar_courses')
-          .select()
-          .eq('device_id', deviceId);
+      LogService.d('CalendarCourseRepository.fetchCalendarCourses: Reading from Drift (local)');
 
-      if (response.isEmpty) return [];
+      // READ FROM DRIFT (local DB) - offline-first
+      final courses = await database.select(database.calendarCourses).get();
 
-      return (response as List)
-          .map((json) => CalendarCourse.fromJson(json as Map<String, dynamic>))
-          .toList();
+      LogService.d('CalendarCourseRepository.fetchCalendarCourses: Found ${courses.length} courses in Drift');
+
+      // Log each course for debugging
+      for (final entity in courses) {
+        LogService.d('  Course: id=${entity.id}, courseId=${entity.courseId}, day=${entity.dayOfWeek}, '
+            'weekType=${entity.weekType}, time=${entity.startHour}:${entity.startMinute}-${entity.endHour}:${entity.endMinute}');
+      }
+
+      final result = courses.map((entity) {
+        return CalendarCourse(
+          id: entity.id,
+          courseId: entity.courseId,
+          roomName: entity.roomName,
+          startTime: TimeOfDay(hour: entity.startHour, minute: entity.startMinute),
+          endTime: TimeOfDay(hour: entity.endHour, minute: entity.endMinute),
+          weekType: WeekType.fromString(entity.weekType),
+          dayOfWeek: entity.dayOfWeek,
+        );
+      }).toList();
+
+      LogService.d('CalendarCourseRepository.fetchCalendarCourses: Returning ${result.length} mapped courses');
+      return result;
     });
   }
 
@@ -66,24 +131,54 @@ class CalendarCourseSupabaseRepository extends CalendarCourseRepository {
     return handleErrors(() async {
       final deviceId = await preferenceRepository.getUserId();
 
-      final response = await supabaseClient
-          .from('calendar_courses')
-          .update({
-            'course_id': calendarCourse.courseId,
-            'room_name': calendarCourse.roomName,
-            'start_time_hour': calendarCourse.startTime.hour,
-            'start_time_minute': calendarCourse.startTime.minute,
-            'end_time_hour': calendarCourse.endTime.hour,
-            'end_time_minute': calendarCourse.endTime.minute,
-            'week_type': calendarCourse.weekType.value,
-            'day_of_week': calendarCourse.dayOfWeek,
-          })
-          .eq('id', calendarCourse.id)
-          .eq('device_id', deviceId)
-          .select();
+      LogService.d('CalendarCourseRepository.updateCalendarCourse: Updating course (double write)');
 
-      if ((response as List).isEmpty) {
-        throw Exception('Cours non trouve ou mise a jour non autorisee');
+      // 1. UPDATE IN DRIFT (local DB)
+      final companion = CalendarCoursesCompanion(
+        id: drift.Value(calendarCourse.id),
+        courseId: drift.Value(calendarCourse.courseId),
+        roomName: drift.Value(calendarCourse.roomName),
+        startHour: drift.Value(calendarCourse.startTime.hour),
+        startMinute: drift.Value(calendarCourse.startTime.minute),
+        endHour: drift.Value(calendarCourse.endTime.hour),
+        endMinute: drift.Value(calendarCourse.endTime.minute),
+        weekType: drift.Value(calendarCourse.weekType.value),
+        dayOfWeek: drift.Value(calendarCourse.dayOfWeek),
+        updatedAt: drift.Value(DateTime.now()),
+      );
+
+      await database
+          .update(database.calendarCourses)
+          .replace(companion);
+
+      LogService.d('CalendarCourseRepository.updateCalendarCourse: Updated in Drift (local)');
+
+      // 2. UPDATE IN SUPABASE (remote sync)
+      try {
+        final response = await supabaseClient
+            .from('calendar_courses')
+            .update({
+              'course_id': calendarCourse.courseId,
+              'room_name': calendarCourse.roomName,
+              'start_time_hour': calendarCourse.startTime.hour,
+              'start_time_minute': calendarCourse.startTime.minute,
+              'end_time_hour': calendarCourse.endTime.hour,
+              'end_time_minute': calendarCourse.endTime.minute,
+              'week_type': calendarCourse.weekType.value,
+              'day_of_week': calendarCourse.dayOfWeek,
+            })
+            .eq('id', calendarCourse.id)
+            .eq('device_id', deviceId)
+            .select();
+
+        if ((response as List).isEmpty) {
+          LogService.w('CalendarCourseRepository.updateCalendarCourse: Course not found in Supabase');
+        } else {
+          LogService.d('CalendarCourseRepository.updateCalendarCourse: Synced to Supabase');
+        }
+      } catch (e) {
+        LogService.w('CalendarCourseRepository.updateCalendarCourse: Supabase sync failed: $e');
+        // Continue - local update succeeded (offline-first)
       }
     });
   }
@@ -91,10 +186,27 @@ class CalendarCourseSupabaseRepository extends CalendarCourseRepository {
   @override
   Future<Either<Failure, void>> deleteCalendarCourse(String id) {
     return handleErrors(() async {
-      await supabaseClient
-          .from('calendar_courses')
-          .delete()
-          .eq('id', id);
+      LogService.d('CalendarCourseRepository.deleteCalendarCourse: Deleting course (double write)');
+
+      // 1. DELETE FROM DRIFT (local DB)
+      await (database.delete(database.calendarCourses)
+            ..where((tbl) => tbl.id.equals(id)))
+          .go();
+
+      LogService.d('CalendarCourseRepository.deleteCalendarCourse: Deleted from Drift (local)');
+
+      // 2. DELETE FROM SUPABASE (remote sync)
+      try {
+        await supabaseClient
+            .from('calendar_courses')
+            .delete()
+            .eq('id', id);
+
+        LogService.d('CalendarCourseRepository.deleteCalendarCourse: Synced to Supabase');
+      } catch (e) {
+        LogService.w('CalendarCourseRepository.deleteCalendarCourse: Supabase sync failed: $e');
+        // Continue - local delete succeeded (offline-first)
+      }
     });
   }
 }
