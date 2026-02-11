@@ -29,7 +29,13 @@
       "mcp__supabase__list_tables",
       "mcp__supabase__apply_migration",
       "mcp__supabase__execute_sql",
-      "Bash(sqlite3:*)"
+      "Bash(sqlite3:*)",
+      "Bash(python3:*)",
+      "Bash(open:*)",
+      "WebSearch",
+      "WebFetch(domain:rive.app)",
+      "Bash(unzip:*)",
+      "Bash(md5:*)"
     ]
   },
   "enableAllProjectMcpServers": true,

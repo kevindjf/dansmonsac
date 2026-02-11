@@ -3,6 +3,7 @@ import 'package:common/src/repository/sharedPreferences_repository.dart';
 import 'package:riverpod/riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:streak/repository/streak_repository.dart';
+import 'package:streak/models/week_day_status.dart';
 
 part 'riverpod_di.g.dart';
 
@@ -86,5 +87,37 @@ Future<bool> brokenStreak(Ref ref) async {
   return result.fold(
     (failure) => throw Exception(failure.message),
     (isBroken) => isBroken,
+  );
+}
+
+/// Provider for weekly streak data
+///
+/// Returns a list of 7 WeekDayStatus entries representing the current week
+/// (Monday to Sunday). Each status indicates:
+/// - completed: Day with bag completion (green checkmark)
+/// - missed: School day without completion (empty circle)
+/// - inactive: Non-school day like weekend/holiday (greyed out)
+/// - future: Day that hasn't happened yet (empty circle)
+///
+/// This provider is used by the WeeklyStreakRow widget to display
+/// the visual weekly progress.
+///
+/// Usage:
+/// ```dart
+/// final weeklyDataAsync = ref.watch(weeklyStreakDataProvider);
+/// weeklyDataAsync.when(
+///   data: (statuses) => WeeklyStreakRow(statuses: statuses),
+///   loading: () => CircularProgressIndicator(),
+///   error: (err, stack) => Text('Error: \$err'),
+/// );
+/// ```
+@riverpod
+Future<List<WeekDayStatus>> weeklyStreakData(Ref ref) async {
+  final repository = ref.watch(streakRepositoryProvider);
+  final result = await repository.getWeeklyStreakData();
+
+  return result.fold(
+    (failure) => throw Exception(failure.message),
+    (statuses) => statuses,
   );
 }

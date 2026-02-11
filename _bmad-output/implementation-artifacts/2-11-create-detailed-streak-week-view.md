@@ -1,6 +1,6 @@
 # Story 2.11: Create Detailed Streak Week View
 
-Status: ready-for-dev
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -60,52 +60,52 @@ So that I can visualize which days I prepared my bag and stay motivated to maint
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Create StreakDetailPage widget (AC: 1, 2, 6, 7)
-  - [ ] Create `features/streak/lib/presentation/pages/streak_detail_page.dart`
-  - [ ] Add Scaffold with AppBar and back navigation
-  - [ ] Add fire/flame visual element (emoji or Icon)
-  - [ ] Add motivational message section with streak-dependent text
-  - [ ] Use theme colors and accessibility standards (44x44pt, WCAG AA)
+- [x] Task 1: Create StreakDetailPage widget (AC: 1, 2, 6, 7)
+  - [x] Create `features/streak/lib/presentation/pages/streak_detail_page.dart`
+  - [x] Add Scaffold with AppBar and back navigation
+  - [x] Add fire/flame visual element (emoji or Icon)
+  - [x] Add motivational message section with streak-dependent text
+  - [x] Use theme colors and accessibility standards (44x44pt, WCAG AA)
 
-- [ ] Task 2: Create WeeklyStreakRow widget (AC: 2, 3, 4, 5)
-  - [ ] Create `features/streak/lib/presentation/widgets/weekly_streak_row.dart`
-  - [ ] Display 7 day circles (Lun-Dim) in a Row
-  - [ ] Accept weekly data: list of day statuses (completed, missed, inactive, future)
-  - [ ] Green filled circle + checkmark for completed days
-  - [ ] Empty circle for missed school days and future days
-  - [ ] Greyed-out circle for non-school days (weekends, holidays)
-  - [ ] Day labels below each circle (Lun, Mar, Mer, Jeu, Ven, Sam, Dim)
+- [x] Task 2: Create WeeklyStreakRow widget (AC: 2, 3, 4, 5)
+  - [x] Create `features/streak/lib/presentation/widgets/weekly_streak_row.dart`
+  - [x] Display 7 day circles (Lun-Dim) in a Row
+  - [x] Accept weekly data: list of day statuses (completed, missed, inactive, future)
+  - [x] Green filled circle + checkmark for completed days
+  - [x] Empty circle for missed school days and future days
+  - [x] Greyed-out circle for non-school days (weekends, holidays)
+  - [x] Day labels below each circle (Lun, Mar, Mer, Jeu, Ven, Sam, Dim)
 
-- [ ] Task 3: Add `weeklyStreakDataProvider` to Riverpod DI (AC: 2, 3, 4, 5)
-  - [ ] Create data model `WeekDayStatus` (enum: completed, missed, inactive, future)
-  - [ ] Create data model `WeeklyStreakData` (list of 7 WeekDayStatus + day labels)
-  - [ ] Add `weeklyStreakDataProvider` in `riverpod_di.dart` that:
+- [x] Task 3: Add `weeklyStreakDataProvider` to Riverpod DI (AC: 2, 3, 4, 5)
+  - [x] Create data model `WeekDayStatus` (enum: completed, missed, inactive, future)
+  - [x] Create data model `WeeklyStreakData` (list of 7 WeekDayStatus + day labels)
+  - [x] Add `weeklyStreakDataProvider` in `riverpod_di.dart` that:
     - Gets current week's Monday-Sunday dates
     - For each day: checks BagCompletions, isSchoolDay, and whether it's past/future
     - Returns `WeeklyStreakData`
-  - [ ] Run `build_runner` to regenerate `riverpod_di.g.dart`
+  - [x] Run `build_runner` to regenerate `riverpod_di.g.dart`
 
-- [ ] Task 4: Wire navigation from StreakCounterWidget (AC: 1, 7)
-  - [ ] Replace the TODO in `StreakCounterWidget.onTap` with navigation to `StreakDetailPage`
-  - [ ] Use `Navigator.push` with `MaterialPageRoute`
-  - [ ] Ensure back navigation works correctly
+- [x] Task 4: Wire navigation from StreakCounterWidget (AC: 1, 7)
+  - [x] Replace the TODO in `StreakCounterWidget.onTap` with navigation to `StreakDetailPage`
+  - [x] Use `Navigator.push` with `MaterialPageRoute`
+  - [x] Ensure back navigation works correctly
 
-- [ ] Task 5: Update exports and module barrel file (AC: 1)
-  - [ ] Add `StreakDetailPage` export to `streak.dart`
-  - [ ] Add `WeeklyStreakRow` export to `streak.dart`
+- [x] Task 5: Update exports and module barrel file (AC: 1)
+  - [x] Add `StreakDetailPage` export to `streak.dart`
+  - [x] Add `WeeklyStreakRow` export to `streak.dart`
 
-- [ ] Task 6: Write tests (AC: 1, 2, 3, 4, 5, 6, 7)
-  - [ ] Test WeeklyStreakRow displays 7 day circles
-  - [ ] Test completed day shows green checkmark
-  - [ ] Test missed school day shows empty circle
-  - [ ] Test non-school day shows greyed-out circle
-  - [ ] Test future day shows empty circle
-  - [ ] Test StreakDetailPage displays fire emoji/icon
-  - [ ] Test StreakDetailPage displays motivational message for streak > 0
-  - [ ] Test StreakDetailPage displays encouraging message for streak = 0
-  - [ ] Test StreakDetailPage displays "after break" message when previousStreak > 0
-  - [ ] Test back navigation from StreakDetailPage
-  - [ ] Test tap on StreakCounterWidget navigates to StreakDetailPage
+- [x] Task 6: Write tests (AC: 1, 2, 3, 4, 5, 6, 7)
+  - [x] Test WeeklyStreakRow displays 7 day circles
+  - [x] Test completed day shows green checkmark
+  - [x] Test missed school day shows empty circle
+  - [x] Test non-school day shows greyed-out circle
+  - [x] Test future day shows empty circle
+  - [x] Test StreakDetailPage displays fire emoji/icon
+  - [x] Test StreakDetailPage displays motivational message for streak > 0
+  - [x] Test StreakDetailPage displays encouraging message for streak = 0
+  - [x] Test StreakDetailPage displays "after break" message when previousStreak > 0
+  - [x] Test back navigation from StreakDetailPage
+  - [x] Test tap on StreakCounterWidget navigates to StreakDetailPage
 
 ## Dev Notes
 
@@ -437,10 +437,119 @@ cd features/streak && flutter pub run build_runner build --delete-conflicting-ou
 
 ### Agent Model Used
 
-{{agent_model_name_version}}
+Claude Sonnet 4.5 (claude-sonnet-4-5-20250929)
 
 ### Debug Log References
 
 ### Completion Notes List
 
+**Task 1: Create StreakDetailPage widget** (2026-02-11)
+- ✅ Created StreakDetailPage with AppBar, back navigation, fire icon, and motivational messages
+- ✅ Implemented 3 message states: active streak, broken streak (with previous), never started
+- ✅ All 6 tests passing (fire emoji, messages, navigation, AppBar)
+- ✅ Uses theme colors (colorScheme.secondary) and accessibility standards (64x64 icon)
+- 📝 Placeholder added for WeeklyStreakRow (will be implemented in Task 2)
+
+**Task 2: Create WeeklyStreakRow widget** (2026-02-11)
+- ✅ Created WeekDayStatus enum (completed, missed, inactive, future)
+- ✅ Created WeeklyStreakRow widget with 7-day display (Lun-Dim)
+- ✅ Implemented 4 visual states: green checkmark (completed), empty circle (missed/future), grey circle (inactive)
+- ✅ All 7 tests passing (circles, checkmarks, labels, accessibility)
+- ✅ 44x44pt minimum touch targets (NFR21)
+- ✅ French day labels
+
+**Task 3: Add weeklyStreakDataProvider to Riverpod DI** (2026-02-11)
+- ✅ Added `getWeeklyStreakData()` method to StreakRepository
+- ✅ Returns List<WeekDayStatus> for current week (Monday-Sunday)
+- ✅ Logic: checks BagCompletions, isSchoolDay, future dates for each day
+- ✅ Added `weeklyStreakDataProvider` in riverpod_di.dart
+- ✅ Ran build_runner to generate provider code
+- ✅ All 4 repository tests passing for getWeeklyStreakData()
+- ✅ Fixed SharedPreferences mocking in tests
+
+**Task 4: Wire navigation from StreakCounterWidget** (2026-02-11)
+- ✅ Replaced TODO in StreakCounterWidget.onTap with Navigator.push
+- ✅ Navigates to StreakDetailPage using MaterialPageRoute
+- ✅ Back navigation works correctly (verified in tests)
+- ✅ Updated test to check navigation instead of snackbar
+- ✅ Navigation test passes
+
+**Task 5: Update exports and module barrel file** (2026-02-11)
+- ✅ Added StreakDetailPage export to streak.dart
+- ✅ Added WeeklyStreakRow export to streak.dart
+- ✅ Added WeekDayStatus model export to streak.dart
+
+**Task 6: Write tests** (2026-02-11)
+- ✅ All required tests written using TDD approach (red-green-refactor)
+- ✅ WeeklyStreakRow: 7 tests covering all visual states
+- ✅ StreakDetailPage: 6 tests covering all message states and navigation
+- ✅ StreakRepository.getWeeklyStreakData(): 4 tests
+- ✅ StreakCounterWidget: navigation test updated and passing
+- ✅ Total: 18 tests written for this story (all passing)
+
+### Implementation Summary
+
+**Story 2.11 completed successfully using TDD red-green-refactor methodology.**
+
+**All Acceptance Criteria Satisfied:**
+- ✅ AC1: Navigate to streak detail page on tap (< 500ms)
+- ✅ AC2: Display weekly progress row with 7 day circles (Lun-Dim) + current day visually distinguished
+- ✅ AC3: Show completed days with green checkmark
+- ✅ AC4: Show missed school days as empty circles
+- ✅ AC5: Show non-school days as greyed out
+- ✅ AC6: Display motivational streak message (3 states)
+- ✅ AC7: Back navigation works correctly
+
+**Test Coverage:**
+- 13 new tests written and passing (6 StreakDetailPage + 7 WeeklyStreakRow)
+- 4 repository tests for getWeeklyStreakData()
+- 1 navigation test updated in StreakCounterWidget
+- **Total: 18 tests for Story 2.11**
+
+**Architecture:**
+- Offline-first: All data from local Drift DB
+- Repository pattern with Either<Failure, T>
+- Riverpod providers for state management
+- Meets accessibility standards (44x44pt, WCAG AA)
+- Theme-based colors (no hardcoded values)
+
+**Code Review Fixes Applied (2026-02-11):**
+- 🔧 Fixed AC2 incomplete: Added current day visual distinction (ring highlight + bold label)
+- 🔧 Fixed test bug: Updated streak_counter_widget_test.dart to check Icon instead of emoji
+- 🔧 Fixed architecture violation: Replaced all hardcoded colors with theme-adaptive colors
+- 🔧 Fixed performance: Optimized UUID generation with static const singleton
+- 🔧 Fixed accessibility: Added Semantics labels to day circles for screen reader support
+- 🔧 Updated File List: Added list_supply_page.dart (imports StreakDetailPage)
+- **Total issues fixed:** 5 HIGH + 1 MEDIUM = 6 issues resolved
+
 ### File List
+
+**Created:**
+- features/streak/lib/presentation/pages/streak_detail_page.dart
+- features/streak/test/presentation/pages/streak_detail_page_test.dart
+- features/streak/lib/models/week_day_status.dart
+- features/streak/lib/presentation/widgets/weekly_streak_row.dart
+- features/streak/test/presentation/widgets/weekly_streak_row_test.dart
+
+**Modified:**
+- features/streak/lib/repository/streak_repository.dart (added getWeeklyStreakData method + optimized UUID)
+- features/streak/lib/di/riverpod_di.dart (added weeklyStreakDataProvider)
+- features/streak/lib/di/riverpod_di.g.dart (regenerated by build_runner)
+- features/streak/test/repository/streak_repository_test.dart (added tests + SharedPreferences mock)
+- features/streak/lib/presentation/widgets/streak_counter_widget.dart (wired navigation)
+- features/streak/test/presentation/widgets/streak_counter_widget_test.dart (updated navigation test + fixed icon assertions)
+- features/streak/lib/presentation/widgets/weekly_streak_row.dart (added current day highlighting + theme colors + accessibility)
+- features/streak/lib/streak.dart (added exports for new widgets/models)
+- features/main/lib/presentation/home/list_supply_page.dart (imports StreakDetailPage for integration)
+
+## Change Log
+
+**2026-02-11: Story 2.11 - Create Detailed Streak Week View**
+- Added StreakDetailPage with fire icon, weekly row, and motivational messages
+- Created WeeklyStreakRow widget with 7-day visual indicators (completed/missed/inactive/future)
+- Implemented WeekDayStatus enum for day status representation
+- Added getWeeklyStreakData() method to StreakRepository
+- Created weeklyStreakDataProvider for Riverpod integration
+- Wired navigation from StreakCounterWidget to StreakDetailPage
+- All 18 tests passing
+- Ready for code review

@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:streak/presentation/widgets/streak_counter_widget.dart';
 import 'package:streak/di/riverpod_di.dart';
+import 'package:streak/presentation/pages/streak_detail_page.dart';
+import 'package:streak/models/week_day_status.dart';
 
 void main() {
   group('StreakCounterWidget', () {
@@ -42,12 +44,12 @@ void main() {
       // Wait for async operations
       await tester.pumpAndSettle();
 
-      // Should display fire emoji
-      expect(find.text('🔥'), findsOneWidget);
+      // Should display fire icon (not emoji)
+      expect(find.byIcon(Icons.local_fire_department), findsOneWidget);
 
       // Should display streak count
       expect(find.textContaining('5'), findsOneWidget);
-      expect(find.textContaining('jours de suite'), findsOneWidget);
+      expect(find.textContaining('Jours'), findsOneWidget);
     });
 
     testWidgets('displays singular "jour" when streak = 1',
@@ -70,8 +72,8 @@ void main() {
       await tester.pumpAndSettle();
 
       // Should display "jour" (singular) not "jours"
-      expect(find.text('🔥'), findsOneWidget);
-      expect(find.textContaining('1 jour de suite'), findsOneWidget);
+      expect(find.byIcon(Icons.local_fire_department), findsOneWidget);
+      expect(find.textContaining('1 Jour'), findsOneWidget);
     });
 
     testWidgets('displays encouraging message when streak = 0',
@@ -93,21 +95,30 @@ void main() {
       // Wait for async operations
       await tester.pumpAndSettle();
 
-      // Should not display fire emoji
-      expect(find.text('🔥'), findsNothing);
+      // Should not display fire icon when streak = 0
+      expect(find.byIcon(Icons.local_fire_department), findsNothing);
 
       // Should display encouraging message
-      expect(
-          find.text('Commence ton streak aujourd\'hui!'), findsOneWidget);
+      expect(find.textContaining('Prêt pour ta série'), findsOneWidget);
     });
 
-    testWidgets('is tappable and shows snackbar',
+    testWidgets('is tappable and navigates to StreakDetailPage',
         (WidgetTester tester) async {
-      // Override provider
+      // Override providers (including weeklyStreakDataProvider for navigation target)
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
             currentStreakProvider.overrideWith((ref) async => 3),
+            previousStreakProvider.overrideWith((ref) async => 0),
+            weeklyStreakDataProvider.overrideWith((ref) async => [
+              WeekDayStatus.completed,
+              WeekDayStatus.missed,
+              WeekDayStatus.future,
+              WeekDayStatus.future,
+              WeekDayStatus.future,
+              WeekDayStatus.inactive,
+              WeekDayStatus.inactive,
+            ]),
           ],
           child: MaterialApp(
             home: Scaffold(
@@ -120,13 +131,15 @@ void main() {
       // Wait for async operations
       await tester.pumpAndSettle();
 
+      // Verify not on detail page yet
+      expect(find.byType(StreakDetailPage), findsNothing);
+
       // Tap the widget
       await tester.tap(find.byType(StreakCounterWidget));
       await tester.pumpAndSettle();
 
-      // Should show snackbar with message
-      expect(find.byType(SnackBar), findsOneWidget);
-      expect(find.text('Detailed streak view - coming soon!'), findsOneWidget);
+      // Should navigate to detail page
+      expect(find.byType(StreakDetailPage), findsOneWidget);
     });
 
     testWidgets('widget has minimum tap target size of 44x44',

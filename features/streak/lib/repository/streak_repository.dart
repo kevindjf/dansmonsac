@@ -8,6 +8,7 @@ import 'package:common/src/utils/week_utils.dart';
 import 'package:dartz/dartz.dart';
 import 'package:drift/drift.dart' as drift;
 import 'package:uuid/uuid.dart';
+import 'package:streak/models/week_day_status.dart';
 
 /// Repository for streak tracking and bag completion management
 ///
@@ -16,6 +17,8 @@ import 'package:uuid/uuid.dart';
 /// - Access bag completion history
 /// - Mark bag as complete for a given date
 class StreakRepository {
+  static const _uuid = Uuid(); // Singleton UUID generator for better performance
+
   final AppDatabase _database;
   final PreferenceRepository _preferenceRepository;
 
@@ -134,7 +137,7 @@ class StreakRepository {
 
       // Create new completion entry
       final companion = BagCompletionsCompanion(
-        id: drift.Value(const Uuid().v4()),
+        id: drift.Value(_uuid.v4()),
         date: drift.Value(normalizedDate),
         completedAt: drift.Value(DateTime.now()),
         deviceId: drift.Value(deviceId),
@@ -320,6 +323,80 @@ class StreakRepository {
       }
 
       return streakWasBroken;
+    });
+  }
+
+  /// Gets the weekly streak data for the current week
+  ///
+  /// Returns a list of 7 WeekDayStatus entries (Monday to Sunday) representing
+  /// the status of each day in the current week:
+  /// - completed: Day with bag completion
+  /// - missed: School day without completion (in the past)
+  /// - inactive: Non-school day (weekend, holiday)
+  /// - future: Day that hasn't happened yet
+  ///
+  /// This method is used by the weekly streak view to display visual indicators
+  /// for each day of the week.
+  Future<Either<Failure, List<WeekDayStatus>>> getWeeklyStreakData() {
+    return handleErrors(() async {
+      LogService.d('StreakRepository.getWeeklyStreakData: Calculating weekly data');
+
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+
+      // Get Monday of current week (weekday 1 = Monday in ISO 8601)
+      final daysFromMonday = now.weekday - 1;
+      final monday = today.subtract(Duration(days: daysFromMonday));
+
+      LogService.d('StreakRepository.getWeeklyStreakData: Current week Monday = $monday');
+
+      // Get all bag completions once for O(1) lookup
+      final completions = await _database.getAllBagCompletions();
+      final completedDates = completions.map((c) {
+        final d = c.date;
+        return DateTime(d.year, d.month, d.day);
+      }).toSet();
+
+      LogService.d('StreakRepository.getWeeklyStreakData: Found ${completedDates.length} completed dates');
+
+      // Build status for each day (Mon-Sun)
+      final statuses = <WeekDayStatus>[];
+
+      for (int i = 0; i < 7; i++) {
+        final date = monday.add(Duration(days: i));
+        final dayOfWeek = date.weekday; // 1=Mon, 7=Sun
+
+        LogService.d('StreakRepository.getWeeklyStreakData: Processing day $i: $date (weekday=$dayOfWeek)');
+
+        // Check if date is in the future
+        if (date.isAfter(today)) {
+          LogService.d('StreakRepository.getWeeklyStreakData: Day $date is future');
+          statuses.add(WeekDayStatus.future);
+          continue;
+        }
+
+        // Check if it's a school day
+        final isSchool = await _isSchoolDay(date);
+
+        if (!isSchool) {
+          // Non-school day (weekend, holiday)
+          LogService.d('StreakRepository.getWeeklyStreakData: Day $date is inactive (no courses)');
+          statuses.add(WeekDayStatus.inactive);
+          continue;
+        }
+
+        // School day - check if completed
+        if (completedDates.contains(date)) {
+          LogService.d('StreakRepository.getWeeklyStreakData: Day $date is completed');
+          statuses.add(WeekDayStatus.completed);
+        } else {
+          LogService.d('StreakRepository.getWeeklyStreakData: Day $date is missed');
+          statuses.add(WeekDayStatus.missed);
+        }
+      }
+
+      LogService.d('StreakRepository.getWeeklyStreakData: Weekly data = $statuses');
+      return statuses;
     });
   }
 }

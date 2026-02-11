@@ -126,5 +126,45 @@ final brokenStreakProvider = AutoDisposeFutureProvider<bool>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef BrokenStreakRef = AutoDisposeFutureProviderRef<bool>;
+String _$weeklyStreakDataHash() => r'd37625566e5e4dd165ee1c73bdb0374a78d39988';
+
+/// Provider for weekly streak data
+///
+/// Returns a list of 7 WeekDayStatus entries representing the current week
+/// (Monday to Sunday). Each status indicates:
+/// - completed: Day with bag completion (green checkmark)
+/// - missed: School day without completion (empty circle)
+/// - inactive: Non-school day like weekend/holiday (greyed out)
+/// - future: Day that hasn't happened yet (empty circle)
+///
+/// This provider is used by the WeeklyStreakRow widget to display
+/// the visual weekly progress.
+///
+/// Usage:
+/// ```dart
+/// final weeklyDataAsync = ref.watch(weeklyStreakDataProvider);
+/// weeklyDataAsync.when(
+///   data: (statuses) => WeeklyStreakRow(statuses: statuses),
+///   loading: () => CircularProgressIndicator(),
+///   error: (err, stack) => Text('Error: \$err'),
+/// );
+/// ```
+///
+/// Copied from [weeklyStreakData].
+@ProviderFor(weeklyStreakData)
+final weeklyStreakDataProvider =
+    AutoDisposeFutureProvider<List<WeekDayStatus>>.internal(
+  weeklyStreakData,
+  name: r'weeklyStreakDataProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$weeklyStreakDataHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef WeeklyStreakDataRef = AutoDisposeFutureProviderRef<List<WeekDayStatus>>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

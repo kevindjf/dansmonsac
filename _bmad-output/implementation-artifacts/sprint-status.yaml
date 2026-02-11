@@ -59,7 +59,7 @@ development_status:
   2-8-implement-tomorrows-schedule-detection: backlog
   2-9-enhance-notification-with-contextual-text: backlog
   2-10-integrate-streak-with-bag-completion-workflow: backlog
-  2-11-create-detailed-streak-week-view: ready-for-dev
+  2-11-create-detailed-streak-week-view: done
   epic-2-retrospective: optional
 
   # Epic 3: Enhanced Retention with Double Reminder
