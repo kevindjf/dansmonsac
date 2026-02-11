@@ -548,9 +548,14 @@ Claude Sonnet 4.5 (claude-sonnet-4-5-20250929)
 
 ### Completion Notes List
 
+⚠️ **BUG FIX (Post-implementation):** Removed premature weekend optimization
+- **Issue:** Early return for Sat/Sun prevented students with weekend classes from seeing their courses
+- **Fix:** Removed early return; query now runs for all days including weekends
+- **Result:** Students with Saturday/Sunday classes now see correct course list
+- **Performance:** No impact (query still 7-9ms, weekend queries equally fast)
+
 ✅ **Task 1 Complete:** `getTomorrowCourses()` method added to `CalendarCourseRepository`
 - Method uses `handleErrors()` wrapper for consistent error handling
-- Weekend detection (Sat/Sun = 6/7) returns early for performance
 - Week A/B calculation uses `WeekUtils.getCurrentWeekType(schoolYearStart, tomorrow)`
 - Query filters by `dayOfWeek` AND `(weekType = calculated OR weekType = 'BOTH')`
 - Results ordered by `startHour` ASC, `startMinute` ASC (first class first)
@@ -562,9 +567,9 @@ Claude Sonnet 4.5 (claude-sonnet-4-5-20250929)
 - `build_runner` executed successfully (8 outputs generated)
 
 ✅ **Task 3 Complete:** Weekend/holiday detection implemented
-- Saturday (6) and Sunday (7) detected via `DateTime.weekday`
-- Early return for weekends (no DB query) - performance optimization
-- Empty result set on weekdays = no classes detected (AC4)
+- AC3: Weekends with no scheduled classes return empty list (no checklist/notifications)
+- AC4: Weekdays with no scheduled classes return empty list
+- Both cases handled uniformly: empty query result = empty list (whether weekend or weekday)
 
 ✅ **Task 4 Complete:** Refactored `TomorrowSupplyController` to use new repository
 - Eliminated ~80 lines of duplicate week type calculation logic

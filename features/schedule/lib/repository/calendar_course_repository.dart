@@ -232,19 +232,14 @@ class CalendarCourseSupabaseRepository extends CalendarCourseRepository {
 
       LogService.d('CalendarCourseRepository.getTomorrowCourses: Tomorrow = ${tomorrow.toIso8601String()}, dayOfWeek=$tomorrowDayOfWeek');
 
-      // 2. Weekend detection (early return for performance - AC3)
-      if (tomorrowDayOfWeek == DateTime.saturday || tomorrowDayOfWeek == DateTime.sunday) {
-        LogService.d('CalendarCourseRepository.getTomorrowCourses: Tomorrow is weekend (day $tomorrowDayOfWeek), returning empty list');
-        return <CalendarCourseWithSupplies>[];
-      }
-
-      // 3. Determine week type (A/B) using WeekUtils (AC5)
+      // 2. Determine week type (A/B) using WeekUtils (AC5)
       final schoolYearStart = await PreferencesService.getSchoolYearStart();
       final weekType = WeekUtils.getCurrentWeekType(schoolYearStart, tomorrow);
 
       LogService.d('CalendarCourseRepository.getTomorrowCourses: School year start = ${schoolYearStart.toIso8601String()}, weekType = $weekType');
 
-      // 4. Query calendar_courses for tomorrow (AC1, AC5)
+      // 3. Query calendar_courses for tomorrow (AC1, AC5)
+      // NOTE: No early return for weekends - some students may have Saturday/Sunday classes
       // Filter: dayOfWeek = tomorrow.weekday AND (weekType = calculated OR weekType = 'BOTH')
       final query = database.select(database.calendarCourses)
         ..where((c) =>
@@ -256,13 +251,14 @@ class CalendarCourseSupabaseRepository extends CalendarCourseRepository {
 
       LogService.d('CalendarCourseRepository.getTomorrowCourses: Found ${calendarCourses.length} calendar courses for tomorrow');
 
-      // 5. No classes detection (AC4)
+      // 4. No classes detection (AC3, AC4)
+      // Returns empty list whether tomorrow is a weekend or weekday with no scheduled classes
       if (calendarCourses.isEmpty) {
-        LogService.d('CalendarCourseRepository.getTomorrowCourses: Tomorrow is weekday but no courses scheduled, returning empty list');
+        LogService.d('CalendarCourseRepository.getTomorrowCourses: No courses scheduled for tomorrow (dayOfWeek=$tomorrowDayOfWeek), returning empty list');
         return <CalendarCourseWithSupplies>[];
       }
 
-      // 6. Load course details and supplies (AC2: Group supplies by course)
+      // 5. Load course details and supplies (AC2: Group supplies by course)
       final result = <CalendarCourseWithSupplies>[];
 
       for (final calendarCourse in calendarCourses) {
