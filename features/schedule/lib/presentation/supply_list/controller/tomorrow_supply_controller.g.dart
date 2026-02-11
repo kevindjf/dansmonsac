@@ -7,9 +7,12 @@ part of 'tomorrow_supply_controller.dart';
 // **************************************************************************
 
 String _$tomorrowSupplyControllerHash() =>
-    r'7b9edb5648ce1f4e7b0a7960ebbe0a24df712c08';
+    r'9b8f7e8c90eeb035ae69d73f3df918a54dba25dc';
 
-/// See also [TomorrowSupplyController].
+/// Controller for tomorrow's supplies
+/// Refactored to use getTomorrowCourses() repository method (Story 2.8)
+///
+/// Copied from [TomorrowSupplyController].
 @ProviderFor(TomorrowSupplyController)
 final tomorrowSupplyControllerProvider = AutoDisposeAsyncNotifierProvider<
     TomorrowSupplyController, List<CourseWithSuppliesForTomorrow>>.internal(
