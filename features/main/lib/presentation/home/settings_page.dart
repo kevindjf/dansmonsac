@@ -8,6 +8,7 @@ import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:common/src/providers.dart';
 import 'package:sharing/sharing.dart';
 import 'package:onboarding/onboarding.dart';
+import 'package:schedule/di/riverpod_di.dart';
 import 'help_page.dart';
 
 class SettingsPage extends ConsumerStatefulWidget {
@@ -383,7 +384,15 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
         _packTime = picked;
       });
       await PreferencesService.setPackTime(picked);
-      await NotificationService.updateNotificationIfEnabled();
+
+      // Update notification with contextual content (Story 2.9)
+      final repository = ref.read(calendarCourseRepositoryProvider);
+      final database = ref.read(databaseProvider);
+      await NotificationService.updateNotificationIfEnabled(
+        repository: repository,
+        database: database,
+      );
+
       _showSnackBar('Heure de préparation mise à jour: ${_formatTime(picked)}');
     }
   }
