@@ -9,6 +9,7 @@ import 'package:common/src/providers.dart';
 import 'package:sharing/sharing.dart';
 import 'package:onboarding/onboarding.dart';
 import 'package:schedule/di/riverpod_di.dart';
+import 'package:streak/di/riverpod_di.dart';
 import 'help_page.dart';
 
 class SettingsPage extends ConsumerStatefulWidget {
@@ -25,6 +26,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   Color _accentColor = const Color.fromARGB(255, 212, 53, 240);
   bool _showWeekend = true;
   bool _isLoading = true;
+  bool _vacationModeEnabled = false;
+  DateTime? _vacationEndDate;
 
   @override
   void initState() {
@@ -38,6 +41,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     final notificationsEnabled = await PreferencesService.getNotificationsEnabled();
     final accentColor = await PreferencesService.getAccentColor();
     final showWeekend = await PreferencesService.getShowWeekend();
+    final vacationModeEnabled = await PreferencesService.isVacationModeActive();
+    final vacationEndDate = await PreferencesService.getVacationModeEndDate();
 
     setState(() {
       _packTime = packTime;
@@ -45,6 +50,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       _notificationsEnabled = notificationsEnabled;
       _accentColor = accentColor;
       _showWeekend = showWeekend;
+      _vacationModeEnabled = vacationModeEnabled;
+      _vacationEndDate = vacationEndDate;
       _isLoading = false;
     });
   }
@@ -120,6 +127,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                     value: _notificationsEnabled,
                     onChanged: _toggleNotifications,
                   ),
+
+                  _buildVacationModeCard(context),
 
                   const SizedBox(height: 24),
 
@@ -748,5 +757,434 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
         ),
       ),
     );
+  }
+
+  Widget _buildVacationModeCard(BuildContext context) {
+    return Card(
+      color: const Color(0xFF303030),
+      margin: const EdgeInsets.symmetric(vertical: 4.0),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: () => _showVacationModeBottomSheet(context),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: _vacationModeEnabled
+                    ? const Color(0xFFFF9800).withOpacity(0.2)
+                    : Colors.white.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  _vacationModeEnabled ? Icons.beach_access : Icons.school_outlined,
+                  color: _vacationModeEnabled ? const Color(0xFFFF9800) : Colors.white70,
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Mode vacances',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      _vacationModeEnabled && _vacationEndDate != null
+                        ? 'Actif jusqu\'au ${_formatDateShort(_vacationEndDate!)}'
+                        : 'Protège ta streak pendant les congés',
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.6),
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (_vacationModeEnabled)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFF9800).withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Text(
+                    '🏖️ ACTIF',
+                    style: TextStyle(
+                      color: Color(0xFFFF9800),
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              const SizedBox(width: 8),
+              Icon(
+                Icons.chevron_right,
+                color: Colors.white.withOpacity(0.3),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showVacationModeBottomSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => _VacationModeBottomSheet(
+        isEnabled: _vacationModeEnabled,
+        endDate: _vacationEndDate,
+        onConfirm: (bool enabled, DateTime? endDate) async {
+          await PreferencesService.setVacationMode(enabled, endDate);
+
+          // Update notifications based on vacation mode
+          if (enabled) {
+            await NotificationService.cancelNotification();
+          } else if (_notificationsEnabled) {
+            await NotificationService.updateNotificationIfEnabled(
+              repository: ref.read(calendarCourseRepositoryProvider),
+              database: ref.read(databaseProvider),
+            );
+          }
+
+          // Refresh streak calculation
+          ref.invalidate(streakRepositoryProvider);
+
+          setState(() {
+            _vacationModeEnabled = enabled;
+            _vacationEndDate = endDate;
+          });
+
+          Navigator.pop(context);
+
+          _showSnackBar(
+            enabled
+              ? '🏖️ Mode vacances activé - Ta streak est protégée !'
+              : '🎒 Bon retour ! Les rappels sont réactivés.'
+          );
+        },
+      ),
+    );
+  }
+
+  String _formatDateShort(DateTime date) {
+    final months = [
+      'janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin',
+      'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'
+    ];
+    return '${date.day} ${months[date.month - 1]} ${date.year}';
+  }
+}
+
+// Bottom sheet widget for vacation mode
+class _VacationModeBottomSheet extends StatefulWidget {
+  final bool isEnabled;
+  final DateTime? endDate;
+  final Function(bool enabled, DateTime? endDate) onConfirm;
+
+  const _VacationModeBottomSheet({
+    required this.isEnabled,
+    required this.endDate,
+    required this.onConfirm,
+  });
+
+  @override
+  State<_VacationModeBottomSheet> createState() => _VacationModeBottomSheetState();
+}
+
+class _VacationModeBottomSheetState extends State<_VacationModeBottomSheet> {
+  late bool _enabled;
+  DateTime? _selectedEndDate;
+
+  @override
+  void initState() {
+    super.initState();
+    _enabled = widget.isEnabled;
+    _selectedEndDate = widget.endDate;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        color: Color(0xFF303030),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewPadding.bottom + 16,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Handle bar
+          Center(
+            child: Container(
+              margin: const EdgeInsets.symmetric(vertical: 12),
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.white24,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+
+          // Title
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFF9800).withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(
+                    Icons.beach_access,
+                    color: Color(0xFFFF9800),
+                    size: 28,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                const Expanded(
+                  child: Text(
+                    'Mode vacances',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // Description
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Text(
+              'Active ce mode pour protéger ta streak pendant les vacances. Les jours de vacances ne seront pas comptés.',
+              style: TextStyle(
+                color: Colors.white.withOpacity(0.7),
+                fontSize: 14,
+                height: 1.4,
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 24),
+
+          // Switch
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    _enabled ? 'Mode vacances activé' : 'Mode vacances désactivé',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+                Switch(
+                  value: _enabled,
+                  onChanged: (value) {
+                    setState(() {
+                      _enabled = value;
+                      if (!value) {
+                        _selectedEndDate = null;
+                      }
+                    });
+                  },
+                  activeColor: const Color(0xFFFF9800),
+                ),
+              ],
+            ),
+          ),
+
+          // Date picker (only shown when enabled)
+          if (_enabled) ...[
+            const SizedBox(height: 16),
+            const Divider(color: Colors.white12),
+            const SizedBox(height: 16),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Text(
+                'Date de fin des vacances',
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.7),
+                  fontSize: 14,
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(12),
+                onTap: () => _selectEndDate(context),
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.05),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.white12),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.calendar_today, color: Color(0xFFFF9800)),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Text(
+                          _selectedEndDate != null
+                            ? _formatDate(_selectedEndDate!)
+                            : 'Choisir une date',
+                          style: TextStyle(
+                            color: _selectedEndDate != null
+                              ? Colors.white
+                              : Colors.white.withOpacity(0.5),
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                      Icon(
+                        Icons.chevron_right,
+                        color: Colors.white.withOpacity(0.3),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Text(
+                'Le mode vacances se désactivera automatiquement après cette date',
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.5),
+                  fontSize: 12,
+                  fontStyle: FontStyle.italic,
+                ),
+              ),
+            ),
+          ],
+
+          const SizedBox(height: 24),
+
+          // Buttons
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: const Text(
+                      'Annuler',
+                      style: TextStyle(
+                        color: Colors.white70,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  flex: 2,
+                  child: ElevatedButton(
+                    onPressed: (_enabled && _selectedEndDate == null)
+                      ? null
+                      : () => widget.onConfirm(_enabled, _selectedEndDate),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFFF9800),
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      disabledBackgroundColor: Colors.white12,
+                    ),
+                    child: const Text(
+                      'Confirmer',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _selectEndDate(BuildContext context) async {
+    final now = DateTime.now();
+    final tomorrow = now.add(const Duration(days: 1));
+    final maxDate = now.add(const Duration(days: 90)); // Max 3 months
+
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedEndDate ?? tomorrow,
+      firstDate: tomorrow,
+      lastDate: maxDate,
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.dark(
+              primary: Color(0xFFFF9800),
+              onPrimary: Colors.white,
+              surface: Color(0xFF303030),
+              onSurface: Colors.white,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (picked != null) {
+      setState(() {
+        _selectedEndDate = picked;
+      });
+    }
+  }
+
+  String _formatDate(DateTime date) {
+    final months = [
+      'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
+      'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'
+    ];
+    return '${date.day} ${months[date.month - 1]} ${date.year}';
   }
 }

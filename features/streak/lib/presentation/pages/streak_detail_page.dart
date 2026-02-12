@@ -1,4 +1,5 @@
 import 'package:common/src/services/log_service.dart';
+import 'package:common/src/services/preferences_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lottie/lottie.dart';
@@ -40,6 +41,7 @@ class StreakDetailPage extends ConsumerWidget {
               return weeklyDataAsync.when(
                 data: (weeklyData) => _buildContent(
                   context,
+                  ref,
                   currentStreak,
                   previousStreak,
                   weeklyData,
@@ -60,6 +62,7 @@ class StreakDetailPage extends ConsumerWidget {
 
   Widget _buildContent(
     BuildContext context,
+    WidgetRef ref,
     int currentStreak,
     int previousStreak,
     List<WeekDayStatus> weeklyData,
@@ -97,8 +100,61 @@ class StreakDetailPage extends ConsumerWidget {
             currentStreak,
             previousStreak,
           ),
+
+          const SizedBox(height: 48),
+
+          // Vacation mode hint
+          _buildVacationModeHint(context, ref),
+
+          const SizedBox(height: 24),
         ],
       ),
+    );
+  }
+
+  Widget _buildVacationModeHint(BuildContext context, WidgetRef ref) {
+    return FutureBuilder<bool>(
+      future: PreferencesService.isVacationModeActive(),
+      builder: (context, snapshot) {
+        final isVacationMode = snapshot.data ?? false;
+
+        // Only show hint if vacation mode is NOT active
+        if (isVacationMode) {
+          return const SizedBox.shrink();
+        }
+
+        return Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: const Color(0xFFFF9800).withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: const Color(0xFFFF9800).withValues(alpha: 0.3),
+              width: 1,
+            ),
+          ),
+          child: Row(
+            children: [
+              const Icon(
+                Icons.beach_access,
+                color: Color(0xFFFF9800),
+                size: 20,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  'Tu es en vacances ? N\'oublie pas de l\'activer dans les paramètres pour ne pas perdre ta streak',
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.8),
+                    fontSize: 12,
+                    height: 1.4,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 

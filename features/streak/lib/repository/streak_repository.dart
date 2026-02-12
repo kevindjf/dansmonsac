@@ -161,11 +161,18 @@ class StreakRepository {
   Future<bool> _isSchoolDay(DateTime date) async {
     LogService.d('StreakRepository._isSchoolDay: === START CHECK FOR $date ===');
 
-    // 1. Normalize date to start of day
+    // 1. Check vacation mode FIRST (takes precedence over everything)
+    final isVacationMode = await PreferencesService.isVacationModeActive();
+    if (isVacationMode) {
+      LogService.d('StreakRepository._isSchoolDay: Vacation mode active → FALSE');
+      return false;
+    }
+
+    // 2. Normalize date to start of day
     final normalizedDate = DateTime(date.year, date.month, date.day);
     LogService.d('StreakRepository._isSchoolDay: Normalized date = $normalizedDate');
 
-    // 2. Check if weekend (Saturday=6, Sunday=7 in ISO 8601)
+    // 3. Check if weekend (Saturday=6, Sunday=7 in ISO 8601)
     final dayOfWeek = normalizedDate.weekday;
     LogService.d('StreakRepository._isSchoolDay: dayOfWeek = $dayOfWeek (1=Mon, 7=Sun)');
 
@@ -174,7 +181,7 @@ class StreakRepository {
       return false; // Weekends are not school days
     }
 
-    // 3. Get week type (A or B) using WeekUtils
+    // 4. Get week type (A or B) using WeekUtils
     final schoolYearStart = await PreferencesService.getSchoolYearStart();
     LogService.d('StreakRepository._isSchoolDay: schoolYearStart = $schoolYearStart');
 
@@ -183,10 +190,10 @@ class StreakRepository {
 
     LogService.d('StreakRepository._isSchoolDay: Querying DB with dayOfWeek=$dayOfWeek, weekType=$weekType');
 
-    // 4. Query calendar_courses for this day and week type
+    // 5. Query calendar_courses for this day and week type
     final courses = await _database.getCalendarCoursesByDayAndWeek(dayOfWeek, weekType);
 
-    // 5. If no courses, it's not a school day (holiday or empty day)
+    // 6. If no courses, it's not a school day (holiday or empty day)
     final isSchoolDay = courses.isNotEmpty;
     LogService.d('StreakRepository._isSchoolDay: Found ${courses.length} courses');
     LogService.d('StreakRepository._isSchoolDay: === RESULT: $normalizedDate isSchoolDay=$isSchoolDay ===');
