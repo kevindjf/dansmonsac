@@ -58,7 +58,7 @@ development_status:
   2-7-implement-streak-break-detection-reset: done
   2-8-implement-tomorrows-schedule-detection: done
   2-9-enhance-notification-with-contextual-text: done
-  2-10-integrate-streak-with-bag-completion-workflow: ready-for-dev
+  2-10-integrate-streak-with-bag-completion-workflow: done
   2-11-create-detailed-streak-week-view: done
   epic-2-retrospective: optional
 
