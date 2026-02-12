@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:common/src/database/app_database.dart';
 import 'package:common/src/models/network/network_failure.dart';
 import 'package:common/src/repository/preference_repository.dart';
@@ -6,7 +7,7 @@ import 'package:common/src/services/log_service.dart';
 import 'package:common/src/services/preferences_service.dart';
 import 'package:common/src/utils/week_utils.dart';
 import 'package:dartz/dartz.dart';
-import 'package:drift/drift.dart' as drift;
+import 'package:drift/drift.dart';
 import 'package:flutter/material.dart';
 import 'package:schedule/models/calendar_course.dart';
 import 'package:schedule/models/calendar_course_with_supplies.dart';
@@ -49,17 +50,17 @@ class CalendarCourseSupabaseRepository extends CalendarCourseRepository {
       // IMPORTANT: Always provide updatedAt field to avoid silent insertion failures
       final now = DateTime.now();
       final companion = CalendarCoursesCompanion(
-        id: drift.Value(id),
-        courseId: drift.Value(calendarCourse.courseId),
-        roomName: drift.Value(calendarCourse.roomName),
-        startHour: drift.Value(calendarCourse.startTime.hour),
-        startMinute: drift.Value(calendarCourse.startTime.minute),
-        endHour: drift.Value(calendarCourse.endTime.hour),
-        endMinute: drift.Value(calendarCourse.endTime.minute),
-        weekType: drift.Value(calendarCourse.weekType.value),
-        dayOfWeek: drift.Value(calendarCourse.dayOfWeek),
-        createdAt: drift.Value(now),
-        updatedAt: drift.Value(now),
+        id: Value(id),
+        courseId: Value(calendarCourse.courseId),
+        roomName: Value(calendarCourse.roomName),
+        startHour: Value(calendarCourse.startTime.hour),
+        startMinute: Value(calendarCourse.startTime.minute),
+        endHour: Value(calendarCourse.endTime.hour),
+        endMinute: Value(calendarCourse.endTime.minute),
+        weekType: Value(calendarCourse.weekType.value),
+        dayOfWeek: Value(calendarCourse.dayOfWeek),
+        createdAt: Value(now),
+        updatedAt: Value(now),
       );
 
       await database.into(database.calendarCourses).insert(companion);
@@ -144,16 +145,16 @@ class CalendarCourseSupabaseRepository extends CalendarCourseRepository {
 
       // 1. UPDATE IN DRIFT (local DB)
       final companion = CalendarCoursesCompanion(
-        id: drift.Value(calendarCourse.id),
-        courseId: drift.Value(calendarCourse.courseId),
-        roomName: drift.Value(calendarCourse.roomName),
-        startHour: drift.Value(calendarCourse.startTime.hour),
-        startMinute: drift.Value(calendarCourse.startTime.minute),
-        endHour: drift.Value(calendarCourse.endTime.hour),
-        endMinute: drift.Value(calendarCourse.endTime.minute),
-        weekType: drift.Value(calendarCourse.weekType.value),
-        dayOfWeek: drift.Value(calendarCourse.dayOfWeek),
-        updatedAt: drift.Value(DateTime.now()),
+        id: Value(calendarCourse.id),
+        courseId: Value(calendarCourse.courseId),
+        roomName: Value(calendarCourse.roomName),
+        startHour: Value(calendarCourse.startTime.hour),
+        startMinute: Value(calendarCourse.startTime.minute),
+        endHour: Value(calendarCourse.endTime.hour),
+        endMinute: Value(calendarCourse.endTime.minute),
+        weekType: Value(calendarCourse.weekType.value),
+        dayOfWeek: Value(calendarCourse.dayOfWeek),
+        updatedAt: Value(DateTime.now()),
       );
 
       await database
@@ -222,12 +223,10 @@ class CalendarCourseSupabaseRepository extends CalendarCourseRepository {
   @override
   Future<Either<Failure, List<CalendarCourseWithSupplies>>> getTomorrowCourses() {
     return handleErrors(() async {
-      final stopwatch = Stopwatch()..start();
-
       LogService.d('CalendarCourseRepository.getTomorrowCourses: Starting query');
 
-      // 1. Calculate tomorrow's date
-      final tomorrow = DateTime.now().add(const Duration(days: 1));
+      // 1. Calculate tomorrow's date (using clock for testability)
+      final tomorrow = clock.now().add(const Duration(days: 1));
       final tomorrowDayOfWeek = tomorrow.weekday; // 1=Mon, 7=Sun
 
       LogService.d('CalendarCourseRepository.getTomorrowCourses: Tomorrow = ${tomorrow.toIso8601String()}, dayOfWeek=$tomorrowDayOfWeek');
@@ -238,44 +237,62 @@ class CalendarCourseSupabaseRepository extends CalendarCourseRepository {
 
       LogService.d('CalendarCourseRepository.getTomorrowCourses: School year start = ${schoolYearStart.toIso8601String()}, weekType = $weekType');
 
-      // 3. Query calendar_courses for tomorrow (AC1, AC5)
+      // Start stopwatch AFTER SharedPreferences I/O for accurate Drift-only measurement
+      final stopwatch = Stopwatch()..start();
+
+      // 3. Optimized query strategy (fixes N+1 query problem)
+      // Instead of N individual queries, use 2 batch queries + in-memory join
       // NOTE: No early return for weekends - some students may have Saturday/Sunday classes
-      // Filter: dayOfWeek = tomorrow.weekday AND (weekType = calculated OR weekType = 'BOTH')
-      final query = database.select(database.calendarCourses)
+
+      // Query 1: Get tomorrow's calendar courses (filtered by day + week type)
+      // Note: 'BOTH' is the app-level value, 'AB' is the Drift schema default — handle both for safety
+      final calendarQuery = database.select(database.calendarCourses)
         ..where((c) =>
             c.dayOfWeek.equals(tomorrowDayOfWeek) &
-            (c.weekType.equals('BOTH') | c.weekType.equals(weekType)))
-        ..orderBy([(c) => drift.OrderingTerm.asc(c.startHour), (c) => drift.OrderingTerm.asc(c.startMinute)]); // AC2: Order by time
+            (c.weekType.equals('BOTH') | c.weekType.equals('AB') | c.weekType.equals(weekType)))
+        ..orderBy([(c) => OrderingTerm.asc(c.startHour), (c) => OrderingTerm.asc(c.startMinute)]);
 
-      final calendarCourses = await query.get();
+      final calendarCourses = await calendarQuery.get();
 
       LogService.d('CalendarCourseRepository.getTomorrowCourses: Found ${calendarCourses.length} calendar courses for tomorrow');
 
       // 4. No classes detection (AC3, AC4)
-      // Returns empty list whether tomorrow is a weekend or weekday with no scheduled classes
       if (calendarCourses.isEmpty) {
         LogService.d('CalendarCourseRepository.getTomorrowCourses: No courses scheduled for tomorrow (dayOfWeek=$tomorrowDayOfWeek), returning empty list');
         return <CalendarCourseWithSupplies>[];
       }
 
-      // 5. Load course details and supplies (AC2: Group supplies by course)
+      // Query 2: Batch load all courses (instead of N individual getCourseById calls)
+      final courseIds = calendarCourses.map((c) => c.courseId).toSet().toList();
+      final coursesQuery = database.select(database.courses)
+        ..where((c) => c.id.isIn(courseIds));
+      final coursesMap = {for (var c in await coursesQuery.get()) c.id: c};
+
+      // Query 3: Batch load all supplies for these courses (instead of N individual getSuppliesByCourse calls)
+      final suppliesQuery = database.select(database.supplies)
+        ..where((s) => s.courseId.isIn(courseIds));
+      final allSupplies = await suppliesQuery.get();
+
+      // Group supplies by courseId in memory
+      final suppliesByCourse = <String, List<SupplyEntity>>{};
+      for (final supply in allSupplies) {
+        suppliesByCourse.putIfAbsent(supply.courseId, () => []).add(supply);
+      }
+
+      LogService.d('CalendarCourseRepository.getTomorrowCourses: Batch loaded ${coursesMap.length} courses and ${allSupplies.length} supplies');
+
+      // 5. Build final result with in-memory join (AC2: Group supplies by course)
       final result = <CalendarCourseWithSupplies>[];
 
       for (final calendarCourse in calendarCourses) {
-        // Get course info
-        final course = await database.getCourseById(calendarCourse.courseId);
+        final course = coursesMap[calendarCourse.courseId];
 
         if (course == null) {
           LogService.w('CalendarCourseRepository.getTomorrowCourses: Course ${calendarCourse.courseId} not found, skipping');
           continue;
         }
 
-        // Get supplies for this course
-        final supplies = await database.getSuppliesByCourse(course.id);
-
-        LogService.d('CalendarCourseRepository.getTomorrowCourses: Course "${course.name}" has ${supplies.length} supplies');
-
-        // Map to Supply model
+        final supplies = suppliesByCourse[course.id] ?? [];
         final supplyModels = supplies.map((s) => Supply(id: s.id, name: s.name)).toList();
 
         result.add(
@@ -295,7 +312,7 @@ class CalendarCourseSupabaseRepository extends CalendarCourseRepository {
       stopwatch.stop();
       final elapsedMs = stopwatch.elapsedMilliseconds;
 
-      LogService.d('CalendarCourseRepository.getTomorrowCourses: Query completed in ${elapsedMs}ms, returning ${result.length} courses');
+      LogService.d('CalendarCourseRepository.getTomorrowCourses: Batch query completed in ${elapsedMs}ms (3 queries: calendar courses, courses, supplies), returning ${result.length} courses');
 
       // Performance validation (NFR2: < 500ms)
       if (elapsedMs >= 500) {

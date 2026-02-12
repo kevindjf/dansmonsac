@@ -1,3 +1,5 @@
+import 'package:common/src/services/log_service.dart';
+
 /// Utilitaires pour gérer les semaines A/B
 class WeekUtils {
   /// Calcule si une date donnée est en semaine A ou B
@@ -12,8 +14,8 @@ class WeekUtils {
     // Si le nombre de semaines est pair, c'est semaine A, sinon semaine B
     final weekType = weeksDiff % 2 == 0 ? 'A' : 'B';
 
-    print('WeekUtils.getCurrentWeekType: schoolYearStart=$schoolYearStart, date=$date');
-    print('WeekUtils.getCurrentWeekType: daysDiff=$daysDiff, weeksDiff=$weeksDiff, weekType=$weekType');
+    LogService.d('WeekUtils.getCurrentWeekType: schoolYearStart=$schoolYearStart, date=$date');
+    LogService.d('WeekUtils.getCurrentWeekType: daysDiff=$daysDiff, weeksDiff=$weeksDiff, weekType=$weekType');
 
     return weekType;
   }

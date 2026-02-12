@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:common/src/database/app_database.dart';
 import 'package:common/src/repository/preference_repository.dart';
 import 'package:common/src/services/preferences_service.dart';
@@ -53,51 +54,54 @@ void main() {
 
   group('getTomorrowCourses', () {
     test('AC3: returns empty list for Saturday (weekend)', () async {
-      // Arrange: Insert test data for Monday-Friday
+      // Arrange: Insert test data for Monday-Friday only
       await _insertTestCourse(database, dayOfWeek: 1, courseName: 'Mathématiques');
       await _insertTestCourse(database, dayOfWeek: 5, courseName: 'Français');
 
-      // TODO: Mock system date to Friday (tomorrow = Saturday)
-      // Note: This test will fail until getTomorrowCourses() is implemented
+      // Act: Mock system date to Friday (tomorrow = Saturday)
+      await withClock(Clock.fixed(DateTime(2026, 2, 13, 12, 0)), () async {
+        // Feb 13, 2026 is a Friday, so tomorrow is Saturday (dayOfWeek=6)
+        final result = await repository.getTomorrowCourses();
 
-      // Act
-      final result = await repository.getTomorrowCourses();
-
-      // Assert
-      expect(result.isRight(), true);
-      final courses = result.getOrElse(() => []);
-      expect(courses, isEmpty, reason: 'Saturday should return empty list');
+        // Assert
+        expect(result.isRight(), true);
+        final courses = result.getOrElse(() => []);
+        expect(courses, isEmpty, reason: 'Saturday should return empty list (no classes scheduled)');
+      });
     });
 
     test('AC3: returns empty list for Sunday (weekend)', () async {
-      // Arrange: Insert test data
+      // Arrange: Insert test data for weekdays only
       await _insertTestCourse(database, dayOfWeek: 1, courseName: 'Histoire');
 
-      // TODO: Mock system date to Saturday (tomorrow = Sunday)
+      // Act: Mock system date to Saturday (tomorrow = Sunday)
+      await withClock(Clock.fixed(DateTime(2026, 2, 14, 12, 0)), () async {
+        // Feb 14, 2026 is a Saturday, so tomorrow is Sunday (dayOfWeek=7)
+        final result = await repository.getTomorrowCourses();
 
-      // Act
-      final result = await repository.getTomorrowCourses();
-
-      // Assert
-      expect(result.isRight(), true);
-      expect(result.getOrElse(() => []), isEmpty);
+        // Assert
+        expect(result.isRight(), true);
+        expect(result.getOrElse(() => []), isEmpty,
+            reason: 'Sunday should return empty list (no classes scheduled)');
+      });
     });
 
     test('AC4: returns empty list when no classes on weekday', () async {
-      // Arrange: Insert courses only for Mon, Wed, Fri
+      // Arrange: Insert courses only for Mon, Wed, Fri (no Tuesday classes)
       await _insertTestCourse(database, dayOfWeek: 1, courseName: 'Math');
       await _insertTestCourse(database, dayOfWeek: 3, courseName: 'Physics');
       await _insertTestCourse(database, dayOfWeek: 5, courseName: 'English');
 
-      // TODO: Mock system date to Monday (tomorrow = Tuesday, no classes)
+      // Act: Mock system date to Monday (tomorrow = Tuesday, no classes)
+      await withClock(Clock.fixed(DateTime(2026, 2, 16, 12, 0)), () async {
+        // Feb 16, 2026 is a Monday, so tomorrow is Tuesday
+        final result = await repository.getTomorrowCourses();
 
-      // Act
-      final result = await repository.getTomorrowCourses();
-
-      // Assert
-      expect(result.isRight(), true);
-      expect(result.getOrElse(() => []), isEmpty,
-          reason: 'No classes on Tuesday should return empty list');
+        // Assert
+        expect(result.isRight(), true);
+        expect(result.getOrElse(() => []), isEmpty,
+            reason: 'No classes on Tuesday should return empty list');
+      });
     });
 
     test('AC5: returns only week A courses on week A', () async {
@@ -126,32 +130,34 @@ void main() {
       await _insertTestSupply(database, physicsId, 'Cahier de physique');
       await _insertTestSupply(database, englishId, 'English book');
 
-      // TODO: Mock system date to Monday of week A (tomorrow = Tuesday week A)
+      // Act: Mock system date to Monday of week A (tomorrow = Tuesday week A)
+      // School year starts Sep 1, 2025 (Monday) = week A
+      // Feb 16, 2026 is week 24 (even) = week A
+      await withClock(Clock.fixed(DateTime(2026, 2, 16, 12, 0)), () async {
+        final result = await repository.getTomorrowCourses();
 
-      // Act
-      final result = await repository.getTomorrowCourses();
-
-      // Assert
-      expect(result.isRight(), true);
-      final courses = result.getOrElse(() => []);
-      expect(courses.length, 2, reason: 'Week A: should return Math (A) and English (BOTH)');
-      expect(courses.any((c) => c.courseName == 'Mathématiques'), true);
-      expect(courses.any((c) => c.courseName == 'Anglais'), true);
-      expect(courses.any((c) => c.courseName == 'Physique'), false,
-          reason: 'Week B course should NOT appear on week A');
+        // Assert
+        expect(result.isRight(), true);
+        final courses = result.getOrElse(() => []);
+        expect(courses.length, 2, reason: 'Week A: should return Math (A) and English (BOTH)');
+        expect(courses.any((c) => c.courseName == 'Mathématiques'), true);
+        expect(courses.any((c) => c.courseName == 'Anglais'), true);
+        expect(courses.any((c) => c.courseName == 'Physique'), false,
+            reason: 'Week B course should NOT appear on week A');
+      });
     });
 
     test('AC5: returns only week B courses on week B', () async {
-      // Arrange
+      // Arrange: courses on Tuesday (dayOfWeek=2), tomorrow from Monday
       final mathId = await _insertTestCourse(
         database,
-        dayOfWeek: 3,
+        dayOfWeek: 2,
         courseName: 'Maths',
         weekType: 'A',
       );
       final historyId = await _insertTestCourse(
         database,
-        dayOfWeek: 3,
+        dayOfWeek: 2,
         courseName: 'Histoire',
         weekType: 'B',
       );
@@ -159,16 +165,18 @@ void main() {
       await _insertTestSupply(database, mathId, 'Cahier');
       await _insertTestSupply(database, historyId, 'Livre histoire');
 
-      // TODO: Mock date to week B
+      // Act: Mock date to week B
+      // Feb 23, 2026 is a Monday, tomorrow = Tuesday (dayOfWeek=2)
+      // School year start Sep 1, 2025: daysDiff=175, weeksDiff=25 (odd) = week B
+      await withClock(Clock.fixed(DateTime(2026, 2, 23, 12, 0)), () async {
+        final result = await repository.getTomorrowCourses();
 
-      // Act
-      final result = await repository.getTomorrowCourses();
-
-      // Assert
-      expect(result.isRight(), true);
-      final courses = result.getOrElse(() => []);
-      expect(courses.length, 1);
-      expect(courses.first.courseName, 'Histoire');
+        // Assert
+        expect(result.isRight(), true);
+        final courses = result.getOrElse(() => []);
+        expect(courses.length, 1, reason: 'Week B: should return only History (B)');
+        expect(courses.first.courseName, 'Histoire');
+      });
     });
 
     test('AC2: returns courses ordered by startHour', () async {
@@ -199,18 +207,19 @@ void main() {
       await _insertTestSupply(database, course2, 'Supply 2');
       await _insertTestSupply(database, course3, 'Supply 3');
 
-      // TODO: Mock date to Sunday (tomorrow = Monday)
+      // Act: Mock date to Sunday (tomorrow = Monday)
+      await withClock(Clock.fixed(DateTime(2026, 2, 15, 12, 0)), () async {
+        // Feb 15, 2026 is a Sunday, so tomorrow is Monday
+        final result = await repository.getTomorrowCourses();
 
-      // Act
-      final result = await repository.getTomorrowCourses();
-
-      // Assert
-      expect(result.isRight(), true);
-      final courses = result.getOrElse(() => []);
-      expect(courses.length, 3);
-      expect(courses[0].courseName, 'Maths', reason: 'First class at 8:00');
-      expect(courses[1].courseName, 'Français', reason: 'Second class at 10:00');
-      expect(courses[2].courseName, 'Anglais', reason: 'Third class at 14:30');
+        // Assert
+        expect(result.isRight(), true);
+        final courses = result.getOrElse(() => []);
+        expect(courses.length, 3);
+        expect(courses[0].courseName, 'Maths', reason: 'First class at 8:00');
+        expect(courses[1].courseName, 'Français', reason: 'Second class at 10:00');
+        expect(courses[2].courseName, 'Anglais', reason: 'Third class at 14:30');
+      });
     });
 
     test('AC2: groups supplies correctly by course', () async {
@@ -226,19 +235,20 @@ void main() {
       await _insertTestSupply(database, mathId, 'Calculatrice');
       await _insertTestSupply(database, mathId, 'Compas');
 
-      // TODO: Mock date to Wednesday (tomorrow = Thursday)
+      // Act: Mock date to Wednesday (tomorrow = Thursday)
+      await withClock(Clock.fixed(DateTime(2026, 2, 18, 12, 0)), () async {
+        // Feb 18, 2026 is a Wednesday, so tomorrow is Thursday
+        final result = await repository.getTomorrowCourses();
 
-      // Act
-      final result = await repository.getTomorrowCourses();
-
-      // Assert
-      expect(result.isRight(), true);
-      final courses = result.getOrElse(() => []);
-      expect(courses.length, 1);
-      expect(courses.first.supplies.length, 3,
-          reason: 'Course should have 3 supplies grouped together');
-      expect(courses.first.supplies.map((s) => s.name).toList(),
-          containsAll(['Cahier de maths', 'Calculatrice', 'Compas']));
+        // Assert
+        expect(result.isRight(), true);
+        final courses = result.getOrElse(() => []);
+        expect(courses.length, 1);
+        expect(courses.first.supplies.length, 3,
+            reason: 'Course should have 3 supplies grouped together');
+        expect(courses.first.supplies.map((s) => s.name).toList(),
+            containsAll(['Cahier de maths', 'Calculatrice', 'Compas']));
+      });
     });
 
     test('AC1: query performance is under 500ms (NFR2)', () async {

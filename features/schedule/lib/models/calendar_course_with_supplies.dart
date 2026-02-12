@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show listEquals;
+import 'package:flutter/material.dart' show TimeOfDay;
 import 'package:supply/models/supply.dart';
 
 /// Represents a calendar course with its associated supplies and timing information
@@ -36,6 +37,34 @@ class CalendarCourseWithSupplies {
     final end = '${endHour.toString().padLeft(2, '0')}:${endMinute.toString().padLeft(2, '0')}';
     return '$start - $end';
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is CalendarCourseWithSupplies &&
+          courseId == other.courseId &&
+          courseName == other.courseName &&
+          startHour == other.startHour &&
+          startMinute == other.startMinute &&
+          endHour == other.endHour &&
+          endMinute == other.endMinute &&
+          room == other.room &&
+          listEquals(
+            supplies.map((s) => s.id).toList(),
+            other.supplies.map((s) => s.id).toList(),
+          );
+
+  @override
+  int get hashCode => Object.hash(
+        courseId,
+        courseName,
+        startHour,
+        startMinute,
+        endHour,
+        endMinute,
+        room,
+        Object.hashAll(supplies.map((s) => s.id)),
+      );
 
   @override
   String toString() {
