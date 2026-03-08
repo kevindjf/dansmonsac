@@ -173,19 +173,25 @@ void main() {
 
     test('streak counter updates in real-time', () async {
       // Test that streak recalculation works after bag completion
-      final today = DateTime.now();
-      final todayDate = DateTime(today.year, today.month, today.day);
+      // The streak logic checks targetDate = notificationDay + 1
+      // So we need to insert a completion for tomorrow (the target date
+      // that corresponds to today's notification day).
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+      final tomorrow = today.add(const Duration(days: 1));
 
       // Get initial streak
       final initialStreakResult = await streakRepository.getCurrentStreak();
       expect(initialStreakResult.isRight(), isTrue);
       final initialStreak = initialStreakResult.getOrElse(() => 0);
 
-      // Complete bag for today
+      // Complete bag for tomorrow (target date for today's notification day)
+      // The test setup creates calendar courses for all weekdays (Mon-Fri),
+      // so the streak logic will find courses for the target day.
       await database.insertBagCompletion(
         BagCompletionsCompanion(
           id: drift.Value(uuid.v4()),
-          date: drift.Value(todayDate),
+          date: drift.Value(tomorrow),
           completedAt: drift.Value(DateTime.now()),
           deviceId: drift.Value('test-device'),
           createdAt: drift.Value(DateTime.now()),
@@ -197,8 +203,14 @@ void main() {
       expect(updatedStreakResult.isRight(), isTrue);
       final updatedStreak = updatedStreakResult.getOrElse(() => 0);
 
-      // Verify streak incremented
-      expect(updatedStreak, equals(initialStreak + 1));
+      // Verify streak incremented (only if tomorrow is a school day)
+      // The test data has courses Mon-Fri, so if tomorrow is a weekday it counts
+      if (tomorrow.weekday >= DateTime.monday && tomorrow.weekday <= DateTime.friday) {
+        expect(updatedStreak, equals(initialStreak + 1));
+      } else {
+        // Tomorrow is a weekend day - no courses, so streak doesn't change
+        expect(updatedStreak, equals(initialStreak));
+      }
     });
   });
 
