@@ -9,8 +9,9 @@ Module de gestion des cours (matières). Permet d'ajouter, lister et supprimer d
 - Affichage de la liste des cours avec leurs fournitures
 
 ## Architecture
-- **Pattern Repository** avec classe abstraite `CourseRepository` et implémentation `CourseSupabaseRepository`
+- **Pattern Repository** avec classe abstraite `CourseRepository` et implémentation `CourseDriftRepository`
 - **Gestion d'erreurs** via `Either<Failure, T>` (package dartz)
+- **Stockage local** : Drift (SQLite) uniquement, aucune sync Supabase
 - **Models** :
   - `CourseWithSupplies` - Cours avec sa liste de fournitures
   - `AddCourseCommand` - Commande pour créer un cours
@@ -23,17 +24,18 @@ Module de gestion des cours (matières). Permet d'ajouter, lister et supprimer d
 
 ## Fichiers clés
 - `repository/course_repository.dart` - Interface abstraite
-- `repository/course_supabase_repository.dart` - Implémentation Supabase
+- `repository/course_drift_repository.dart` - Implémentation Drift (local-first)
 - `di/riverpod_di.dart` - Provider `courseRepositoryProvider`
 - `presentation/list/courses_page.dart` - Page de liste des cours
 - `presentation/add/add_course_page.dart` - Modal d'ajout de cours
 
 ## Dépendances principales
 - `flutter_riverpod` / `riverpod_annotation`
-- `supabase_flutter`
+- `drift` - Base de données locale
+- `uuid` - Génération d'IDs locaux
 - `dartz`
-- `common` (pour `handleErrors`, `Failure`, `PreferenceRepository`)
+- `common` (pour `handleErrors`, `Failure`, `AppDatabase`)
 
-## Tables Supabase
-- `courses` - Stockage des cours (id, device_id, name)
-- `supplies` - Fournitures liées aux cours (id, course_id, name)
+## Tables Drift
+- `Courses` - Stockage local des cours (id, remoteId, name, color, weekType)
+- `Supplies` - Fournitures liées aux cours (id, remoteId, courseId, name)

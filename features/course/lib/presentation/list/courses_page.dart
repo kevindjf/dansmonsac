@@ -33,7 +33,7 @@ class CoursesPage extends ConsumerWidget {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _getList(context,items, ref),
+            _getList(context, items, ref),
           ],
         ),
         Column(
@@ -111,7 +111,7 @@ class CoursesPage extends ConsumerWidget {
     );
   }
 
-  _getList(BuildContext context,List<CourseItemUI> items, WidgetRef ref) {
+  _getList(BuildContext context, List<CourseItemUI> items, WidgetRef ref) {
     return Expanded(
       child: RefreshIndicator(
         onRefresh: () async {
@@ -121,60 +121,60 @@ class CoursesPage extends ConsumerWidget {
         child: items.isEmpty
             ? _buildEmptyView(context)
             : ListView.builder(
-          itemCount: items.length + 2,
-          itemBuilder: (context, index) {
-            if (index == 0) {
-              return Padding(
-                padding: const EdgeInsets.all(24.0),
-                child: Text(
-                  "Cours & Fourniture(s)",
-                  style: GoogleFonts.robotoCondensed(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold),
-                ),
-              );
-            } else if (index <= items.length) {
-              int realIndex = index - 1;
-              final item = items[realIndex];
+                itemCount: items.length + 2,
+                itemBuilder: (context, index) {
+                  if (index == 0) {
+                    return Padding(
+                      padding: const EdgeInsets.all(24.0),
+                      child: Text(
+                        "Cours & Fourniture(s)",
+                        style: GoogleFonts.robotoCondensed(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold),
+                      ),
+                    );
+                  } else if (index <= items.length) {
+                    int realIndex = index - 1;
+                    final item = items[realIndex];
 
-              return ContentCourseHolder(
-                key: ValueKey('${item.id}_${item.isExpand}'),
-                course: item,
-                onAddSupply: (CourseItemUI value) {
-                  showBottomSheetSupply(realIndex, value, context, ref);
+                    return ContentCourseHolder(
+                      key: ValueKey('${item.id}_${item.isExpand}'),
+                      course: item,
+                      onAddSupply: (CourseItemUI value) {
+                        showBottomSheetSupply(realIndex, value, context, ref);
+                      },
+                      onDeleteSupply: (SupplyItemUI value) {
+                        ref
+                            .read(coursesControllerProvider.notifier)
+                            .onDeleteSupply(realIndex, value);
+                      },
+                      onDeleteCourse: (CourseItemUI value) {
+                        ref
+                            .read(coursesControllerProvider.notifier)
+                            .onDeleteCourse(realIndex);
+                      },
+                      onExpandCourse: (CourseItemUI value) {
+                        ref
+                            .read(coursesControllerProvider.notifier)
+                            .onExpandCourse(realIndex);
+                      },
+                      onRenameCourse: (CourseItemUI course, String newName) {
+                        ref
+                            .read(coursesControllerProvider.notifier)
+                            .onRenameCourse(realIndex, newName);
+                      },
+                      onRenameSupply: (SupplyItemUI supply, String newName) {
+                        ref
+                            .read(coursesControllerProvider.notifier)
+                            .onRenameSupply(realIndex, supply, newName);
+                      },
+                    );
+                  } else {
+                    return const SizedBox(height: 80);
+                  }
                 },
-                onDeleteSupply: (SupplyItemUI value) {
-                  ref
-                      .read(coursesControllerProvider.notifier)
-                      .onDeleteSupply(realIndex, value);
-                },
-                onDeleteCourse: (CourseItemUI value) {
-                  ref
-                      .read(coursesControllerProvider.notifier)
-                      .onDeleteCourse(realIndex);
-                },
-                onExpandCourse: (CourseItemUI value) {
-                  ref
-                      .read(coursesControllerProvider.notifier)
-                      .onExpandCourse(realIndex);
-                },
-                onRenameCourse: (CourseItemUI course, String newName) {
-                  ref
-                      .read(coursesControllerProvider.notifier)
-                      .onRenameCourse(realIndex, newName);
-                },
-                onRenameSupply: (SupplyItemUI supply, String newName) {
-                  ref
-                      .read(coursesControllerProvider.notifier)
-                      .onRenameSupply(realIndex, supply, newName);
-                },
-              );
-            } else {
-              return const SizedBox(height: 80);
-            }
-          },
-        ),
+              ),
       ),
     );
   }
@@ -184,7 +184,8 @@ class CoursesPage extends ConsumerWidget {
       physics: const AlwaysScrollableScrollPhysics(),
       children: [
         SizedBox(
-          height: MediaQuery.of(context).size.height * 0.7, // Hauteur pour centrer le contenu
+          height: MediaQuery.of(context).size.height *
+              0.7, // Hauteur pour centrer le contenu
           child: Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,

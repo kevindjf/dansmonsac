@@ -16,7 +16,6 @@ class SupplySupabaseRepository extends SupplyRepository {
   @override
   Future<Either<Failure, Supply>> store(AddSupplyCommand command) {
     return handleErrors(() async {
-
       final supplyInsertResponse = await supabaseClient
           .from('supplies')
           .insert({
@@ -39,10 +38,7 @@ class SupplySupabaseRepository extends SupplyRepository {
   @override
   Future<Either<Failure, void>> deleteSupply(String id) {
     return handleErrors(() async {
-      await supabaseClient
-          .from('supplies')
-          .delete()
-          .eq('id', id);
+      await supabaseClient.from('supplies').delete().eq('id', id);
     });
   }
 
@@ -51,8 +47,7 @@ class SupplySupabaseRepository extends SupplyRepository {
     return handleErrors(() async {
       await supabaseClient
           .from('supplies')
-          .update({'name': newName})
-          .eq('id', id);
+          .update({'name': newName}).eq('id', id);
     });
   }
 }

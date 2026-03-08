@@ -68,7 +68,8 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
   final ScrollController _scrollController = ScrollController();
   bool _isScrolling = false;
   Timer? _scrollTimer;
-  bool _bagCompletionMarked = false; // Track if bag completion was already marked for today
+  bool _bagCompletionMarked =
+      false; // Track if bag completion was already marked for today
   bool _isVacationMode = false;
   DateTime? _vacationEndDate;
 
@@ -137,7 +138,7 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
     final packTime = await PreferencesService.getPackTime();
     final now = DateTime.now();
     final targetDate = (now.hour < packTime.hour ||
-                       (now.hour == packTime.hour && now.minute < packTime.minute))
+            (now.hour == packTime.hour && now.minute < packTime.minute))
         ? DateTime(now.year, now.month, now.day)
         : DateTime(now.year, now.month, now.day + 1);
 
@@ -159,7 +160,7 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
     if (mounted) {
       setState(() {
         _checkedState.addAll(savedState);
-});
+      });
     }
 
     // Check for streak break after load completes
@@ -213,12 +214,15 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
     int checkedCount = _checkedState.values.where((checked) => checked).length;
 
     // If all supplies are checked and we haven't marked completion yet
-    if (totalSupplies > 0 && checkedCount == totalSupplies && !_bagCompletionMarked) {
+    if (totalSupplies > 0 &&
+        checkedCount == totalSupplies &&
+        !_bagCompletionMarked) {
       _bagCompletionMarked = true;
 
       // Insert into BagCompletions via StreakRepository
       final streakRepository = ref.read(streakRepositoryProvider);
-      final result = await streakRepository.markBagComplete(_targetDate ?? DateTime.now());
+      final result =
+          await streakRepository.markBagComplete(_targetDate ?? DateTime.now());
 
       final isSuccess = result.isRight();
 
@@ -237,7 +241,8 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
 
       // Log new streak value for debugging
       final newStreak = await ref.read(currentStreakProvider.future);
-      LogService.d('BagCompletion: targetDate=$_targetDate, new streak=$newStreak');
+      LogService.d(
+          'BagCompletion: targetDate=$_targetDate, new streak=$newStreak');
 
       // Navigate to StreakDetailPage with celebration animation
       if (mounted) {
@@ -262,7 +267,8 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
     return FutureBuilder<TimeOfDay>(
       future: PreferencesService.getPackTime(),
       builder: (context, packTimeSnapshot) {
-        final packTime = packTimeSnapshot.data ?? const TimeOfDay(hour: 19, minute: 0);
+        final packTime =
+            packTimeSnapshot.data ?? const TimeOfDay(hour: 19, minute: 0);
 
         return tomorrowSuppliesState.when(
           data: (coursesWithSupplies) {
@@ -297,7 +303,9 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
             // Add standalone supplies section if there are any
             if (_standaloneSupplies.isNotEmpty) {
               // Add section title
-              final standaloneIds = _standaloneSupplies.map((name) => 'standalone_$name').toList();
+              final standaloneIds = _standaloneSupplies
+                  .map((name) => 'standalone_$name')
+                  .toList();
               items.add(CourseTitleItem(
                 title: "Autres fournitures",
                 courseId: '', // Empty for standalone supplies
@@ -330,20 +338,40 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
               return _buildEmptyState(packTime, _EmptyReason.noSupplies);
             }
 
-            return _buildSupplyList(context, items, checkedSupplies, totalSupplies, packTime);
+            return _buildSupplyList(
+                context, items, checkedSupplies, totalSupplies, packTime);
           },
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, stack) => _buildEmptyState(packTime, _EmptyReason.noCourses),
+          error: (error, stack) =>
+              _buildEmptyState(packTime, _EmptyReason.noCourses),
         );
       },
     );
   }
 
   String _formatVacationDate(DateTime date) {
-    const days = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
+    const days = [
+      'Lundi',
+      'Mardi',
+      'Mercredi',
+      'Jeudi',
+      'Vendredi',
+      'Samedi',
+      'Dimanche'
+    ];
     const months = [
-      'Janvier', 'Fevrier', 'Mars', 'Avril', 'Mai', 'Juin',
-      'Juillet', 'Aout', 'Septembre', 'Octobre', 'Novembre', 'Decembre'
+      'Janvier',
+      'Fevrier',
+      'Mars',
+      'Avril',
+      'Mai',
+      'Juin',
+      'Juillet',
+      'Aout',
+      'Septembre',
+      'Octobre',
+      'Novembre',
+      'Decembre'
     ];
     return "${days[date.weekday - 1]} ${date.day} ${months[date.month - 1]}";
   }
@@ -356,7 +384,8 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
     if (_vacationEndDate != null) {
       final now = DateTime.now();
       final today = DateTime(now.year, now.month, now.day);
-      final end = DateTime(_vacationEndDate!.year, _vacationEndDate!.month, _vacationEndDate!.day);
+      final end = DateTime(_vacationEndDate!.year, _vacationEndDate!.month,
+          _vacationEndDate!.day);
       final daysLeft = end.difference(today).inDays;
       if (daysLeft == 0) {
         daysRemainingText = "c'est aujourd'hui !";
@@ -466,11 +495,13 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
     switch (reason) {
       case _EmptyReason.noCourses:
         title = 'Pas de seance prevue';
-        subtitle = 'Aucune seance n\'est programmee dans votre emploi du temps pour cette date.\nAjoutez des cours dans l\'onglet Calendrier.';
+        subtitle =
+            'Aucune seance n\'est programmee dans votre emploi du temps pour cette date.\nAjoutez des cours dans l\'onglet Calendrier.';
         icon = Icons.event_busy;
       case _EmptyReason.noSupplies:
         title = 'Aucune fourniture renseignee';
-        subtitle = 'Vos seances n\'ont pas de fournitures associees.\nAjoutez des fournitures a vos cours dans l\'onglet Cours.';
+        subtitle =
+            'Vos seances n\'ont pas de fournitures associees.\nAjoutez des fournitures a vos cours dans l\'onglet Cours.';
         icon = Icons.inventory_2_outlined;
     }
 
@@ -529,7 +560,8 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
     );
   }
 
-  Widget _buildSupplyList(BuildContext context, List<ListItem> items, int checked, int total, TimeOfDay packTime) {
+  Widget _buildSupplyList(BuildContext context, List<ListItem> items,
+      int checked, int total, TimeOfDay packTime) {
     return Stack(
       children: [
         Column(
@@ -579,25 +611,32 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
                     );
                   } else if (item is SupplyItem) {
                     return Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+                      margin: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 2),
                       decoration: BoxDecoration(
                         color: const Color(0xFF2D2D3A),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: ListTile(
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 4),
                         title: Text(
                           item.name,
                           style: GoogleFonts.roboto(
-                            color: item.isChecked ? Colors.white38 : Colors.white70,
+                            color: item.isChecked
+                                ? Colors.white38
+                                : Colors.white70,
                             fontSize: 15,
-                            decoration: item.isChecked ? TextDecoration.lineThrough : null,
+                            decoration: item.isChecked
+                                ? TextDecoration.lineThrough
+                                : null,
                           ),
                         ),
                         trailing: Checkbox(
                           value: item.isChecked,
                           onChanged: (value) async {
-                            final controller = ref.read(dailyCheckControllerProvider.notifier);
+                            final controller =
+                                ref.read(dailyCheckControllerProvider.notifier);
                             setState(() {
                               _checkedState[item.id] = value ?? false;
                             });
@@ -610,7 +649,8 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
                             );
 
                             // Check if bag is now complete
-                            final tomorrowSupplies = await ref.read(tomorrowSupplyControllerProvider.future);
+                            final tomorrowSupplies = await ref
+                                .read(tomorrowSupplyControllerProvider.future);
                             int totalSupplies = 0;
                             for (final course in tomorrowSupplies) {
                               totalSupplies += course.supplies.length;
@@ -627,7 +667,8 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
                         onTap: () async {
                           // Toggle checkbox when tapping anywhere on the card
                           final newValue = !item.isChecked;
-                          final controller = ref.read(dailyCheckControllerProvider.notifier);
+                          final controller =
+                              ref.read(dailyCheckControllerProvider.notifier);
                           setState(() {
                             _checkedState[item.id] = newValue;
                           });
@@ -640,7 +681,8 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
                           );
 
                           // Check if bag is now complete
-                          final tomorrowSupplies = await ref.read(tomorrowSupplyControllerProvider.future);
+                          final tomorrowSupplies = await ref
+                              .read(tomorrowSupplyControllerProvider.future);
                           int totalSupplies = 0;
                           for (final course in tomorrowSupplies) {
                             totalSupplies += course.supplies.length;
@@ -662,7 +704,8 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
     );
   }
 
-  Widget _buildBagReadyBanner(BuildContext context, int checked, int total, TimeOfDay packTime) {
+  Widget _buildBagReadyBanner(
+      BuildContext context, int checked, int total, TimeOfDay packTime) {
     final accentColor = Theme.of(context).colorScheme.secondary;
     final progress = total > 0 ? checked / total : 0.0;
 
@@ -705,7 +748,9 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      checked == total ? "Ton sac est pret !" : "Prepare ton sac",
+                      checked == total
+                          ? "Ton sac est pret !"
+                          : "Prepare ton sac",
                       style: GoogleFonts.robotoCondensed(
                         fontSize: 18,
                         color: Colors.white,
@@ -792,10 +837,28 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
   String _formatTargetDateShort(DateTime? date) {
     if (date == null) return '';
 
-    const days = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
+    const days = [
+      'Lundi',
+      'Mardi',
+      'Mercredi',
+      'Jeudi',
+      'Vendredi',
+      'Samedi',
+      'Dimanche'
+    ];
     const months = [
-      'Janvier', 'Fevrier', 'Mars', 'Avril', 'Mai', 'Juin',
-      'Juillet', 'Aout', 'Septembre', 'Octobre', 'Novembre', 'Decembre'
+      'Janvier',
+      'Fevrier',
+      'Mars',
+      'Avril',
+      'Mai',
+      'Juin',
+      'Juillet',
+      'Aout',
+      'Septembre',
+      'Octobre',
+      'Novembre',
+      'Decembre'
     ];
 
     return "${days[date.weekday - 1]} ${date.day} ${months[date.month - 1]}";
@@ -941,7 +1004,9 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
             left: 16,
             right: 16,
             top: 16,
-            bottom: MediaQuery.of(sheetContext).viewInsets.bottom + bottomSafeArea + 16,
+            bottom: MediaQuery.of(sheetContext).viewInsets.bottom +
+                bottomSafeArea +
+                16,
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -971,7 +1036,8 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: Theme.of(sheetContext).colorScheme.primary),
+                    borderSide: BorderSide(
+                        color: Theme.of(sheetContext).colorScheme.primary),
                   ),
                   labelText: "Nom de la fourniture",
                   hintText: "Exemple : Règle",

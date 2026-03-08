@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "851694236975",
+    "project_id": "dansmonsac-51195",
+    "storage_bucket": "dansmonsac-51195.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:851694236975:android:e3ee2f2097b88587661dda",
+        "android_client_info": {
+          "package_name": "fr.kappsmobile.dansmonsac"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAow-PnxAE-o5FFcy5ARqnHdQW9pnNQBy0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -6,7 +6,8 @@ void main() {
   group('Supply Suggestions - DefaultSupplies Integration', () {
     group('Known Subjects', () {
       test('should return suggestions for "Mathématiques"', () {
-        final supplies = DefaultSupplies.getSuppliesBySubjectName('Mathématiques');
+        final supplies =
+            DefaultSupplies.getSuppliesBySubjectName('Mathématiques');
         expect(supplies, isNotNull);
         expect(supplies!.length, 4);
         expect(supplies[0], 'Cahier de maths');
@@ -25,7 +26,8 @@ void main() {
       });
 
       test('should return suggestions for "Histoire-Géographie"', () {
-        final supplies = DefaultSupplies.getSuppliesBySubjectName('Histoire-Géographie');
+        final supplies =
+            DefaultSupplies.getSuppliesBySubjectName('Histoire-Géographie');
         expect(supplies, isNotNull);
         expect(supplies!.length, 2);
         expect(supplies[0], 'Cahier d\'histoire-géo');
@@ -60,21 +62,24 @@ void main() {
 
     group('Case Insensitivity', () {
       test('should match "mathématiques" (lowercase)', () {
-        final supplies = DefaultSupplies.getSuppliesBySubjectName('mathématiques');
+        final supplies =
+            DefaultSupplies.getSuppliesBySubjectName('mathématiques');
         expect(supplies, isNotNull);
         expect(supplies!.length, 4);
         expect(supplies[0], 'Cahier de maths');
       });
 
       test('should match "MATHÉMATIQUES" (uppercase)', () {
-        final supplies = DefaultSupplies.getSuppliesBySubjectName('MATHÉMATIQUES');
+        final supplies =
+            DefaultSupplies.getSuppliesBySubjectName('MATHÉMATIQUES');
         expect(supplies, isNotNull);
         expect(supplies!.length, 4);
         expect(supplies[0], 'Cahier de maths');
       });
 
       test('should match "MaThÉmAtIqUeS" (mixed case)', () {
-        final supplies = DefaultSupplies.getSuppliesBySubjectName('MaThÉmAtIqUeS');
+        final supplies =
+            DefaultSupplies.getSuppliesBySubjectName('MaThÉmAtIqUeS');
         expect(supplies, isNotNull);
         expect(supplies!.length, 4);
       });
@@ -82,7 +87,8 @@ void main() {
 
     group('Accent Insensitivity', () {
       test('should match "mathematiques" (no accents)', () {
-        final supplies = DefaultSupplies.getSuppliesBySubjectName('mathematiques');
+        final supplies =
+            DefaultSupplies.getSuppliesBySubjectName('mathematiques');
         expect(supplies, isNotNull);
         expect(supplies!.length, 4);
         expect(supplies[0], 'Cahier de maths');
@@ -96,7 +102,8 @@ void main() {
       });
 
       test('should match "Histoire-Geographie" (no accents)', () {
-        final supplies = DefaultSupplies.getSuppliesBySubjectName('Histoire-Geographie');
+        final supplies =
+            DefaultSupplies.getSuppliesBySubjectName('Histoire-Geographie');
         expect(supplies, isNotNull);
         expect(supplies!.length, 2);
       });
@@ -144,7 +151,8 @@ void main() {
 
     group('Unknown Subjects', () {
       test('should return null for unknown subject', () {
-        final supplies = DefaultSupplies.getSuppliesBySubjectName('Unknown Subject');
+        final supplies =
+            DefaultSupplies.getSuppliesBySubjectName('Unknown Subject');
         expect(supplies, isNull);
       });
 
@@ -233,8 +241,11 @@ void main() {
   });
 
   group('Supply Suggestions Conversion Logic', () {
-    test('should convert DefaultSupplies to SuggestedSupply list with default checked state', () {
-      final supplies = DefaultSupplies.getSuppliesBySubjectName('Mathématiques');
+    test(
+        'should convert DefaultSupplies to SuggestedSupply list with default checked state',
+        () {
+      final supplies =
+          DefaultSupplies.getSuppliesBySubjectName('Mathématiques');
       expect(supplies, isNotNull);
 
       // Simulate controller logic

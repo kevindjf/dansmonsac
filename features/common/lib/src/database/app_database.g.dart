@@ -42,16 +42,6 @@ class $CoursesTable extends Courses
   late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
       'updated_at', aliasedName, false,
       type: DriftSqlType.dateTime, requiredDuringInsert: true);
-  static const VerificationMeta _isSyncedMeta =
-      const VerificationMeta('isSynced');
-  @override
-  late final GeneratedColumn<bool> isSynced = GeneratedColumn<bool>(
-      'is_synced', aliasedName, false,
-      type: DriftSqlType.bool,
-      requiredDuringInsert: false,
-      defaultConstraints:
-          GeneratedColumn.constraintIsAlways('CHECK ("is_synced" IN (0, 1))'),
-      defaultValue: const Constant(false));
   static const VerificationMeta _createdAtMeta =
       const VerificationMeta('createdAt');
   @override
@@ -62,7 +52,7 @@ class $CoursesTable extends Courses
       defaultValue: currentDateAndTime);
   @override
   List<GeneratedColumn> get $columns =>
-      [id, remoteId, name, color, weekType, updatedAt, isSynced, createdAt];
+      [id, remoteId, name, color, weekType, updatedAt, createdAt];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -106,10 +96,6 @@ class $CoursesTable extends Courses
     } else if (isInserting) {
       context.missing(_updatedAtMeta);
     }
-    if (data.containsKey('is_synced')) {
-      context.handle(_isSyncedMeta,
-          isSynced.isAcceptableOrUnknown(data['is_synced']!, _isSyncedMeta));
-    }
     if (data.containsKey('created_at')) {
       context.handle(_createdAtMeta,
           createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
@@ -135,8 +121,6 @@ class $CoursesTable extends Courses
           .read(DriftSqlType.string, data['${effectivePrefix}week_type'])!,
       updatedAt: attachedDatabase.typeMapping
           .read(DriftSqlType.dateTime, data['${effectivePrefix}updated_at'])!,
-      isSynced: attachedDatabase.typeMapping
-          .read(DriftSqlType.bool, data['${effectivePrefix}is_synced'])!,
       createdAt: attachedDatabase.typeMapping
           .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
     );
@@ -155,7 +139,6 @@ class CourseEntity extends DataClass implements Insertable<CourseEntity> {
   final String color;
   final String weekType;
   final DateTime updatedAt;
-  final bool isSynced;
   final DateTime createdAt;
   const CourseEntity(
       {required this.id,
@@ -164,7 +147,6 @@ class CourseEntity extends DataClass implements Insertable<CourseEntity> {
       required this.color,
       required this.weekType,
       required this.updatedAt,
-      required this.isSynced,
       required this.createdAt});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -177,7 +159,6 @@ class CourseEntity extends DataClass implements Insertable<CourseEntity> {
     map['color'] = Variable<String>(color);
     map['week_type'] = Variable<String>(weekType);
     map['updated_at'] = Variable<DateTime>(updatedAt);
-    map['is_synced'] = Variable<bool>(isSynced);
     map['created_at'] = Variable<DateTime>(createdAt);
     return map;
   }
@@ -192,7 +173,6 @@ class CourseEntity extends DataClass implements Insertable<CourseEntity> {
       color: Value(color),
       weekType: Value(weekType),
       updatedAt: Value(updatedAt),
-      isSynced: Value(isSynced),
       createdAt: Value(createdAt),
     );
   }
@@ -207,7 +187,6 @@ class CourseEntity extends DataClass implements Insertable<CourseEntity> {
       color: serializer.fromJson<String>(json['color']),
       weekType: serializer.fromJson<String>(json['weekType']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
-      isSynced: serializer.fromJson<bool>(json['isSynced']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
     );
   }
@@ -221,7 +200,6 @@ class CourseEntity extends DataClass implements Insertable<CourseEntity> {
       'color': serializer.toJson<String>(color),
       'weekType': serializer.toJson<String>(weekType),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
-      'isSynced': serializer.toJson<bool>(isSynced),
       'createdAt': serializer.toJson<DateTime>(createdAt),
     };
   }
@@ -233,7 +211,6 @@ class CourseEntity extends DataClass implements Insertable<CourseEntity> {
           String? color,
           String? weekType,
           DateTime? updatedAt,
-          bool? isSynced,
           DateTime? createdAt}) =>
       CourseEntity(
         id: id ?? this.id,
@@ -242,7 +219,6 @@ class CourseEntity extends DataClass implements Insertable<CourseEntity> {
         color: color ?? this.color,
         weekType: weekType ?? this.weekType,
         updatedAt: updatedAt ?? this.updatedAt,
-        isSynced: isSynced ?? this.isSynced,
         createdAt: createdAt ?? this.createdAt,
       );
   CourseEntity copyWithCompanion(CoursesCompanion data) {
@@ -253,7 +229,6 @@ class CourseEntity extends DataClass implements Insertable<CourseEntity> {
       color: data.color.present ? data.color.value : this.color,
       weekType: data.weekType.present ? data.weekType.value : this.weekType,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
-      isSynced: data.isSynced.present ? data.isSynced.value : this.isSynced,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
     );
   }
@@ -267,15 +242,14 @@ class CourseEntity extends DataClass implements Insertable<CourseEntity> {
           ..write('color: $color, ')
           ..write('weekType: $weekType, ')
           ..write('updatedAt: $updatedAt, ')
-          ..write('isSynced: $isSynced, ')
           ..write('createdAt: $createdAt')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(
-      id, remoteId, name, color, weekType, updatedAt, isSynced, createdAt);
+  int get hashCode =>
+      Object.hash(id, remoteId, name, color, weekType, updatedAt, createdAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -286,7 +260,6 @@ class CourseEntity extends DataClass implements Insertable<CourseEntity> {
           other.color == this.color &&
           other.weekType == this.weekType &&
           other.updatedAt == this.updatedAt &&
-          other.isSynced == this.isSynced &&
           other.createdAt == this.createdAt);
 }
 
@@ -297,7 +270,6 @@ class CoursesCompanion extends UpdateCompanion<CourseEntity> {
   final Value<String> color;
   final Value<String> weekType;
   final Value<DateTime> updatedAt;
-  final Value<bool> isSynced;
   final Value<DateTime> createdAt;
   final Value<int> rowid;
   const CoursesCompanion({
@@ -307,7 +279,6 @@ class CoursesCompanion extends UpdateCompanion<CourseEntity> {
     this.color = const Value.absent(),
     this.weekType = const Value.absent(),
     this.updatedAt = const Value.absent(),
-    this.isSynced = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.rowid = const Value.absent(),
   });
@@ -318,7 +289,6 @@ class CoursesCompanion extends UpdateCompanion<CourseEntity> {
     required String color,
     required String weekType,
     required DateTime updatedAt,
-    this.isSynced = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.rowid = const Value.absent(),
   })  : id = Value(id),
@@ -333,7 +303,6 @@ class CoursesCompanion extends UpdateCompanion<CourseEntity> {
     Expression<String>? color,
     Expression<String>? weekType,
     Expression<DateTime>? updatedAt,
-    Expression<bool>? isSynced,
     Expression<DateTime>? createdAt,
     Expression<int>? rowid,
   }) {
@@ -344,7 +313,6 @@ class CoursesCompanion extends UpdateCompanion<CourseEntity> {
       if (color != null) 'color': color,
       if (weekType != null) 'week_type': weekType,
       if (updatedAt != null) 'updated_at': updatedAt,
-      if (isSynced != null) 'is_synced': isSynced,
       if (createdAt != null) 'created_at': createdAt,
       if (rowid != null) 'rowid': rowid,
     });
@@ -357,7 +325,6 @@ class CoursesCompanion extends UpdateCompanion<CourseEntity> {
       Value<String>? color,
       Value<String>? weekType,
       Value<DateTime>? updatedAt,
-      Value<bool>? isSynced,
       Value<DateTime>? createdAt,
       Value<int>? rowid}) {
     return CoursesCompanion(
@@ -367,7 +334,6 @@ class CoursesCompanion extends UpdateCompanion<CourseEntity> {
       color: color ?? this.color,
       weekType: weekType ?? this.weekType,
       updatedAt: updatedAt ?? this.updatedAt,
-      isSynced: isSynced ?? this.isSynced,
       createdAt: createdAt ?? this.createdAt,
       rowid: rowid ?? this.rowid,
     );
@@ -394,9 +360,6 @@ class CoursesCompanion extends UpdateCompanion<CourseEntity> {
     if (updatedAt.present) {
       map['updated_at'] = Variable<DateTime>(updatedAt.value);
     }
-    if (isSynced.present) {
-      map['is_synced'] = Variable<bool>(isSynced.value);
-    }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
@@ -415,7 +378,6 @@ class CoursesCompanion extends UpdateCompanion<CourseEntity> {
           ..write('color: $color, ')
           ..write('weekType: $weekType, ')
           ..write('updatedAt: $updatedAt, ')
-          ..write('isSynced: $isSynced, ')
           ..write('createdAt: $createdAt, ')
           ..write('rowid: $rowid')
           ..write(')'))
@@ -473,16 +435,6 @@ class $SuppliesTable extends Supplies
   late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
       'updated_at', aliasedName, false,
       type: DriftSqlType.dateTime, requiredDuringInsert: true);
-  static const VerificationMeta _isSyncedMeta =
-      const VerificationMeta('isSynced');
-  @override
-  late final GeneratedColumn<bool> isSynced = GeneratedColumn<bool>(
-      'is_synced', aliasedName, false,
-      type: DriftSqlType.bool,
-      requiredDuringInsert: false,
-      defaultConstraints:
-          GeneratedColumn.constraintIsAlways('CHECK ("is_synced" IN (0, 1))'),
-      defaultValue: const Constant(false));
   static const VerificationMeta _createdAtMeta =
       const VerificationMeta('createdAt');
   @override
@@ -500,7 +452,6 @@ class $SuppliesTable extends Supplies
         isChecked,
         checkedDate,
         updatedAt,
-        isSynced,
         createdAt
       ];
   @override
@@ -550,10 +501,6 @@ class $SuppliesTable extends Supplies
     } else if (isInserting) {
       context.missing(_updatedAtMeta);
     }
-    if (data.containsKey('is_synced')) {
-      context.handle(_isSyncedMeta,
-          isSynced.isAcceptableOrUnknown(data['is_synced']!, _isSyncedMeta));
-    }
     if (data.containsKey('created_at')) {
       context.handle(_createdAtMeta,
           createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
@@ -581,8 +528,6 @@ class $SuppliesTable extends Supplies
           .read(DriftSqlType.dateTime, data['${effectivePrefix}checked_date']),
       updatedAt: attachedDatabase.typeMapping
           .read(DriftSqlType.dateTime, data['${effectivePrefix}updated_at'])!,
-      isSynced: attachedDatabase.typeMapping
-          .read(DriftSqlType.bool, data['${effectivePrefix}is_synced'])!,
       createdAt: attachedDatabase.typeMapping
           .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
     );
@@ -602,7 +547,6 @@ class SupplyEntity extends DataClass implements Insertable<SupplyEntity> {
   final bool isChecked;
   final DateTime? checkedDate;
   final DateTime updatedAt;
-  final bool isSynced;
   final DateTime createdAt;
   const SupplyEntity(
       {required this.id,
@@ -612,7 +556,6 @@ class SupplyEntity extends DataClass implements Insertable<SupplyEntity> {
       required this.isChecked,
       this.checkedDate,
       required this.updatedAt,
-      required this.isSynced,
       required this.createdAt});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -628,7 +571,6 @@ class SupplyEntity extends DataClass implements Insertable<SupplyEntity> {
       map['checked_date'] = Variable<DateTime>(checkedDate);
     }
     map['updated_at'] = Variable<DateTime>(updatedAt);
-    map['is_synced'] = Variable<bool>(isSynced);
     map['created_at'] = Variable<DateTime>(createdAt);
     return map;
   }
@@ -646,7 +588,6 @@ class SupplyEntity extends DataClass implements Insertable<SupplyEntity> {
           ? const Value.absent()
           : Value(checkedDate),
       updatedAt: Value(updatedAt),
-      isSynced: Value(isSynced),
       createdAt: Value(createdAt),
     );
   }
@@ -662,7 +603,6 @@ class SupplyEntity extends DataClass implements Insertable<SupplyEntity> {
       isChecked: serializer.fromJson<bool>(json['isChecked']),
       checkedDate: serializer.fromJson<DateTime?>(json['checkedDate']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
-      isSynced: serializer.fromJson<bool>(json['isSynced']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
     );
   }
@@ -677,7 +617,6 @@ class SupplyEntity extends DataClass implements Insertable<SupplyEntity> {
       'isChecked': serializer.toJson<bool>(isChecked),
       'checkedDate': serializer.toJson<DateTime?>(checkedDate),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
-      'isSynced': serializer.toJson<bool>(isSynced),
       'createdAt': serializer.toJson<DateTime>(createdAt),
     };
   }
@@ -690,7 +629,6 @@ class SupplyEntity extends DataClass implements Insertable<SupplyEntity> {
           bool? isChecked,
           Value<DateTime?> checkedDate = const Value.absent(),
           DateTime? updatedAt,
-          bool? isSynced,
           DateTime? createdAt}) =>
       SupplyEntity(
         id: id ?? this.id,
@@ -700,7 +638,6 @@ class SupplyEntity extends DataClass implements Insertable<SupplyEntity> {
         isChecked: isChecked ?? this.isChecked,
         checkedDate: checkedDate.present ? checkedDate.value : this.checkedDate,
         updatedAt: updatedAt ?? this.updatedAt,
-        isSynced: isSynced ?? this.isSynced,
         createdAt: createdAt ?? this.createdAt,
       );
   SupplyEntity copyWithCompanion(SuppliesCompanion data) {
@@ -713,7 +650,6 @@ class SupplyEntity extends DataClass implements Insertable<SupplyEntity> {
       checkedDate:
           data.checkedDate.present ? data.checkedDate.value : this.checkedDate,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
-      isSynced: data.isSynced.present ? data.isSynced.value : this.isSynced,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
     );
   }
@@ -728,7 +664,6 @@ class SupplyEntity extends DataClass implements Insertable<SupplyEntity> {
           ..write('isChecked: $isChecked, ')
           ..write('checkedDate: $checkedDate, ')
           ..write('updatedAt: $updatedAt, ')
-          ..write('isSynced: $isSynced, ')
           ..write('createdAt: $createdAt')
           ..write(')'))
         .toString();
@@ -736,7 +671,7 @@ class SupplyEntity extends DataClass implements Insertable<SupplyEntity> {
 
   @override
   int get hashCode => Object.hash(id, remoteId, courseId, name, isChecked,
-      checkedDate, updatedAt, isSynced, createdAt);
+      checkedDate, updatedAt, createdAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -748,7 +683,6 @@ class SupplyEntity extends DataClass implements Insertable<SupplyEntity> {
           other.isChecked == this.isChecked &&
           other.checkedDate == this.checkedDate &&
           other.updatedAt == this.updatedAt &&
-          other.isSynced == this.isSynced &&
           other.createdAt == this.createdAt);
 }
 
@@ -760,7 +694,6 @@ class SuppliesCompanion extends UpdateCompanion<SupplyEntity> {
   final Value<bool> isChecked;
   final Value<DateTime?> checkedDate;
   final Value<DateTime> updatedAt;
-  final Value<bool> isSynced;
   final Value<DateTime> createdAt;
   final Value<int> rowid;
   const SuppliesCompanion({
@@ -771,7 +704,6 @@ class SuppliesCompanion extends UpdateCompanion<SupplyEntity> {
     this.isChecked = const Value.absent(),
     this.checkedDate = const Value.absent(),
     this.updatedAt = const Value.absent(),
-    this.isSynced = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.rowid = const Value.absent(),
   });
@@ -783,7 +715,6 @@ class SuppliesCompanion extends UpdateCompanion<SupplyEntity> {
     this.isChecked = const Value.absent(),
     this.checkedDate = const Value.absent(),
     required DateTime updatedAt,
-    this.isSynced = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.rowid = const Value.absent(),
   })  : id = Value(id),
@@ -798,7 +729,6 @@ class SuppliesCompanion extends UpdateCompanion<SupplyEntity> {
     Expression<bool>? isChecked,
     Expression<DateTime>? checkedDate,
     Expression<DateTime>? updatedAt,
-    Expression<bool>? isSynced,
     Expression<DateTime>? createdAt,
     Expression<int>? rowid,
   }) {
@@ -810,7 +740,6 @@ class SuppliesCompanion extends UpdateCompanion<SupplyEntity> {
       if (isChecked != null) 'is_checked': isChecked,
       if (checkedDate != null) 'checked_date': checkedDate,
       if (updatedAt != null) 'updated_at': updatedAt,
-      if (isSynced != null) 'is_synced': isSynced,
       if (createdAt != null) 'created_at': createdAt,
       if (rowid != null) 'rowid': rowid,
     });
@@ -824,7 +753,6 @@ class SuppliesCompanion extends UpdateCompanion<SupplyEntity> {
       Value<bool>? isChecked,
       Value<DateTime?>? checkedDate,
       Value<DateTime>? updatedAt,
-      Value<bool>? isSynced,
       Value<DateTime>? createdAt,
       Value<int>? rowid}) {
     return SuppliesCompanion(
@@ -835,7 +763,6 @@ class SuppliesCompanion extends UpdateCompanion<SupplyEntity> {
       isChecked: isChecked ?? this.isChecked,
       checkedDate: checkedDate ?? this.checkedDate,
       updatedAt: updatedAt ?? this.updatedAt,
-      isSynced: isSynced ?? this.isSynced,
       createdAt: createdAt ?? this.createdAt,
       rowid: rowid ?? this.rowid,
     );
@@ -865,9 +792,6 @@ class SuppliesCompanion extends UpdateCompanion<SupplyEntity> {
     if (updatedAt.present) {
       map['updated_at'] = Variable<DateTime>(updatedAt.value);
     }
-    if (isSynced.present) {
-      map['is_synced'] = Variable<bool>(isSynced.value);
-    }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
@@ -887,7 +811,6 @@ class SuppliesCompanion extends UpdateCompanion<SupplyEntity> {
           ..write('isChecked: $isChecked, ')
           ..write('checkedDate: $checkedDate, ')
           ..write('updatedAt: $updatedAt, ')
-          ..write('isSynced: $isSynced, ')
           ..write('createdAt: $createdAt, ')
           ..write('rowid: $rowid')
           ..write(')'))
@@ -970,16 +893,6 @@ class $CalendarCoursesTable extends CalendarCourses
   late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
       'updated_at', aliasedName, false,
       type: DriftSqlType.dateTime, requiredDuringInsert: true);
-  static const VerificationMeta _isSyncedMeta =
-      const VerificationMeta('isSynced');
-  @override
-  late final GeneratedColumn<bool> isSynced = GeneratedColumn<bool>(
-      'is_synced', aliasedName, false,
-      type: DriftSqlType.bool,
-      requiredDuringInsert: false,
-      defaultConstraints:
-          GeneratedColumn.constraintIsAlways('CHECK ("is_synced" IN (0, 1))'),
-      defaultValue: const Constant(false));
   static const VerificationMeta _createdAtMeta =
       const VerificationMeta('createdAt');
   @override
@@ -1001,7 +914,6 @@ class $CalendarCoursesTable extends CalendarCourses
         endMinute,
         weekType,
         updatedAt,
-        isSynced,
         createdAt
       ];
   @override
@@ -1078,10 +990,6 @@ class $CalendarCoursesTable extends CalendarCourses
     } else if (isInserting) {
       context.missing(_updatedAtMeta);
     }
-    if (data.containsKey('is_synced')) {
-      context.handle(_isSyncedMeta,
-          isSynced.isAcceptableOrUnknown(data['is_synced']!, _isSyncedMeta));
-    }
     if (data.containsKey('created_at')) {
       context.handle(_createdAtMeta,
           createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
@@ -1117,8 +1025,6 @@ class $CalendarCoursesTable extends CalendarCourses
           .read(DriftSqlType.string, data['${effectivePrefix}week_type'])!,
       updatedAt: attachedDatabase.typeMapping
           .read(DriftSqlType.dateTime, data['${effectivePrefix}updated_at'])!,
-      isSynced: attachedDatabase.typeMapping
-          .read(DriftSqlType.bool, data['${effectivePrefix}is_synced'])!,
       createdAt: attachedDatabase.typeMapping
           .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
     );
@@ -1143,7 +1049,6 @@ class CalendarCourseEntity extends DataClass
   final int endMinute;
   final String weekType;
   final DateTime updatedAt;
-  final bool isSynced;
   final DateTime createdAt;
   const CalendarCourseEntity(
       {required this.id,
@@ -1157,7 +1062,6 @@ class CalendarCourseEntity extends DataClass
       required this.endMinute,
       required this.weekType,
       required this.updatedAt,
-      required this.isSynced,
       required this.createdAt});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -1175,7 +1079,6 @@ class CalendarCourseEntity extends DataClass
     map['end_minute'] = Variable<int>(endMinute);
     map['week_type'] = Variable<String>(weekType);
     map['updated_at'] = Variable<DateTime>(updatedAt);
-    map['is_synced'] = Variable<bool>(isSynced);
     map['created_at'] = Variable<DateTime>(createdAt);
     return map;
   }
@@ -1195,7 +1098,6 @@ class CalendarCourseEntity extends DataClass
       endMinute: Value(endMinute),
       weekType: Value(weekType),
       updatedAt: Value(updatedAt),
-      isSynced: Value(isSynced),
       createdAt: Value(createdAt),
     );
   }
@@ -1215,7 +1117,6 @@ class CalendarCourseEntity extends DataClass
       endMinute: serializer.fromJson<int>(json['endMinute']),
       weekType: serializer.fromJson<String>(json['weekType']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
-      isSynced: serializer.fromJson<bool>(json['isSynced']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
     );
   }
@@ -1234,7 +1135,6 @@ class CalendarCourseEntity extends DataClass
       'endMinute': serializer.toJson<int>(endMinute),
       'weekType': serializer.toJson<String>(weekType),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
-      'isSynced': serializer.toJson<bool>(isSynced),
       'createdAt': serializer.toJson<DateTime>(createdAt),
     };
   }
@@ -1251,7 +1151,6 @@ class CalendarCourseEntity extends DataClass
           int? endMinute,
           String? weekType,
           DateTime? updatedAt,
-          bool? isSynced,
           DateTime? createdAt}) =>
       CalendarCourseEntity(
         id: id ?? this.id,
@@ -1265,7 +1164,6 @@ class CalendarCourseEntity extends DataClass
         endMinute: endMinute ?? this.endMinute,
         weekType: weekType ?? this.weekType,
         updatedAt: updatedAt ?? this.updatedAt,
-        isSynced: isSynced ?? this.isSynced,
         createdAt: createdAt ?? this.createdAt,
       );
   CalendarCourseEntity copyWithCompanion(CalendarCoursesCompanion data) {
@@ -1282,7 +1180,6 @@ class CalendarCourseEntity extends DataClass
       endMinute: data.endMinute.present ? data.endMinute.value : this.endMinute,
       weekType: data.weekType.present ? data.weekType.value : this.weekType,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
-      isSynced: data.isSynced.present ? data.isSynced.value : this.isSynced,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
     );
   }
@@ -1301,7 +1198,6 @@ class CalendarCourseEntity extends DataClass
           ..write('endMinute: $endMinute, ')
           ..write('weekType: $weekType, ')
           ..write('updatedAt: $updatedAt, ')
-          ..write('isSynced: $isSynced, ')
           ..write('createdAt: $createdAt')
           ..write(')'))
         .toString();
@@ -1320,7 +1216,6 @@ class CalendarCourseEntity extends DataClass
       endMinute,
       weekType,
       updatedAt,
-      isSynced,
       createdAt);
   @override
   bool operator ==(Object other) =>
@@ -1337,7 +1232,6 @@ class CalendarCourseEntity extends DataClass
           other.endMinute == this.endMinute &&
           other.weekType == this.weekType &&
           other.updatedAt == this.updatedAt &&
-          other.isSynced == this.isSynced &&
           other.createdAt == this.createdAt);
 }
 
@@ -1353,7 +1247,6 @@ class CalendarCoursesCompanion extends UpdateCompanion<CalendarCourseEntity> {
   final Value<int> endMinute;
   final Value<String> weekType;
   final Value<DateTime> updatedAt;
-  final Value<bool> isSynced;
   final Value<DateTime> createdAt;
   final Value<int> rowid;
   const CalendarCoursesCompanion({
@@ -1368,7 +1261,6 @@ class CalendarCoursesCompanion extends UpdateCompanion<CalendarCourseEntity> {
     this.endMinute = const Value.absent(),
     this.weekType = const Value.absent(),
     this.updatedAt = const Value.absent(),
-    this.isSynced = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.rowid = const Value.absent(),
   });
@@ -1384,7 +1276,6 @@ class CalendarCoursesCompanion extends UpdateCompanion<CalendarCourseEntity> {
     required int endMinute,
     this.weekType = const Value.absent(),
     required DateTime updatedAt,
-    this.isSynced = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.rowid = const Value.absent(),
   })  : id = Value(id),
@@ -1407,7 +1298,6 @@ class CalendarCoursesCompanion extends UpdateCompanion<CalendarCourseEntity> {
     Expression<int>? endMinute,
     Expression<String>? weekType,
     Expression<DateTime>? updatedAt,
-    Expression<bool>? isSynced,
     Expression<DateTime>? createdAt,
     Expression<int>? rowid,
   }) {
@@ -1423,7 +1313,6 @@ class CalendarCoursesCompanion extends UpdateCompanion<CalendarCourseEntity> {
       if (endMinute != null) 'end_minute': endMinute,
       if (weekType != null) 'week_type': weekType,
       if (updatedAt != null) 'updated_at': updatedAt,
-      if (isSynced != null) 'is_synced': isSynced,
       if (createdAt != null) 'created_at': createdAt,
       if (rowid != null) 'rowid': rowid,
     });
@@ -1441,7 +1330,6 @@ class CalendarCoursesCompanion extends UpdateCompanion<CalendarCourseEntity> {
       Value<int>? endMinute,
       Value<String>? weekType,
       Value<DateTime>? updatedAt,
-      Value<bool>? isSynced,
       Value<DateTime>? createdAt,
       Value<int>? rowid}) {
     return CalendarCoursesCompanion(
@@ -1456,7 +1344,6 @@ class CalendarCoursesCompanion extends UpdateCompanion<CalendarCourseEntity> {
       endMinute: endMinute ?? this.endMinute,
       weekType: weekType ?? this.weekType,
       updatedAt: updatedAt ?? this.updatedAt,
-      isSynced: isSynced ?? this.isSynced,
       createdAt: createdAt ?? this.createdAt,
       rowid: rowid ?? this.rowid,
     );
@@ -1498,9 +1385,6 @@ class CalendarCoursesCompanion extends UpdateCompanion<CalendarCourseEntity> {
     if (updatedAt.present) {
       map['updated_at'] = Variable<DateTime>(updatedAt.value);
     }
-    if (isSynced.present) {
-      map['is_synced'] = Variable<bool>(isSynced.value);
-    }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
@@ -1524,401 +1408,7 @@ class CalendarCoursesCompanion extends UpdateCompanion<CalendarCourseEntity> {
           ..write('endMinute: $endMinute, ')
           ..write('weekType: $weekType, ')
           ..write('updatedAt: $updatedAt, ')
-          ..write('isSynced: $isSynced, ')
           ..write('createdAt: $createdAt, ')
-          ..write('rowid: $rowid')
-          ..write(')'))
-        .toString();
-  }
-}
-
-class $PendingOperationsTable extends PendingOperations
-    with TableInfo<$PendingOperationsTable, PendingOperationEntity> {
-  @override
-  final GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  $PendingOperationsTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _idMeta = const VerificationMeta('id');
-  @override
-  late final GeneratedColumn<String> id = GeneratedColumn<String>(
-      'id', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
-  static const VerificationMeta _entityTypeMeta =
-      const VerificationMeta('entityType');
-  @override
-  late final GeneratedColumn<String> entityType = GeneratedColumn<String>(
-      'entity_type', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
-  static const VerificationMeta _entityIdMeta =
-      const VerificationMeta('entityId');
-  @override
-  late final GeneratedColumn<String> entityId = GeneratedColumn<String>(
-      'entity_id', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
-  static const VerificationMeta _operationTypeMeta =
-      const VerificationMeta('operationType');
-  @override
-  late final GeneratedColumn<String> operationType = GeneratedColumn<String>(
-      'operation_type', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
-  static const VerificationMeta _dataMeta = const VerificationMeta('data');
-  @override
-  late final GeneratedColumn<String> data = GeneratedColumn<String>(
-      'data', aliasedName, true,
-      type: DriftSqlType.string, requiredDuringInsert: false);
-  static const VerificationMeta _createdAtMeta =
-      const VerificationMeta('createdAt');
-  @override
-  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
-      'created_at', aliasedName, false,
-      type: DriftSqlType.dateTime,
-      requiredDuringInsert: false,
-      defaultValue: currentDateAndTime);
-  static const VerificationMeta _retryCountMeta =
-      const VerificationMeta('retryCount');
-  @override
-  late final GeneratedColumn<int> retryCount = GeneratedColumn<int>(
-      'retry_count', aliasedName, false,
-      type: DriftSqlType.int,
-      requiredDuringInsert: false,
-      defaultValue: const Constant(0));
-  @override
-  List<GeneratedColumn> get $columns =>
-      [id, entityType, entityId, operationType, data, createdAt, retryCount];
-  @override
-  String get aliasedName => _alias ?? actualTableName;
-  @override
-  String get actualTableName => $name;
-  static const String $name = 'pending_operations';
-  @override
-  VerificationContext validateIntegrity(
-      Insertable<PendingOperationEntity> instance,
-      {bool isInserting = false}) {
-    final context = VerificationContext();
-    final data = instance.toColumns(true);
-    if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    } else if (isInserting) {
-      context.missing(_idMeta);
-    }
-    if (data.containsKey('entity_type')) {
-      context.handle(
-          _entityTypeMeta,
-          entityType.isAcceptableOrUnknown(
-              data['entity_type']!, _entityTypeMeta));
-    } else if (isInserting) {
-      context.missing(_entityTypeMeta);
-    }
-    if (data.containsKey('entity_id')) {
-      context.handle(_entityIdMeta,
-          entityId.isAcceptableOrUnknown(data['entity_id']!, _entityIdMeta));
-    } else if (isInserting) {
-      context.missing(_entityIdMeta);
-    }
-    if (data.containsKey('operation_type')) {
-      context.handle(
-          _operationTypeMeta,
-          operationType.isAcceptableOrUnknown(
-              data['operation_type']!, _operationTypeMeta));
-    } else if (isInserting) {
-      context.missing(_operationTypeMeta);
-    }
-    if (data.containsKey('data')) {
-      context.handle(
-          _dataMeta, this.data.isAcceptableOrUnknown(data['data']!, _dataMeta));
-    }
-    if (data.containsKey('created_at')) {
-      context.handle(_createdAtMeta,
-          createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
-    }
-    if (data.containsKey('retry_count')) {
-      context.handle(
-          _retryCountMeta,
-          retryCount.isAcceptableOrUnknown(
-              data['retry_count']!, _retryCountMeta));
-    }
-    return context;
-  }
-
-  @override
-  Set<GeneratedColumn> get $primaryKey => {id};
-  @override
-  PendingOperationEntity map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return PendingOperationEntity(
-      id: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}id'])!,
-      entityType: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}entity_type'])!,
-      entityId: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}entity_id'])!,
-      operationType: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}operation_type'])!,
-      data: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}data']),
-      createdAt: attachedDatabase.typeMapping
-          .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
-      retryCount: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}retry_count'])!,
-    );
-  }
-
-  @override
-  $PendingOperationsTable createAlias(String alias) {
-    return $PendingOperationsTable(attachedDatabase, alias);
-  }
-}
-
-class PendingOperationEntity extends DataClass
-    implements Insertable<PendingOperationEntity> {
-  final String id;
-  final String entityType;
-  final String entityId;
-  final String operationType;
-  final String? data;
-  final DateTime createdAt;
-  final int retryCount;
-  const PendingOperationEntity(
-      {required this.id,
-      required this.entityType,
-      required this.entityId,
-      required this.operationType,
-      this.data,
-      required this.createdAt,
-      required this.retryCount});
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    map['id'] = Variable<String>(id);
-    map['entity_type'] = Variable<String>(entityType);
-    map['entity_id'] = Variable<String>(entityId);
-    map['operation_type'] = Variable<String>(operationType);
-    if (!nullToAbsent || data != null) {
-      map['data'] = Variable<String>(data);
-    }
-    map['created_at'] = Variable<DateTime>(createdAt);
-    map['retry_count'] = Variable<int>(retryCount);
-    return map;
-  }
-
-  PendingOperationsCompanion toCompanion(bool nullToAbsent) {
-    return PendingOperationsCompanion(
-      id: Value(id),
-      entityType: Value(entityType),
-      entityId: Value(entityId),
-      operationType: Value(operationType),
-      data: data == null && nullToAbsent ? const Value.absent() : Value(data),
-      createdAt: Value(createdAt),
-      retryCount: Value(retryCount),
-    );
-  }
-
-  factory PendingOperationEntity.fromJson(Map<String, dynamic> json,
-      {ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return PendingOperationEntity(
-      id: serializer.fromJson<String>(json['id']),
-      entityType: serializer.fromJson<String>(json['entityType']),
-      entityId: serializer.fromJson<String>(json['entityId']),
-      operationType: serializer.fromJson<String>(json['operationType']),
-      data: serializer.fromJson<String?>(json['data']),
-      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
-      retryCount: serializer.fromJson<int>(json['retryCount']),
-    );
-  }
-  @override
-  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return <String, dynamic>{
-      'id': serializer.toJson<String>(id),
-      'entityType': serializer.toJson<String>(entityType),
-      'entityId': serializer.toJson<String>(entityId),
-      'operationType': serializer.toJson<String>(operationType),
-      'data': serializer.toJson<String?>(data),
-      'createdAt': serializer.toJson<DateTime>(createdAt),
-      'retryCount': serializer.toJson<int>(retryCount),
-    };
-  }
-
-  PendingOperationEntity copyWith(
-          {String? id,
-          String? entityType,
-          String? entityId,
-          String? operationType,
-          Value<String?> data = const Value.absent(),
-          DateTime? createdAt,
-          int? retryCount}) =>
-      PendingOperationEntity(
-        id: id ?? this.id,
-        entityType: entityType ?? this.entityType,
-        entityId: entityId ?? this.entityId,
-        operationType: operationType ?? this.operationType,
-        data: data.present ? data.value : this.data,
-        createdAt: createdAt ?? this.createdAt,
-        retryCount: retryCount ?? this.retryCount,
-      );
-  PendingOperationEntity copyWithCompanion(PendingOperationsCompanion data) {
-    return PendingOperationEntity(
-      id: data.id.present ? data.id.value : this.id,
-      entityType:
-          data.entityType.present ? data.entityType.value : this.entityType,
-      entityId: data.entityId.present ? data.entityId.value : this.entityId,
-      operationType: data.operationType.present
-          ? data.operationType.value
-          : this.operationType,
-      data: data.data.present ? data.data.value : this.data,
-      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
-      retryCount:
-          data.retryCount.present ? data.retryCount.value : this.retryCount,
-    );
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('PendingOperationEntity(')
-          ..write('id: $id, ')
-          ..write('entityType: $entityType, ')
-          ..write('entityId: $entityId, ')
-          ..write('operationType: $operationType, ')
-          ..write('data: $data, ')
-          ..write('createdAt: $createdAt, ')
-          ..write('retryCount: $retryCount')
-          ..write(')'))
-        .toString();
-  }
-
-  @override
-  int get hashCode => Object.hash(
-      id, entityType, entityId, operationType, data, createdAt, retryCount);
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is PendingOperationEntity &&
-          other.id == this.id &&
-          other.entityType == this.entityType &&
-          other.entityId == this.entityId &&
-          other.operationType == this.operationType &&
-          other.data == this.data &&
-          other.createdAt == this.createdAt &&
-          other.retryCount == this.retryCount);
-}
-
-class PendingOperationsCompanion
-    extends UpdateCompanion<PendingOperationEntity> {
-  final Value<String> id;
-  final Value<String> entityType;
-  final Value<String> entityId;
-  final Value<String> operationType;
-  final Value<String?> data;
-  final Value<DateTime> createdAt;
-  final Value<int> retryCount;
-  final Value<int> rowid;
-  const PendingOperationsCompanion({
-    this.id = const Value.absent(),
-    this.entityType = const Value.absent(),
-    this.entityId = const Value.absent(),
-    this.operationType = const Value.absent(),
-    this.data = const Value.absent(),
-    this.createdAt = const Value.absent(),
-    this.retryCount = const Value.absent(),
-    this.rowid = const Value.absent(),
-  });
-  PendingOperationsCompanion.insert({
-    required String id,
-    required String entityType,
-    required String entityId,
-    required String operationType,
-    this.data = const Value.absent(),
-    this.createdAt = const Value.absent(),
-    this.retryCount = const Value.absent(),
-    this.rowid = const Value.absent(),
-  })  : id = Value(id),
-        entityType = Value(entityType),
-        entityId = Value(entityId),
-        operationType = Value(operationType);
-  static Insertable<PendingOperationEntity> custom({
-    Expression<String>? id,
-    Expression<String>? entityType,
-    Expression<String>? entityId,
-    Expression<String>? operationType,
-    Expression<String>? data,
-    Expression<DateTime>? createdAt,
-    Expression<int>? retryCount,
-    Expression<int>? rowid,
-  }) {
-    return RawValuesInsertable({
-      if (id != null) 'id': id,
-      if (entityType != null) 'entity_type': entityType,
-      if (entityId != null) 'entity_id': entityId,
-      if (operationType != null) 'operation_type': operationType,
-      if (data != null) 'data': data,
-      if (createdAt != null) 'created_at': createdAt,
-      if (retryCount != null) 'retry_count': retryCount,
-      if (rowid != null) 'rowid': rowid,
-    });
-  }
-
-  PendingOperationsCompanion copyWith(
-      {Value<String>? id,
-      Value<String>? entityType,
-      Value<String>? entityId,
-      Value<String>? operationType,
-      Value<String?>? data,
-      Value<DateTime>? createdAt,
-      Value<int>? retryCount,
-      Value<int>? rowid}) {
-    return PendingOperationsCompanion(
-      id: id ?? this.id,
-      entityType: entityType ?? this.entityType,
-      entityId: entityId ?? this.entityId,
-      operationType: operationType ?? this.operationType,
-      data: data ?? this.data,
-      createdAt: createdAt ?? this.createdAt,
-      retryCount: retryCount ?? this.retryCount,
-      rowid: rowid ?? this.rowid,
-    );
-  }
-
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    if (id.present) {
-      map['id'] = Variable<String>(id.value);
-    }
-    if (entityType.present) {
-      map['entity_type'] = Variable<String>(entityType.value);
-    }
-    if (entityId.present) {
-      map['entity_id'] = Variable<String>(entityId.value);
-    }
-    if (operationType.present) {
-      map['operation_type'] = Variable<String>(operationType.value);
-    }
-    if (data.present) {
-      map['data'] = Variable<String>(data.value);
-    }
-    if (createdAt.present) {
-      map['created_at'] = Variable<DateTime>(createdAt.value);
-    }
-    if (retryCount.present) {
-      map['retry_count'] = Variable<int>(retryCount.value);
-    }
-    if (rowid.present) {
-      map['rowid'] = Variable<int>(rowid.value);
-    }
-    return map;
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('PendingOperationsCompanion(')
-          ..write('id: $id, ')
-          ..write('entityType: $entityType, ')
-          ..write('entityId: $entityId, ')
-          ..write('operationType: $operationType, ')
-          ..write('data: $data, ')
-          ..write('createdAt: $createdAt, ')
-          ..write('retryCount: $retryCount, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -2913,8 +2403,6 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $SuppliesTable supplies = $SuppliesTable(this);
   late final $CalendarCoursesTable calendarCourses =
       $CalendarCoursesTable(this);
-  late final $PendingOperationsTable pendingOperations =
-      $PendingOperationsTable(this);
   late final $DailyChecksTable dailyChecks = $DailyChecksTable(this);
   late final $BagCompletionsTable bagCompletions = $BagCompletionsTable(this);
   late final $PremiumStatusTable premiumStatus = $PremiumStatusTable(this);
@@ -2926,7 +2414,6 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         courses,
         supplies,
         calendarCourses,
-        pendingOperations,
         dailyChecks,
         bagCompletions,
         premiumStatus
@@ -2940,7 +2427,6 @@ typedef $$CoursesTableCreateCompanionBuilder = CoursesCompanion Function({
   required String color,
   required String weekType,
   required DateTime updatedAt,
-  Value<bool> isSynced,
   Value<DateTime> createdAt,
   Value<int> rowid,
 });
@@ -2951,7 +2437,6 @@ typedef $$CoursesTableUpdateCompanionBuilder = CoursesCompanion Function({
   Value<String> color,
   Value<String> weekType,
   Value<DateTime> updatedAt,
-  Value<bool> isSynced,
   Value<DateTime> createdAt,
   Value<int> rowid,
 });
@@ -2982,9 +2467,6 @@ class $$CoursesTableFilterComposer
 
   ColumnFilters<DateTime> get updatedAt => $composableBuilder(
       column: $table.updatedAt, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<bool> get isSynced => $composableBuilder(
-      column: $table.isSynced, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<DateTime> get createdAt => $composableBuilder(
       column: $table.createdAt, builder: (column) => ColumnFilters(column));
@@ -3017,9 +2499,6 @@ class $$CoursesTableOrderingComposer
   ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
       column: $table.updatedAt, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<bool> get isSynced => $composableBuilder(
-      column: $table.isSynced, builder: (column) => ColumnOrderings(column));
-
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
       column: $table.createdAt, builder: (column) => ColumnOrderings(column));
 }
@@ -3050,9 +2529,6 @@ class $$CoursesTableAnnotationComposer
 
   GeneratedColumn<DateTime> get updatedAt =>
       $composableBuilder(column: $table.updatedAt, builder: (column) => column);
-
-  GeneratedColumn<bool> get isSynced =>
-      $composableBuilder(column: $table.isSynced, builder: (column) => column);
 
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
@@ -3087,7 +2563,6 @@ class $$CoursesTableTableManager extends RootTableManager<
             Value<String> color = const Value.absent(),
             Value<String> weekType = const Value.absent(),
             Value<DateTime> updatedAt = const Value.absent(),
-            Value<bool> isSynced = const Value.absent(),
             Value<DateTime> createdAt = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
@@ -3098,7 +2573,6 @@ class $$CoursesTableTableManager extends RootTableManager<
             color: color,
             weekType: weekType,
             updatedAt: updatedAt,
-            isSynced: isSynced,
             createdAt: createdAt,
             rowid: rowid,
           ),
@@ -3109,7 +2583,6 @@ class $$CoursesTableTableManager extends RootTableManager<
             required String color,
             required String weekType,
             required DateTime updatedAt,
-            Value<bool> isSynced = const Value.absent(),
             Value<DateTime> createdAt = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
@@ -3120,7 +2593,6 @@ class $$CoursesTableTableManager extends RootTableManager<
             color: color,
             weekType: weekType,
             updatedAt: updatedAt,
-            isSynced: isSynced,
             createdAt: createdAt,
             rowid: rowid,
           ),
@@ -3151,7 +2623,6 @@ typedef $$SuppliesTableCreateCompanionBuilder = SuppliesCompanion Function({
   Value<bool> isChecked,
   Value<DateTime?> checkedDate,
   required DateTime updatedAt,
-  Value<bool> isSynced,
   Value<DateTime> createdAt,
   Value<int> rowid,
 });
@@ -3163,7 +2634,6 @@ typedef $$SuppliesTableUpdateCompanionBuilder = SuppliesCompanion Function({
   Value<bool> isChecked,
   Value<DateTime?> checkedDate,
   Value<DateTime> updatedAt,
-  Value<bool> isSynced,
   Value<DateTime> createdAt,
   Value<int> rowid,
 });
@@ -3197,9 +2667,6 @@ class $$SuppliesTableFilterComposer
 
   ColumnFilters<DateTime> get updatedAt => $composableBuilder(
       column: $table.updatedAt, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<bool> get isSynced => $composableBuilder(
-      column: $table.isSynced, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<DateTime> get createdAt => $composableBuilder(
       column: $table.createdAt, builder: (column) => ColumnFilters(column));
@@ -3235,9 +2702,6 @@ class $$SuppliesTableOrderingComposer
   ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
       column: $table.updatedAt, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<bool> get isSynced => $composableBuilder(
-      column: $table.isSynced, builder: (column) => ColumnOrderings(column));
-
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
       column: $table.createdAt, builder: (column) => ColumnOrderings(column));
 }
@@ -3271,9 +2735,6 @@ class $$SuppliesTableAnnotationComposer
 
   GeneratedColumn<DateTime> get updatedAt =>
       $composableBuilder(column: $table.updatedAt, builder: (column) => column);
-
-  GeneratedColumn<bool> get isSynced =>
-      $composableBuilder(column: $table.isSynced, builder: (column) => column);
 
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
@@ -3309,7 +2770,6 @@ class $$SuppliesTableTableManager extends RootTableManager<
             Value<bool> isChecked = const Value.absent(),
             Value<DateTime?> checkedDate = const Value.absent(),
             Value<DateTime> updatedAt = const Value.absent(),
-            Value<bool> isSynced = const Value.absent(),
             Value<DateTime> createdAt = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
@@ -3321,7 +2781,6 @@ class $$SuppliesTableTableManager extends RootTableManager<
             isChecked: isChecked,
             checkedDate: checkedDate,
             updatedAt: updatedAt,
-            isSynced: isSynced,
             createdAt: createdAt,
             rowid: rowid,
           ),
@@ -3333,7 +2792,6 @@ class $$SuppliesTableTableManager extends RootTableManager<
             Value<bool> isChecked = const Value.absent(),
             Value<DateTime?> checkedDate = const Value.absent(),
             required DateTime updatedAt,
-            Value<bool> isSynced = const Value.absent(),
             Value<DateTime> createdAt = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
@@ -3345,7 +2803,6 @@ class $$SuppliesTableTableManager extends RootTableManager<
             isChecked: isChecked,
             checkedDate: checkedDate,
             updatedAt: updatedAt,
-            isSynced: isSynced,
             createdAt: createdAt,
             rowid: rowid,
           ),
@@ -3381,7 +2838,6 @@ typedef $$CalendarCoursesTableCreateCompanionBuilder = CalendarCoursesCompanion
   required int endMinute,
   Value<String> weekType,
   required DateTime updatedAt,
-  Value<bool> isSynced,
   Value<DateTime> createdAt,
   Value<int> rowid,
 });
@@ -3398,7 +2854,6 @@ typedef $$CalendarCoursesTableUpdateCompanionBuilder = CalendarCoursesCompanion
   Value<int> endMinute,
   Value<String> weekType,
   Value<DateTime> updatedAt,
-  Value<bool> isSynced,
   Value<DateTime> createdAt,
   Value<int> rowid,
 });
@@ -3444,9 +2899,6 @@ class $$CalendarCoursesTableFilterComposer
 
   ColumnFilters<DateTime> get updatedAt => $composableBuilder(
       column: $table.updatedAt, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<bool> get isSynced => $composableBuilder(
-      column: $table.isSynced, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<DateTime> get createdAt => $composableBuilder(
       column: $table.createdAt, builder: (column) => ColumnFilters(column));
@@ -3494,9 +2946,6 @@ class $$CalendarCoursesTableOrderingComposer
   ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
       column: $table.updatedAt, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<bool> get isSynced => $composableBuilder(
-      column: $table.isSynced, builder: (column) => ColumnOrderings(column));
-
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
       column: $table.createdAt, builder: (column) => ColumnOrderings(column));
 }
@@ -3543,9 +2992,6 @@ class $$CalendarCoursesTableAnnotationComposer
   GeneratedColumn<DateTime> get updatedAt =>
       $composableBuilder(column: $table.updatedAt, builder: (column) => column);
 
-  GeneratedColumn<bool> get isSynced =>
-      $composableBuilder(column: $table.isSynced, builder: (column) => column);
-
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
 }
@@ -3588,7 +3034,6 @@ class $$CalendarCoursesTableTableManager extends RootTableManager<
             Value<int> endMinute = const Value.absent(),
             Value<String> weekType = const Value.absent(),
             Value<DateTime> updatedAt = const Value.absent(),
-            Value<bool> isSynced = const Value.absent(),
             Value<DateTime> createdAt = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
@@ -3604,7 +3049,6 @@ class $$CalendarCoursesTableTableManager extends RootTableManager<
             endMinute: endMinute,
             weekType: weekType,
             updatedAt: updatedAt,
-            isSynced: isSynced,
             createdAt: createdAt,
             rowid: rowid,
           ),
@@ -3620,7 +3064,6 @@ class $$CalendarCoursesTableTableManager extends RootTableManager<
             required int endMinute,
             Value<String> weekType = const Value.absent(),
             required DateTime updatedAt,
-            Value<bool> isSynced = const Value.absent(),
             Value<DateTime> createdAt = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
@@ -3636,7 +3079,6 @@ class $$CalendarCoursesTableTableManager extends RootTableManager<
             endMinute: endMinute,
             weekType: weekType,
             updatedAt: updatedAt,
-            isSynced: isSynced,
             createdAt: createdAt,
             rowid: rowid,
           ),
@@ -3661,214 +3103,6 @@ typedef $$CalendarCoursesTableProcessedTableManager = ProcessedTableManager<
       BaseReferences<_$AppDatabase, $CalendarCoursesTable, CalendarCourseEntity>
     ),
     CalendarCourseEntity,
-    PrefetchHooks Function()>;
-typedef $$PendingOperationsTableCreateCompanionBuilder
-    = PendingOperationsCompanion Function({
-  required String id,
-  required String entityType,
-  required String entityId,
-  required String operationType,
-  Value<String?> data,
-  Value<DateTime> createdAt,
-  Value<int> retryCount,
-  Value<int> rowid,
-});
-typedef $$PendingOperationsTableUpdateCompanionBuilder
-    = PendingOperationsCompanion Function({
-  Value<String> id,
-  Value<String> entityType,
-  Value<String> entityId,
-  Value<String> operationType,
-  Value<String?> data,
-  Value<DateTime> createdAt,
-  Value<int> retryCount,
-  Value<int> rowid,
-});
-
-class $$PendingOperationsTableFilterComposer
-    extends Composer<_$AppDatabase, $PendingOperationsTable> {
-  $$PendingOperationsTableFilterComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnFilters<String> get id => $composableBuilder(
-      column: $table.id, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<String> get entityType => $composableBuilder(
-      column: $table.entityType, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<String> get entityId => $composableBuilder(
-      column: $table.entityId, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<String> get operationType => $composableBuilder(
-      column: $table.operationType, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<String> get data => $composableBuilder(
-      column: $table.data, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<DateTime> get createdAt => $composableBuilder(
-      column: $table.createdAt, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<int> get retryCount => $composableBuilder(
-      column: $table.retryCount, builder: (column) => ColumnFilters(column));
-}
-
-class $$PendingOperationsTableOrderingComposer
-    extends Composer<_$AppDatabase, $PendingOperationsTable> {
-  $$PendingOperationsTableOrderingComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnOrderings<String> get id => $composableBuilder(
-      column: $table.id, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<String> get entityType => $composableBuilder(
-      column: $table.entityType, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<String> get entityId => $composableBuilder(
-      column: $table.entityId, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<String> get operationType => $composableBuilder(
-      column: $table.operationType,
-      builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<String> get data => $composableBuilder(
-      column: $table.data, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
-      column: $table.createdAt, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<int> get retryCount => $composableBuilder(
-      column: $table.retryCount, builder: (column) => ColumnOrderings(column));
-}
-
-class $$PendingOperationsTableAnnotationComposer
-    extends Composer<_$AppDatabase, $PendingOperationsTable> {
-  $$PendingOperationsTableAnnotationComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  GeneratedColumn<String> get id =>
-      $composableBuilder(column: $table.id, builder: (column) => column);
-
-  GeneratedColumn<String> get entityType => $composableBuilder(
-      column: $table.entityType, builder: (column) => column);
-
-  GeneratedColumn<String> get entityId =>
-      $composableBuilder(column: $table.entityId, builder: (column) => column);
-
-  GeneratedColumn<String> get operationType => $composableBuilder(
-      column: $table.operationType, builder: (column) => column);
-
-  GeneratedColumn<String> get data =>
-      $composableBuilder(column: $table.data, builder: (column) => column);
-
-  GeneratedColumn<DateTime> get createdAt =>
-      $composableBuilder(column: $table.createdAt, builder: (column) => column);
-
-  GeneratedColumn<int> get retryCount => $composableBuilder(
-      column: $table.retryCount, builder: (column) => column);
-}
-
-class $$PendingOperationsTableTableManager extends RootTableManager<
-    _$AppDatabase,
-    $PendingOperationsTable,
-    PendingOperationEntity,
-    $$PendingOperationsTableFilterComposer,
-    $$PendingOperationsTableOrderingComposer,
-    $$PendingOperationsTableAnnotationComposer,
-    $$PendingOperationsTableCreateCompanionBuilder,
-    $$PendingOperationsTableUpdateCompanionBuilder,
-    (
-      PendingOperationEntity,
-      BaseReferences<_$AppDatabase, $PendingOperationsTable,
-          PendingOperationEntity>
-    ),
-    PendingOperationEntity,
-    PrefetchHooks Function()> {
-  $$PendingOperationsTableTableManager(
-      _$AppDatabase db, $PendingOperationsTable table)
-      : super(TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $$PendingOperationsTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$PendingOperationsTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$PendingOperationsTableAnnotationComposer(
-                  $db: db, $table: table),
-          updateCompanionCallback: ({
-            Value<String> id = const Value.absent(),
-            Value<String> entityType = const Value.absent(),
-            Value<String> entityId = const Value.absent(),
-            Value<String> operationType = const Value.absent(),
-            Value<String?> data = const Value.absent(),
-            Value<DateTime> createdAt = const Value.absent(),
-            Value<int> retryCount = const Value.absent(),
-            Value<int> rowid = const Value.absent(),
-          }) =>
-              PendingOperationsCompanion(
-            id: id,
-            entityType: entityType,
-            entityId: entityId,
-            operationType: operationType,
-            data: data,
-            createdAt: createdAt,
-            retryCount: retryCount,
-            rowid: rowid,
-          ),
-          createCompanionCallback: ({
-            required String id,
-            required String entityType,
-            required String entityId,
-            required String operationType,
-            Value<String?> data = const Value.absent(),
-            Value<DateTime> createdAt = const Value.absent(),
-            Value<int> retryCount = const Value.absent(),
-            Value<int> rowid = const Value.absent(),
-          }) =>
-              PendingOperationsCompanion.insert(
-            id: id,
-            entityType: entityType,
-            entityId: entityId,
-            operationType: operationType,
-            data: data,
-            createdAt: createdAt,
-            retryCount: retryCount,
-            rowid: rowid,
-          ),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
-              .toList(),
-          prefetchHooksCallback: null,
-        ));
-}
-
-typedef $$PendingOperationsTableProcessedTableManager = ProcessedTableManager<
-    _$AppDatabase,
-    $PendingOperationsTable,
-    PendingOperationEntity,
-    $$PendingOperationsTableFilterComposer,
-    $$PendingOperationsTableOrderingComposer,
-    $$PendingOperationsTableAnnotationComposer,
-    $$PendingOperationsTableCreateCompanionBuilder,
-    $$PendingOperationsTableUpdateCompanionBuilder,
-    (
-      PendingOperationEntity,
-      BaseReferences<_$AppDatabase, $PendingOperationsTable,
-          PendingOperationEntity>
-    ),
-    PendingOperationEntity,
     PrefetchHooks Function()>;
 typedef $$DailyChecksTableCreateCompanionBuilder = DailyChecksCompanion
     Function({
@@ -4418,8 +3652,6 @@ class $AppDatabaseManager {
       $$SuppliesTableTableManager(_db, _db.supplies);
   $$CalendarCoursesTableTableManager get calendarCourses =>
       $$CalendarCoursesTableTableManager(_db, _db.calendarCourses);
-  $$PendingOperationsTableTableManager get pendingOperations =>
-      $$PendingOperationsTableTableManager(_db, _db.pendingOperations);
   $$DailyChecksTableTableManager get dailyChecks =>
       $$DailyChecksTableTableManager(_db, _db.dailyChecks);
   $$BagCompletionsTableTableManager get bagCompletions =>

@@ -7,7 +7,7 @@ part of 'school_year_onboarding_controller.dart';
 // **************************************************************************
 
 String _$schoolYearOnboardingControllerHash() =>
-    r'3f4c6e8a2b1d5c9f7e3a6b4c8d2e5f9a1b3c7d9e';
+    r'4c1ca6f7e3daab7119656ce6281ed41498d85a2f';
 
 /// See also [SchoolYearOnboardingController].
 @ProviderFor(SchoolYearOnboardingController)
@@ -25,4 +25,4 @@ final schoolYearOnboardingControllerProvider = AutoDisposeNotifierProvider<
 typedef _$SchoolYearOnboardingController
     = AutoDisposeNotifier<SchoolYearOnboardingState>;
 // ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member
+// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

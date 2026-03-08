@@ -290,7 +290,8 @@ class CoursesController extends _$CoursesController {
     state = AsyncValue.data(DataCourseListState(optimisticCourses));
 
     try {
-      final result = await courseRepository.updateCourseName(courseToRename.id, newName);
+      final result =
+          await courseRepository.updateCourseName(courseToRename.id, newName);
 
       if (result.isLeft()) {
         // Rollback on error
@@ -322,7 +323,8 @@ class CoursesController extends _$CoursesController {
     }
   }
 
-  Future<void> onRenameSupply(int courseIndex, SupplyItemUI supply, String newName) async {
+  Future<void> onRenameSupply(
+      int courseIndex, SupplyItemUI supply, String newName) async {
     final currentState = state.value as DataCourseListState;
     final currentCourses = List<CourseItemUI>.from(currentState.items);
 
@@ -342,7 +344,8 @@ class CoursesController extends _$CoursesController {
     state = AsyncValue.data(DataCourseListState(optimisticCourses));
 
     try {
-      final result = await supplyRepository.updateSupplyName(supply.id, newName);
+      final result =
+          await supplyRepository.updateSupplyName(supply.id, newName);
 
       if (result.isLeft()) {
         // Rollback on error

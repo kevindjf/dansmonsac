@@ -18,7 +18,8 @@ class ErrorMessages {
   // Messages spécifiques
   static const String courseNotFound = 'Cours introuvable';
   static const String supplyNotFound = 'Fourniture introuvable';
-  static const String syncFailed = 'Synchronisation echouee. Vos donnees seront synchronisees plus tard.';
+  static const String syncFailed =
+      'Synchronisation echouee. Vos donnees seront synchronisees plus tard.';
   static const String operationNotAllowed = 'Operation non autorisee';
   static const String invalidInput = 'Saisie invalide';
 }

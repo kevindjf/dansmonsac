@@ -1,8 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../database/app_database.dart';
-import '../di/riverpod_di.dart';
-import '../sync/sync_manager.dart';
 
 /// Provider for the app database
 final databaseProvider = Provider<AppDatabase>((ref) {
@@ -14,42 +12,4 @@ final databaseProvider = Provider<AppDatabase>((ref) {
   });
 
   return database;
-});
-
-/// Provider for the sync manager
-final syncManagerProvider = Provider<SyncManager>((ref) {
-  final database = ref.watch(databaseProvider);
-  final supabaseClientInstance = ref.watch(supabaseClient);
-  final preferenceRepo = ref.watch(preferenceRepositoryProvider);
-
-  final syncManager = SyncManager(
-    database,
-    supabaseClientInstance,
-    preferenceRepo,
-  );
-
-  // Dispose the sync manager when the provider is disposed
-  ref.onDispose(() {
-    syncManager.dispose();
-  });
-
-  return syncManager;
-});
-
-/// Provider for the sync status stream
-final syncStatusProvider = StreamProvider<SyncStatus>((ref) {
-  final syncManager = ref.watch(syncManagerProvider);
-  return syncManager.statusStream;
-});
-
-/// Provider for the current sync status (synchronous)
-final currentSyncStatusProvider = Provider<SyncStatus>((ref) {
-  final syncManager = ref.watch(syncManagerProvider);
-  return syncManager.status;
-});
-
-/// Provider to trigger a manual sync
-final manualSyncProvider = FutureProvider.family<SyncResult, bool>((ref, force) async {
-  final syncManager = ref.watch(syncManagerProvider);
-  return await syncManager.sync();
 });

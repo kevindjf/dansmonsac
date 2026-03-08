@@ -4,7 +4,8 @@ import 'package:common/src/services/log_service.dart';
 class WeekUtils {
   /// Calcule si une date donnée est en semaine A ou B
   /// basée sur la date de début de l'année scolaire (première semaine A)
-  static String getCurrentWeekType(DateTime schoolYearStart, [DateTime? checkDate]) {
+  static String getCurrentWeekType(DateTime schoolYearStart,
+      [DateTime? checkDate]) {
     final date = checkDate ?? DateTime.now();
 
     // Calculer le nombre de semaines écoulées depuis le début de l'année scolaire
@@ -14,8 +15,10 @@ class WeekUtils {
     // Si le nombre de semaines est pair, c'est semaine A, sinon semaine B
     final weekType = weeksDiff % 2 == 0 ? 'A' : 'B';
 
-    LogService.d('WeekUtils.getCurrentWeekType: schoolYearStart=$schoolYearStart, date=$date');
-    LogService.d('WeekUtils.getCurrentWeekType: daysDiff=$daysDiff, weeksDiff=$weeksDiff, weekType=$weekType');
+    LogService.d(
+        'WeekUtils.getCurrentWeekType: schoolYearStart=$schoolYearStart, date=$date');
+    LogService.d(
+        'WeekUtils.getCurrentWeekType: daysDiff=$daysDiff, weeksDiff=$weeksDiff, weekType=$weekType');
 
     return weekType;
   }

@@ -7,6 +7,7 @@ class SetupTimeOnboardingState {
   SetupTimeOnboardingState(this.setupTime, this.isLoading);
 
   SetupTimeOnboardingState copyWith({TimeOfDay? setupTime, bool? isLoading}) {
-    return SetupTimeOnboardingState(setupTime ?? this.setupTime, isLoading ?? this.isLoading);
+    return SetupTimeOnboardingState(
+        setupTime ?? this.setupTime, isLoading ?? this.isLoading);
   }
 }

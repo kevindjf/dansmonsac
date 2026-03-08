@@ -33,8 +33,10 @@ class CalendarCourseWithSupplies {
 
   /// Returns formatted time range (e.g., "08:00 - 09:30")
   String get timeRange {
-    final start = '${startHour.toString().padLeft(2, '0')}:${startMinute.toString().padLeft(2, '0')}';
-    final end = '${endHour.toString().padLeft(2, '0')}:${endMinute.toString().padLeft(2, '0')}';
+    final start =
+        '${startHour.toString().padLeft(2, '0')}:${startMinute.toString().padLeft(2, '0')}';
+    final end =
+        '${endHour.toString().padLeft(2, '0')}:${endMinute.toString().padLeft(2, '0')}';
     return '$start - $end';
   }
 

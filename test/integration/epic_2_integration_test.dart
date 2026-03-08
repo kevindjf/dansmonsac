@@ -98,14 +98,16 @@ void main() {
       // 4. Streak counter increments by 1 (Story 2.4, Story 2.5)
 
       final tomorrow = DateTime.now().add(const Duration(days: 1));
-      final tomorrowDate = DateTime(tomorrow.year, tomorrow.month, tomorrow.day);
+      final tomorrowDate =
+          DateTime(tomorrow.year, tomorrow.month, tomorrow.day);
 
       // Step 1: Get tomorrow's courses (Story 2.8)
       final coursesResult = await calendarCourseRepository.getTomorrowCourses();
       expect(coursesResult.isRight(), isTrue);
 
       final courses = coursesResult.getOrElse(() => []);
-      expect(courses, isNotEmpty, reason: 'Should have courses tomorrow for testing');
+      expect(courses, isNotEmpty,
+          reason: 'Should have courses tomorrow for testing');
 
       // Collect all supplies across all courses (with their courseId)
       final allSupplies = <({String supplyId, String courseId})>[];
@@ -137,7 +139,8 @@ void main() {
 
         // NFR1: Checklist interaction < 100ms
         expect(stopwatch.elapsedMilliseconds, lessThan(100),
-            reason: 'NFR1 violated: checklist interaction took ${stopwatch.elapsedMilliseconds}ms');
+            reason:
+                'NFR1 violated: checklist interaction took ${stopwatch.elapsedMilliseconds}ms');
 
         // Verify immediate persistence
         final checks = await database.getDailyChecksByDate(tomorrowDate);
@@ -205,7 +208,8 @@ void main() {
 
       // Verify streak incremented (only if tomorrow is a school day)
       // The test data has courses Mon-Fri, so if tomorrow is a weekday it counts
-      if (tomorrow.weekday >= DateTime.monday && tomorrow.weekday <= DateTime.friday) {
+      if (tomorrow.weekday >= DateTime.monday &&
+          tomorrow.weekday <= DateTime.friday) {
         expect(updatedStreak, equals(initialStreak + 1));
       } else {
         // Tomorrow is a weekend day - no courses, so streak doesn't change
@@ -217,7 +221,8 @@ void main() {
   group('AC2: State Persistence Across App Lifecycle', () {
     test('checklist persists across app restart', () async {
       final tomorrow = DateTime.now().add(const Duration(days: 1));
-      final tomorrowDate = DateTime(tomorrow.year, tomorrow.month, tomorrow.day);
+      final tomorrowDate =
+          DateTime(tomorrow.year, tomorrow.month, tomorrow.day);
 
       // Create some daily checks using toggleSupplyCheck
       await dailyCheckRepository.toggleSupplyCheck(
@@ -249,7 +254,8 @@ void main() {
       while (dates.length < 5) {
         // Only add weekdays (Monday=1 to Friday=5)
         if (currentDate.weekday >= 1 && currentDate.weekday <= 5) {
-          dates.add(DateTime(currentDate.year, currentDate.month, currentDate.day));
+          dates.add(
+              DateTime(currentDate.year, currentDate.month, currentDate.day));
         }
         currentDate = currentDate.subtract(const Duration(days: 1));
       }
@@ -271,7 +277,8 @@ void main() {
       expect(streakResult.isRight(), isTrue);
 
       final streak = streakResult.getOrElse(() => 0);
-      expect(streak, equals(5), reason: 'Streak should persist across restarts');
+      expect(streak, equals(5),
+          reason: 'Streak should persist across restarts');
     });
 
     test('bag ready state persists until next day', () async {
@@ -291,11 +298,12 @@ void main() {
 
       // Verify completion exists
       final completions = await database.getAllBagCompletions();
-      expect(completions.any((c) =>
-        c.date.year == todayDate.year &&
-        c.date.month == todayDate.month &&
-        c.date.day == todayDate.day
-      ), isTrue);
+      expect(
+          completions.any((c) =>
+              c.date.year == todayDate.year &&
+              c.date.month == todayDate.month &&
+              c.date.day == todayDate.day),
+          isTrue);
     });
   });
 
@@ -304,7 +312,8 @@ void main() {
       final today = DateTime.now();
       final todayDate = DateTime(today.year, today.month, today.day);
       final yesterday = today.subtract(const Duration(days: 1));
-      final yesterdayDate = DateTime(yesterday.year, yesterday.month, yesterday.day);
+      final yesterdayDate =
+          DateTime(yesterday.year, yesterday.month, yesterday.day);
 
       // Create checks for yesterday
       await dailyCheckRepository.toggleSupplyCheck(
@@ -323,7 +332,8 @@ void main() {
       );
 
       // Verify yesterday's checks are separate from today's
-      final yesterdayChecks = await database.getDailyChecksByDate(yesterdayDate);
+      final yesterdayChecks =
+          await database.getDailyChecksByDate(yesterdayDate);
       final todayChecks = await database.getDailyChecksByDate(todayDate);
 
       expect(yesterdayChecks.length, equals(1));
@@ -335,7 +345,8 @@ void main() {
 
     test('yesterday data archived in DailyChecks', () async {
       final yesterday = DateTime.now().subtract(const Duration(days: 1));
-      final yesterdayDate = DateTime(yesterday.year, yesterday.month, yesterday.day);
+      final yesterdayDate =
+          DateTime(yesterday.year, yesterday.month, yesterday.day);
 
       // Create checks for yesterday
       await dailyCheckRepository.toggleSupplyCheck(
@@ -346,8 +357,10 @@ void main() {
       );
 
       // Verify data persists (not deleted)
-      final yesterdayChecks = await database.getDailyChecksByDate(yesterdayDate);
-      expect(yesterdayChecks, isNotEmpty, reason: 'Yesterday data should be archived, not deleted');
+      final yesterdayChecks =
+          await database.getDailyChecksByDate(yesterdayDate);
+      expect(yesterdayChecks, isNotEmpty,
+          reason: 'Yesterday data should be archived, not deleted');
     });
   });
 
@@ -360,7 +373,8 @@ void main() {
       while (dates.length < 7) {
         // Only add weekdays (Monday=1 to Friday=5)
         if (currentDate.weekday >= 1 && currentDate.weekday <= 5) {
-          dates.add(DateTime(currentDate.year, currentDate.month, currentDate.day));
+          dates.add(
+              DateTime(currentDate.year, currentDate.month, currentDate.day));
         }
         currentDate = currentDate.subtract(const Duration(days: 1));
       }
@@ -381,7 +395,8 @@ void main() {
       expect(streakResult.isRight(), isTrue);
 
       final streak = streakResult.getOrElse(() => 0);
-      expect(streak, equals(7), reason: 'Streak should count consecutive school days');
+      expect(streak, equals(7),
+          reason: 'Streak should count consecutive school days');
     });
 
     test('streak breaks when day is skipped', () async {
@@ -389,7 +404,8 @@ void main() {
 
       // Create streak of 5 days with a gap
       for (int i = 0; i < 5; i++) {
-        final date = today.subtract(Duration(days: 7 - i)); // Gap at days 5 and 6
+        final date =
+            today.subtract(Duration(days: 7 - i)); // Gap at days 5 and 6
         final dateOnly = DateTime(date.year, date.month, date.day);
         await database.insertBagCompletion(
           BagCompletionsCompanion(
@@ -408,14 +424,16 @@ void main() {
 
       final streak = streakResult.getOrElse(() => 0);
       // Streak should be broken due to gap
-      expect(streak, lessThan(7), reason: 'Streak should break when days are skipped');
+      expect(streak, lessThan(7),
+          reason: 'Streak should break when days are skipped');
     });
   });
 
   group('AC5: Performance and Testing Requirements', () {
     test('checklist interaction performance < 100ms (NFR1)', () async {
       final tomorrow = DateTime.now().add(const Duration(days: 1));
-      final tomorrowDate = DateTime(tomorrow.year, tomorrow.month, tomorrow.day);
+      final tomorrowDate =
+          DateTime(tomorrow.year, tomorrow.month, tomorrow.day);
 
       final stopwatch = Stopwatch()..start();
 
@@ -429,7 +447,8 @@ void main() {
       stopwatch.stop();
 
       expect(stopwatch.elapsedMilliseconds, lessThan(100),
-          reason: 'NFR1: Checklist interaction must be < 100ms, got ${stopwatch.elapsedMilliseconds}ms');
+          reason:
+              'NFR1: Checklist interaction must be < 100ms, got ${stopwatch.elapsedMilliseconds}ms');
     });
 
     test('supply list load time < 500ms (NFR2)', () async {
@@ -441,12 +460,14 @@ void main() {
 
       expect(coursesResult.isRight(), isTrue);
       expect(stopwatch.elapsedMilliseconds, lessThan(500),
-          reason: 'NFR2: Supply list load must be < 500ms, got ${stopwatch.elapsedMilliseconds}ms');
+          reason:
+              'NFR2: Supply list load must be < 500ms, got ${stopwatch.elapsedMilliseconds}ms');
     });
 
     test('no data loss in offline mode', () async {
       final tomorrow = DateTime.now().add(const Duration(days: 1));
-      final tomorrowDate = DateTime(tomorrow.year, tomorrow.month, tomorrow.day);
+      final tomorrowDate =
+          DateTime(tomorrow.year, tomorrow.month, tomorrow.day);
 
       // All writes go to local Drift database (offline-first)
       await dailyCheckRepository.toggleSupplyCheck(

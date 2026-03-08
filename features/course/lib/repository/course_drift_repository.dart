@@ -23,25 +23,27 @@ class CourseDriftRepository extends CourseRepository {
   @override
   Future<Either<Failure, CourseWithSupplies>> store(AddCourseCommand command) {
     return handleErrors(() async {
-      LogService.d('CourseDriftRepository.store: Creating course "${command.courseName}"');
+      LogService.d(
+          'CourseDriftRepository.store: Creating course "${command.courseName}"');
 
       final courseId = uuid.v4();
       final now = DateTime.now();
 
       // Insert course into Drift
       await database.into(database.courses).insert(
-        CoursesCompanion(
-          id: Value(courseId),
-          remoteId: const Value(null), // No remote ID yet (local-only)
-          name: Value(command.courseName),
-          color: const Value(''), // Default color
-          weekType: const Value('AB'), // Default week type
-          updatedAt: Value(now),
-          createdAt: Value(now),
-        ),
-      );
+            CoursesCompanion(
+              id: Value(courseId),
+              remoteId: const Value(null), // No remote ID yet (local-only)
+              name: Value(command.courseName),
+              color: const Value(''), // Default color
+              weekType: const Value('AB'), // Default week type
+              updatedAt: Value(now),
+              createdAt: Value(now),
+            ),
+          );
 
-      LogService.d('CourseDriftRepository.store: Inserted course with ID $courseId');
+      LogService.d(
+          'CourseDriftRepository.store: Inserted course with ID $courseId');
 
       // Insert supplies
       final createdSupplies = <Supply>[];
@@ -50,20 +52,21 @@ class CourseDriftRepository extends CourseRepository {
           final supplyId = uuid.v4();
 
           await database.into(database.supplies).insert(
-            SuppliesCompanion(
-              id: Value(supplyId),
-              remoteId: const Value(null),
-              courseId: Value(courseId),
-              name: Value(supplyName),
-              isChecked: const Value(false),
-              checkedDate: const Value(null),
-              updatedAt: Value(now),
-              createdAt: Value(now),
-            ),
-          );
+                SuppliesCompanion(
+                  id: Value(supplyId),
+                  remoteId: const Value(null),
+                  courseId: Value(courseId),
+                  name: Value(supplyName),
+                  isChecked: const Value(false),
+                  checkedDate: const Value(null),
+                  updatedAt: Value(now),
+                  createdAt: Value(now),
+                ),
+              );
 
           createdSupplies.add(Supply(id: supplyId, name: supplyName));
-          LogService.d('CourseDriftRepository.store: Inserted supply "$supplyName"');
+          LogService.d(
+              'CourseDriftRepository.store: Inserted supply "$supplyName"');
         }
       }
 
@@ -87,14 +90,15 @@ class CourseDriftRepository extends CourseRepository {
       final allCourses = await coursesQuery.get();
       final allSupplies = await suppliesQuery.get();
 
-      LogService.d('CourseDriftRepository.fetchCourses: Found ${allCourses.length} courses and ${allSupplies.length} supplies');
+      LogService.d(
+          'CourseDriftRepository.fetchCourses: Found ${allCourses.length} courses and ${allSupplies.length} supplies');
 
       // Group supplies by courseId in memory
       final suppliesByCourse = <String, List<Supply>>{};
       for (final supply in allSupplies) {
         suppliesByCourse.putIfAbsent(supply.courseId, () => []).add(
-          Supply(id: supply.id, name: supply.name),
-        );
+              Supply(id: supply.id, name: supply.name),
+            );
       }
 
       // Build CourseWithSupplies list
@@ -107,7 +111,8 @@ class CourseDriftRepository extends CourseRepository {
         );
       }).toList();
 
-      LogService.d('CourseDriftRepository.fetchCourses: Returning ${result.length} courses');
+      LogService.d(
+          'CourseDriftRepository.fetchCourses: Returning ${result.length} courses');
       return result;
     });
   }
@@ -119,14 +124,16 @@ class CourseDriftRepository extends CourseRepository {
 
       // Delete daily checks first (manual cascade)
       final dailyChecksDeleted = await database.deleteDailyChecksByCourse(id);
-      LogService.d('CourseDriftRepository.deleteCourse: Deleted $dailyChecksDeleted daily checks');
+      LogService.d(
+          'CourseDriftRepository.deleteCourse: Deleted $dailyChecksDeleted daily checks');
 
       // Delete supplies (manual cascade)
       final suppliesDeleted = await (database.delete(database.supplies)
             ..where((s) => s.courseId.equals(id)))
           .go();
 
-      LogService.d('CourseDriftRepository.deleteCourse: Deleted $suppliesDeleted supplies');
+      LogService.d(
+          'CourseDriftRepository.deleteCourse: Deleted $suppliesDeleted supplies');
 
       // Delete course
       final coursesDeleted = await (database.delete(database.courses)
@@ -134,7 +141,8 @@ class CourseDriftRepository extends CourseRepository {
           .go();
 
       if (coursesDeleted == 0) {
-        LogService.w('CourseDriftRepository.deleteCourse: Course $id not found');
+        LogService.w(
+            'CourseDriftRepository.deleteCourse: Course $id not found');
         throw Exception('Course not found');
       }
 
@@ -145,7 +153,8 @@ class CourseDriftRepository extends CourseRepository {
   @override
   Future<Either<Failure, void>> updateCourseName(String id, String newName) {
     return handleErrors(() async {
-      LogService.d('CourseDriftRepository.updateCourseName: Updating course $id to "$newName"');
+      LogService.d(
+          'CourseDriftRepository.updateCourseName: Updating course $id to "$newName"');
 
       final updated = await (database.update(database.courses)
             ..where((c) => c.id.equals(id)))
@@ -157,11 +166,13 @@ class CourseDriftRepository extends CourseRepository {
       );
 
       if (updated == 0) {
-        LogService.w('CourseDriftRepository.updateCourseName: Course $id not found');
+        LogService.w(
+            'CourseDriftRepository.updateCourseName: Course $id not found');
         throw Exception('Course not found');
       }
 
-      LogService.d('CourseDriftRepository.updateCourseName: Updated course $id');
+      LogService.d(
+          'CourseDriftRepository.updateCourseName: Updated course $id');
     });
   }
 }

@@ -7,7 +7,8 @@ void main() {
     test('should serialize and deserialize courses correctly', () {
       final data = SharedScheduleData(
         courses: [
-          SharedCourseData(name: 'Mathematiques', supplies: ['Cahier', 'Calculatrice']),
+          SharedCourseData(
+              name: 'Mathematiques', supplies: ['Cahier', 'Calculatrice']),
           SharedCourseData(name: 'Francais', supplies: ['Dictionnaire']),
         ],
         calendarCourses: [],
@@ -60,7 +61,8 @@ void main() {
       expect((json['calendar_courses'] as List).length, equals(2));
 
       // Verify calendar course JSON keys are correct (snake_case)
-      final calendarJson = (json['calendar_courses'] as List)[0] as Map<String, dynamic>;
+      final calendarJson =
+          (json['calendar_courses'] as List)[0] as Map<String, dynamic>;
       expect(calendarJson.containsKey('course_name'), isTrue);
       expect(calendarJson.containsKey('room_name'), isTrue);
       expect(calendarJson.containsKey('start_time_hour'), isTrue);
@@ -95,7 +97,8 @@ void main() {
     test('should produce valid JSON string for Supabase', () {
       final data = SharedScheduleData(
         courses: [
-          SharedCourseData(name: 'Mathematiques', supplies: ['Cahier', 'Calculatrice']),
+          SharedCourseData(
+              name: 'Mathematiques', supplies: ['Cahier', 'Calculatrice']),
         ],
         calendarCourses: [
           SharedCalendarCourseData(
@@ -144,8 +147,11 @@ void main() {
     test('totalSupplies should count all supplies', () {
       final data = SharedScheduleData(
         courses: [
-          SharedCourseData(name: 'Mathematiques', supplies: ['Cahier', 'Calculatrice', 'Regle']),
-          SharedCourseData(name: 'Francais', supplies: ['Dictionnaire', 'Stylo']),
+          SharedCourseData(
+              name: 'Mathematiques',
+              supplies: ['Cahier', 'Calculatrice', 'Regle']),
+          SharedCourseData(
+              name: 'Francais', supplies: ['Dictionnaire', 'Stylo']),
         ],
         calendarCourses: [],
       );

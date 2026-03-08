@@ -35,7 +35,9 @@
       "WebSearch",
       "WebFetch(domain:rive.app)",
       "Bash(unzip:*)",
-      "Bash(md5:*)"
+      "Bash(md5:*)",
+      "mcp__ide__getDiagnostics",
+      "Bash(git init:*)"
     ]
   },
   "enableAllProjectMcpServers": true,

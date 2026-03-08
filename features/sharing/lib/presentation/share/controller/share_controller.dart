@@ -1,9 +1,5 @@
 import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:course/models/cours_with_supplies.dart';
-import 'package:course/di/riverpod_di.dart' as course_di;
-import 'package:schedule/models/calendar_course.dart';
-import 'package:schedule/di/riverpod_di.dart' as schedule_di;
 import 'package:common/src/services/preferences_service.dart';
 import '../../../di/riverpod_di.dart';
 import '../../../models/shared_schedule_data.dart';
@@ -54,7 +50,8 @@ class ShareController extends _$ShareController {
             state = state.copyWith(
               isSyncing: false,
               syncFailed: true,
-              errorMessage: 'Les donnees n\'ont pas pu etre synchronisees. Elles ne sont peut-etre pas a jour.',
+              errorMessage:
+                  'Les donnees n\'ont pas pu etre synchronisees. Elles ne sont peut-etre pas a jour.',
             );
           },
           (_) {
@@ -83,62 +80,16 @@ class ShareController extends _$ShareController {
     }
   }
 
-  /// Fetch fresh data from local database
+  /// Fetch fresh data from local Drift database using ScheduleSerializer
   /// This is called before every sync to ensure we have the latest data
   Future<SharedScheduleData> _fetchFreshData() async {
-    // Fetch all courses with supplies
-    final courseRepo = ref.read(course_di.courseRepositoryProvider);
-    final coursesResult = await courseRepo.fetchCourses();
+    final serializer = ref.read(scheduleSerializerProvider);
+    final data = await serializer.serialize();
 
-    // Fetch all calendar entries
-    final calendarRepo = ref.read(schedule_di.calendarCourseRepositoryProvider);
-    final calendarResult = await calendarRepo.fetchCalendarCourses();
+    debugPrint(
+        'ShareController: Fetched ${data.courses.length} courses and ${data.calendarCourses.length} calendar entries from Drift');
 
-    final courses = coursesResult.fold(
-      (failure) => <CourseWithSupplies>[],
-      (courses) => courses,
-    );
-
-    final calendarCourses = calendarResult.fold(
-      (failure) => <CalendarCourse>[],
-      (entries) => entries,
-    );
-
-    debugPrint('ShareController: Fetched ${courses.length} courses and ${calendarCourses.length} calendar entries');
-
-    // Build shared data structure
-    final sharedCourses = courses.map((course) {
-      return SharedCourseData(
-        name: course.name,
-        supplies: course.supplies.map((s) => s.name).toList(),
-      );
-    }).toList();
-
-    final sharedCalendarCourses = calendarCourses.map((entry) {
-      // Find course name by ID
-      final course = courses.firstWhere(
-        (c) => c.id == entry.courseId,
-        orElse: () => CourseWithSupplies(id: '', name: 'Unknown', supplies: []),
-      );
-
-      return SharedCalendarCourseData(
-        courseName: course.name,
-        roomName: entry.roomName,
-        startTimeHour: entry.startTime.hour,
-        startTimeMinute: entry.startTime.minute,
-        endTimeHour: entry.endTime.hour,
-        endTimeMinute: entry.endTime.minute,
-        weekType: entry.weekType.name,
-        dayOfWeek: entry.dayOfWeek,
-      );
-    }).toList();
-
-    debugPrint('ShareController: Built ${sharedCourses.length} shared courses and ${sharedCalendarCourses.length} shared calendar entries');
-
-    return SharedScheduleData(
-      courses: sharedCourses,
-      calendarCourses: sharedCalendarCourses,
-    );
+    return data;
   }
 
   void updateSharerName(String name) {
@@ -195,13 +146,15 @@ class ShareController extends _$ShareController {
   Future<bool> syncData() async {
     if (state.code == null) return false;
 
-    state = state.copyWith(isSyncing: true, errorMessage: null, syncFailed: false);
+    state =
+        state.copyWith(isSyncing: true, errorMessage: null, syncFailed: false);
 
     try {
       // Fetch fresh data before syncing
       final freshData = await _fetchFreshData();
 
-      debugPrint('syncData: Syncing ${freshData.courses.length} courses, ${freshData.calendarCourses.length} calendar entries');
+      debugPrint(
+          'syncData: Syncing ${freshData.courses.length} courses, ${freshData.calendarCourses.length} calendar entries');
 
       // Update state with fresh data so UI reflects current counts
       state = state.copyWith(data: freshData);
@@ -219,7 +172,8 @@ class ShareController extends _$ShareController {
           state = state.copyWith(
             isSyncing: false,
             syncFailed: true,
-            errorMessage: 'Erreur de synchronisation. Verifiez votre connexion internet.',
+            errorMessage:
+                'Erreur de synchronisation. Verifiez votre connexion internet.',
           );
           return false;
         },

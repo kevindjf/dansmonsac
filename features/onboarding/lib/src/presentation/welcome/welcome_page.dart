@@ -9,7 +9,7 @@ class OnboardingWelcomePage extends ConsumerWidget {
   const OnboardingWelcomePage({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context,WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
     final accentColor = Theme.of(context).colorScheme.secondary;
@@ -89,7 +89,9 @@ class OnboardingWelcomePage extends ConsumerWidget {
                 SizedBox(
                   width: double.infinity,
                   child: FilledButton(
-                    onPressed: () => ref.read(routerDelegateProvider).setRoute(OnboardingImportStepPage.routeName),
+                    onPressed: () => ref
+                        .read(routerDelegateProvider)
+                        .setRoute(OnboardingImportStepPage.routeName),
                     style: FilledButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
@@ -98,7 +100,8 @@ class OnboardingWelcomePage extends ConsumerWidget {
                     ),
                     child: const Text(
                       "Commencer",
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      style:
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                   ),
                 ),
@@ -111,7 +114,8 @@ class OnboardingWelcomePage extends ConsumerWidget {
     );
   }
 
-  Widget _buildFeaturePoint(IconData icon, String text, ColorScheme colorScheme) {
+  Widget _buildFeaturePoint(
+      IconData icon, String text, ColorScheme colorScheme) {
     return Row(
       children: [
         Icon(

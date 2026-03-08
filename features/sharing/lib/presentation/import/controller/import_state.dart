@@ -44,7 +44,8 @@ class ImportState {
   bool get hasSchedule => schedule != null;
   bool get hasError => errorMessage != null;
   bool get hasConflicts => pendingConflicts.isNotEmpty;
-  bool get isResolvingConflicts => hasConflicts && currentConflictIndex < pendingConflicts.length;
+  bool get isResolvingConflicts =>
+      hasConflicts && currentConflictIndex < pendingConflicts.length;
 
   ImportConflict? get currentConflict =>
       isResolvingConflicts ? pendingConflicts[currentConflictIndex] : null;

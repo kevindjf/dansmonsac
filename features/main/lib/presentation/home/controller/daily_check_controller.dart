@@ -104,4 +104,3 @@ class DailyCheckController extends _$DailyCheckController {
     );
   }
 }
-

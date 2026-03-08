@@ -44,8 +44,8 @@ class CourseOnboardingController extends _$CourseOnboardingController {
     }
 
     final cleanName = Validators.clean(state.courseName);
-    var response = await onboardingRepository.storeCourse(
-        cleanName, state.supplies);
+    var response =
+        await onboardingRepository.storeCourse(cleanName, state.supplies);
 
     response.fold((failure) {
       state = state.copyWith(isLoading: false);

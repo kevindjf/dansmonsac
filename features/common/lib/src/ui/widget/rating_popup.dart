@@ -38,7 +38,10 @@ class RatingPopup extends StatelessWidget {
             width: 64,
             height: 64,
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.secondary.withValues(alpha: 0.15),
+              color: Theme.of(context)
+                  .colorScheme
+                  .secondary
+                  .withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(16),
             ),
             child: Icon(

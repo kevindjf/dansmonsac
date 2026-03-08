@@ -137,7 +137,8 @@ class CalendarBodyWidget extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // Use provider with selected date and week filter
-    final calendarState = ref.watch(calendarControllerProvider(selectedDate, weekFilter));
+    final calendarState =
+        ref.watch(calendarControllerProvider(selectedDate, weekFilter));
 
     return calendarState.when(
       data: (calendarEvents) {
@@ -191,7 +192,8 @@ class CalendarBodyWidget extends ConsumerWidget {
     final double pixelsPerMinute = 25.0 / 15.0;
 
     // Container height based on exact minutes
-    final totalMinutes = endDay.endTime.difference(startDay.startTime).inMinutes;
+    final totalMinutes =
+        endDay.endTime.difference(startDay.startTime).inMinutes;
     final containerHeight = totalMinutes * pixelsPerMinute + 40;
 
     List<Widget> widgets = [];
@@ -207,8 +209,10 @@ class CalendarBodyWidget extends ConsumerWidget {
           width = calculateEventWidth(event, groupOverlappingEvents(events), i);
         }
 
-        final minutesFromStart = event.startTime.difference(startDay.startTime).inMinutes.toDouble();
-        final durationMinutes = event.endTime.difference(event.startTime).inMinutes.toDouble();
+        final minutesFromStart =
+            event.startTime.difference(startDay.startTime).inMinutes.toDouble();
+        final durationMinutes =
+            event.endTime.difference(event.startTime).inMinutes.toDouble();
 
         widgets.add(Container(
           margin: EdgeInsets.only(
@@ -221,9 +225,8 @@ class CalendarBodyWidget extends ConsumerWidget {
             onTap: () => _showCourseOptions(context, ref, event),
             child: Container(
               decoration: BoxDecoration(
-                color: Colors.black12,
-                borderRadius: BorderRadius.circular(8)
-              ),
+                  color: Colors.black12,
+                  borderRadius: BorderRadius.circular(8)),
               margin: EdgeInsets.symmetric(vertical: 4, horizontal: 4),
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
@@ -232,12 +235,10 @@ class CalendarBodyWidget extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Text(
-                      FormatterDate.formatHours(event.startTime, event.endTime),
-                      style: GoogleFonts.robotoCondensed(
-                        color: Colors.white38,
-                        fontSize: 12
-                      )
-                    ),
+                        FormatterDate.formatHours(
+                            event.startTime, event.endTime),
+                        style: GoogleFonts.robotoCondensed(
+                            color: Colors.white38, fontSize: 12)),
                     // Title with badge inline
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -246,9 +247,7 @@ class CalendarBodyWidget extends ConsumerWidget {
                           child: Text(
                             event.title,
                             style: GoogleFonts.roboto(
-                              color: Colors.white,
-                              fontSize: 14
-                            ),
+                                color: Colors.white, fontSize: 14),
                             textAlign: TextAlign.center,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -256,7 +255,8 @@ class CalendarBodyWidget extends ConsumerWidget {
                         if (event.weekType != 'BOTH') ...[
                           const SizedBox(width: 6),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 4, vertical: 1),
                             decoration: BoxDecoration(
                               color: Theme.of(context).colorScheme.secondary,
                               borderRadius: BorderRadius.circular(3),
@@ -273,14 +273,11 @@ class CalendarBodyWidget extends ConsumerWidget {
                         ],
                       ],
                     ),
-                    Text(
-                      event.room,
-                      style: GoogleFonts.roboto(
-                        color: Colors.white38,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w300
-                      )
-                    ),
+                    Text(event.room,
+                        style: GoogleFonts.roboto(
+                            color: Colors.white38,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w300)),
                   ],
                 ),
               ),
@@ -301,17 +298,21 @@ class CalendarBodyWidget extends ConsumerWidget {
       if (i < events.length - 1) {
         final nextStart = events[i + 1].startTime;
         // Only consider it a gap if next event starts after the latest end so far
-        if (nextStart.isAfter(latestEnd) || nextStart.isAtSameMomentAs(latestEnd)) {
+        if (nextStart.isAfter(latestEnd) ||
+            nextStart.isAtSameMomentAs(latestEnd)) {
           final gapMinutes = nextStart.difference(latestEnd).inMinutes;
           if (gapMinutes >= 60) {
-            final gapStartFromDay = latestEnd.difference(startDay.startTime).inMinutes.toDouble();
+            final gapStartFromDay =
+                latestEnd.difference(startDay.startTime).inMinutes.toDouble();
             final gapTop = gapStartFromDay * pixelsPerMinute;
             final gapHeight = gapMinutes.toDouble() * pixelsPerMinute;
 
             // Format pause duration
             final hours = gapMinutes ~/ 60;
             final mins = gapMinutes % 60;
-            final pauseLabel = mins > 0 ? "Pause - ${hours}h${mins.toString().padLeft(2, '0')}" : "Pause - ${hours}h";
+            final pauseLabel = mins > 0
+                ? "Pause - ${hours}h${mins.toString().padLeft(2, '0')}"
+                : "Pause - ${hours}h";
 
             widgets.add(Container(
               margin: EdgeInsets.only(top: gapTop),
@@ -407,15 +408,19 @@ class CalendarBodyWidget extends ConsumerWidget {
                   },
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16),
-                    side: BorderSide(color: Theme.of(context).colorScheme.secondary),
+                    side: BorderSide(
+                        color: Theme.of(context).colorScheme.secondary),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  icon: Icon(Icons.edit_outlined, color: Theme.of(context).colorScheme.secondary),
+                  icon: Icon(Icons.edit_outlined,
+                      color: Theme.of(context).colorScheme.secondary),
                   label: Text(
                     "Modifier ce cours",
-                    style: TextStyle(fontSize: 16, color: Theme.of(context).colorScheme.secondary),
+                    style: TextStyle(
+                        fontSize: 16,
+                        color: Theme.of(context).colorScheme.secondary),
                   ),
                 ),
               ),
@@ -455,8 +460,10 @@ class CalendarBodyWidget extends ConsumerWidget {
       id: event.id,
       courseId: event.courseId,
       roomName: event.room,
-      startTime: TimeOfDay(hour: event.startTime.hour, minute: event.startTime.minute),
-      endTime: TimeOfDay(hour: event.endTime.hour, minute: event.endTime.minute),
+      startTime:
+          TimeOfDay(hour: event.startTime.hour, minute: event.startTime.minute),
+      endTime:
+          TimeOfDay(hour: event.endTime.hour, minute: event.endTime.minute),
       weekType: WeekType.fromString(event.weekType),
       dayOfWeek: event.dayOfWeek,
     );
@@ -548,4 +555,3 @@ class _DashedBorderPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
-

@@ -6,7 +6,7 @@ part of 'riverpod_di.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$courseRepositoryHash() => r'5061884ec584f8a450748fe4ef29f415e2a040d3';
+String _$courseRepositoryHash() => r'0f79f9d2443eaa94efa7668592fe0c5c2fde8b56';
 
 /// See also [courseRepository].
 @ProviderFor(courseRepository)

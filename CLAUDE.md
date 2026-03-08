@@ -99,37 +99,40 @@
 
 - Projet modulaire avec feature packages dans `features/` (common, main, course, schedule, supply, onboarding, sharing, splash)
 - State management : Riverpod avec `@riverpod` annotations + code generation
-- Backend : Supabase
+- Backend : Supabase (pour partage uniquement)
 - Pattern Repository avec `Either<Failure, T>` (dartz)
-- **Base de donnees locale** : Drift (SQLite) pour offline-first
+- **Base de donnees locale** : Drift (SQLite) pour architecture local-first
 
-## Architecture Offline-First
+## Architecture Local-First
 
-Le projet utilise une architecture offline-first avec synchronisation automatique :
+Le projet utilise une architecture 100% locale avec partage manuel vers Supabase :
 
 ### Composants cles
 
 1. **AppDatabase** (`features/common/lib/src/database/app_database.dart`)
-   - Tables : Courses, Supplies, CalendarCourses, PendingOperations
-   - Chaque entite a un `remoteId` pour mapper avec Supabase
-   - Schema version 2
+   - Tables : Courses, Supplies, CalendarCourses, DailyChecks, BagCompletions, PremiumStatus
+   - Chaque entite a un `remoteId` nullable (pour debugging)
+   - Schema version 4
 
-2. **SyncManager** (`features/common/lib/src/sync/sync_manager.dart`)
-   - Ecoute les changements de connectivite
-   - Synchronise automatiquement quand le reseau revient
-   - Queue des operations dans `PendingOperations`
-
-3. **Providers** (`features/common/lib/src/providers/database_provider.dart`)
+2. **Providers** (`features/common/lib/src/providers/database_provider.dart`)
    - `databaseProvider` : instance AppDatabase
-   - `syncManagerProvider` : instance SyncManager
-   - `syncStatusProvider` : stream du statut de sync
+
+3. **MigrationService** (`features/common/lib/src/services/migration_service.dart`)
+   - Migration une seule fois au demarrage (Supabase → Drift)
+   - Idempotente avec verification `remoteId`
 
 ### Flux de donnees
 
 ```
-UI → Controller → Local Database → SyncManager → Supabase
+UI → Controller → Local Database (Drift)
                        ↓
-              PendingOperations (queue)
+           (Aucune sync automatique)
+
+Partage manual :
+UI → ShareController → ScheduleSerializer → Supabase (shared_schedules table)
+
+Import :
+UI → ImportController → Supabase fetch → Drift insert
 ```
 
 ## Utilitaires

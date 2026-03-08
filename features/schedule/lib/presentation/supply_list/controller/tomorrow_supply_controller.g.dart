@@ -7,10 +7,12 @@ part of 'tomorrow_supply_controller.dart';
 // **************************************************************************
 
 String _$tomorrowSupplyControllerHash() =>
-    r'9b8f7e8c90eeb035ae69d73f3df918a54dba25dc';
+    r'ee76902f369b166017397e6f754a9f3926c9d6dc';
 
 /// Controller for tomorrow's supplies
-/// Refactored to use getTomorrowCourses() repository method (Story 2.8)
+/// Uses pack time to determine target date:
+/// - Before pack time → show today's courses
+/// - After pack time → show tomorrow's courses
 ///
 /// Copied from [TomorrowSupplyController].
 @ProviderFor(TomorrowSupplyController)

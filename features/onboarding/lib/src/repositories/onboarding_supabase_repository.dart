@@ -1,6 +1,7 @@
 import 'package:course/models/add_course_command.dart';
 import 'package:course/models/cours_with_supplies.dart';
 import 'package:course/repository/course_repository.dart';
+import 'package:common/src/database/app_database.dart';
 import 'package:dartz/dartz.dart';
 import 'package:flutter/material.dart';
 import 'package:onboarding/src/repositories/onboarding_repository.dart';
@@ -9,6 +10,7 @@ import 'package:common/src/repository/preference_repository.dart';
 import 'package:common/src/models/network/network_failure.dart';
 import 'package:common/src/repository/repository_helper.dart';
 import 'package:common/src/services/preferences_service.dart';
+import 'package:common/src/services/log_service.dart';
 import 'package:common/src/utils.dart';
 
 import '../models/command/pack_time_command.dart';
@@ -17,9 +19,10 @@ class OnboardingSupabaseRepository extends OnboardingRepository {
   final SupabaseClient supabaseClient;
   final PreferenceRepository preferenceRepository;
   final CourseRepository courseRepository;
+  final AppDatabase database;
 
-  OnboardingSupabaseRepository(
-      this.supabaseClient, this.preferenceRepository, this.courseRepository);
+  OnboardingSupabaseRepository(this.supabaseClient, this.preferenceRepository,
+      this.courseRepository, this.database);
 
   @override
   Future<Either<Failure, void>> storePackTime(PackTimeCommand command) async {
@@ -54,21 +57,25 @@ class OnboardingSupabaseRepository extends OnboardingRepository {
   @override
   Future<Either<Failure, void>> createDefaultCourses() async {
     return handleErrors(() async {
-      // Check if user already has courses (from import)
-      final existingCoursesResult = await courseRepository.fetchCourses();
-      final existingCourses = existingCoursesResult.fold(
-        (failure) => <CourseWithSupplies>[],
-        (courses) => courses,
-      );
+      // Check if user already has courses (from import) - direct DB access
+      // to avoid false negatives when courseRepository.fetchCourses() returns Left(Failure)
+      final existingCourses = await database.select(database.courses).get();
+      LogService.d(
+          'OnboardingRepository.createDefaultCourses: Found ${existingCourses.length} existing courses in Drift');
 
       // Only create default courses if user has no courses
       if (existingCourses.isEmpty) {
+        LogService.d(
+            'OnboardingRepository.createDefaultCourses: No courses found, creating defaults');
         for (final subject in DefaultSupplies.getDefaultSubjects()) {
           await courseRepository.store(AddCourseCommand(
             subject.name,
             subject.supplies,
           ));
         }
+      } else {
+        LogService.d(
+            'OnboardingRepository.createDefaultCourses: Courses already exist, skipping defaults');
       }
     });
   }

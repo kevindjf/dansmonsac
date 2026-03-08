@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:common/src/ui/ui.dart';
 import 'package:common/src/services.dart';
 import 'package:common/src/di/riverpod_di.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
@@ -38,7 +37,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   Future<void> _loadPreferences() async {
     final packTime = await PreferencesService.getPackTime();
     final schoolYearStart = await PreferencesService.getSchoolYearStart();
-    final notificationsEnabled = await PreferencesService.getNotificationsEnabled();
+    final notificationsEnabled =
+        await PreferencesService.getNotificationsEnabled();
     final accentColor = await PreferencesService.getAccentColor();
     final showWeekend = await PreferencesService.getShowWeekend();
     final vacationModeEnabled = await PreferencesService.isVacationModeActive();
@@ -217,7 +217,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                     value: '',
                     onTap: () {
                       Navigator.of(context).push(
-                        MaterialPageRoute(builder: (context) => const HelpPage()),
+                        MaterialPageRoute(
+                            builder: (context) => const HelpPage()),
                       );
                     },
                   ),
@@ -361,8 +362,18 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
 
   String _formatDate(DateTime date) {
     const months = [
-      'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
-      'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'
+      'janvier',
+      'février',
+      'mars',
+      'avril',
+      'mai',
+      'juin',
+      'juillet',
+      'août',
+      'septembre',
+      'octobre',
+      'novembre',
+      'décembre'
     ];
     return '${date.day} ${months[date.month - 1]} ${date.year}';
   }
@@ -397,9 +408,14 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       // Update notification with contextual content (Story 2.9)
       final repository = ref.read(calendarCourseRepositoryProvider);
       final database = ref.read(databaseProvider);
+      int currentStreak = 0;
+      try {
+        currentStreak = await ref.read(currentStreakProvider.future);
+      } catch (_) {}
       await NotificationService.updateNotificationIfEnabled(
         repository: repository,
         database: database,
+        currentStreak: currentStreak,
       );
 
       _showSnackBar('Heure de préparation mise à jour: ${_formatTime(picked)}');
@@ -581,7 +597,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
               Align(
                 alignment: Alignment.centerRight,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
                     color: accentColor.withOpacity(0.15),
                     borderRadius: BorderRadius.circular(8),
@@ -614,7 +631,18 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       // Request permissions
       final granted = await NotificationService.requestPermissions();
       if (granted) {
-        await NotificationService.scheduleDailyNotification();
+        // Schedule with contextual content (checks vacation mode + tomorrow's courses)
+        final repository = ref.read(calendarCourseRepositoryProvider);
+        final database = ref.read(databaseProvider);
+        int currentStreak = 0;
+        try {
+          currentStreak = await ref.read(currentStreakProvider.future);
+        } catch (_) {}
+        await NotificationService.updateNotificationIfEnabled(
+          repository: repository,
+          database: database,
+          currentStreak: currentStreak,
+        );
         _showSnackBar('Notifications activées à ${_formatTime(_packTime)}');
       } else {
         // Permission denied, revert the switch
@@ -635,7 +663,9 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       _showWeekend = show;
     });
     await PreferencesService.setShowWeekend(show);
-    _showSnackBar(show ? 'Weekend affiché dans le calendrier' : 'Weekend masqué du calendrier');
+    _showSnackBar(show
+        ? 'Weekend affiché dans le calendrier'
+        : 'Weekend masqué du calendrier');
   }
 
   Future<void> _selectAccentColor(BuildContext context) async {
@@ -731,9 +761,9 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   void _replayTutorial() {
     // Navigate to Courses tab with tutorial enabled
     ref.read(routerDelegateProvider).goToHome(
-      initialTabIndex: 2,
-      showTutorial: true,
-    );
+          initialTabIndex: 2,
+          showTutorial: true,
+        );
   }
 
   void _showShareModal(BuildContext context) {
@@ -775,13 +805,17 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   color: _vacationModeEnabled
-                    ? const Color(0xFFFF9800).withOpacity(0.2)
-                    : Colors.white.withOpacity(0.1),
+                      ? const Color(0xFFFF9800).withOpacity(0.2)
+                      : Colors.white.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
-                  _vacationModeEnabled ? Icons.beach_access : Icons.school_outlined,
-                  color: _vacationModeEnabled ? const Color(0xFFFF9800) : Colors.white70,
+                  _vacationModeEnabled
+                      ? Icons.beach_access
+                      : Icons.school_outlined,
+                  color: _vacationModeEnabled
+                      ? const Color(0xFFFF9800)
+                      : Colors.white70,
                   size: 24,
                 ),
               ),
@@ -801,8 +835,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                     const SizedBox(height: 4),
                     Text(
                       _vacationModeEnabled && _vacationEndDate != null
-                        ? 'Actif jusqu\'au ${_formatDateShort(_vacationEndDate!)}'
-                        : 'Protège ta streak pendant les congés',
+                          ? 'Actif jusqu\'au ${_formatDateShort(_vacationEndDate!)}'
+                          : 'Protège ta streak pendant les congés',
                       style: TextStyle(
                         color: Colors.white.withOpacity(0.6),
                         fontSize: 14,
@@ -813,7 +847,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
               ),
               if (_vacationModeEnabled)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
                     color: const Color(0xFFFF9800).withOpacity(0.2),
                     borderRadius: BorderRadius.circular(8),
@@ -854,9 +889,14 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
           if (enabled) {
             await NotificationService.cancelNotification();
           } else if (_notificationsEnabled) {
+            int currentStreak = 0;
+            try {
+              currentStreak = await ref.read(currentStreakProvider.future);
+            } catch (_) {}
             await NotificationService.updateNotificationIfEnabled(
               repository: ref.read(calendarCourseRepositoryProvider),
               database: ref.read(databaseProvider),
+              currentStreak: currentStreak,
             );
           }
 
@@ -870,11 +910,9 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
 
           Navigator.pop(context);
 
-          _showSnackBar(
-            enabled
+          _showSnackBar(enabled
               ? '🏖️ Mode vacances activé - Ta streak est protégée !'
-              : '🎒 Bon retour ! Les rappels sont réactivés.'
-          );
+              : '🎒 Bon retour ! Les rappels sont réactivés.');
         },
       ),
     );
@@ -882,8 +920,18 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
 
   String _formatDateShort(DateTime date) {
     final months = [
-      'janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin',
-      'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'
+      'janv.',
+      'févr.',
+      'mars',
+      'avr.',
+      'mai',
+      'juin',
+      'juil.',
+      'août',
+      'sept.',
+      'oct.',
+      'nov.',
+      'déc.'
     ];
     return '${date.day} ${months[date.month - 1]} ${date.year}';
   }
@@ -902,7 +950,8 @@ class _VacationModeBottomSheet extends StatefulWidget {
   });
 
   @override
-  State<_VacationModeBottomSheet> createState() => _VacationModeBottomSheetState();
+  State<_VacationModeBottomSheet> createState() =>
+      _VacationModeBottomSheetState();
 }
 
 class _VacationModeBottomSheetState extends State<_VacationModeBottomSheet> {
@@ -997,7 +1046,9 @@ class _VacationModeBottomSheetState extends State<_VacationModeBottomSheet> {
               children: [
                 Expanded(
                   child: Text(
-                    _enabled ? 'Mode vacances activé' : 'Mode vacances désactivé',
+                    _enabled
+                        ? 'Mode vacances activé'
+                        : 'Mode vacances désactivé',
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 16,
@@ -1051,17 +1102,18 @@ class _VacationModeBottomSheetState extends State<_VacationModeBottomSheet> {
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.calendar_today, color: Color(0xFFFF9800)),
+                      const Icon(Icons.calendar_today,
+                          color: Color(0xFFFF9800)),
                       const SizedBox(width: 16),
                       Expanded(
                         child: Text(
                           _selectedEndDate != null
-                            ? _formatDate(_selectedEndDate!)
-                            : 'Choisir une date',
+                              ? _formatDate(_selectedEndDate!)
+                              : 'Choisir une date',
                           style: TextStyle(
                             color: _selectedEndDate != null
-                              ? Colors.white
-                              : Colors.white.withOpacity(0.5),
+                                ? Colors.white
+                                : Colors.white.withOpacity(0.5),
                             fontSize: 16,
                           ),
                         ),
@@ -1120,8 +1172,8 @@ class _VacationModeBottomSheetState extends State<_VacationModeBottomSheet> {
                   flex: 2,
                   child: ElevatedButton(
                     onPressed: (_enabled && _selectedEndDate == null)
-                      ? null
-                      : () => widget.onConfirm(_enabled, _selectedEndDate),
+                        ? null
+                        : () => widget.onConfirm(_enabled, _selectedEndDate),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFFF9800),
                       padding: const EdgeInsets.symmetric(vertical: 16),
@@ -1182,8 +1234,18 @@ class _VacationModeBottomSheetState extends State<_VacationModeBottomSheet> {
 
   String _formatDate(DateTime date) {
     final months = [
-      'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
-      'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'
+      'janvier',
+      'février',
+      'mars',
+      'avril',
+      'mai',
+      'juin',
+      'juillet',
+      'août',
+      'septembre',
+      'octobre',
+      'novembre',
+      'décembre'
     ];
     return '${date.day} ${months[date.month - 1]} ${date.year}';
   }

@@ -10,8 +10,9 @@ Module de gestion de l'emploi du temps. Permet d'ajouter des séances de cours a
 - Gestion des semaines A/B
 
 ## Architecture
-- **Pattern Repository** avec `CalendarCourseRepository` et `CalendarCourseSupabaseRepository`
+- **Pattern Repository** avec `CalendarCourseRepository` et `CalendarCourseSupabaseRepository` (nom historique, utilise Drift uniquement)
 - **Gestion d'erreurs** via `Either<Failure, T>`
+- **Stockage local** : Drift (SQLite) uniquement, aucune sync Supabase
 - **Model** :
   - `CalendarCourse` - Séance avec cours, salle, horaires, jour, type de semaine
 
@@ -24,7 +25,7 @@ Module de gestion de l'emploi du temps. Permet d'ajouter des séances de cours a
 
 ## Fichiers clés
 - `models/calendar_course.dart` - Modèle de séance
-- `repository/calendar_course_repository.dart` - Interface + implémentation Supabase
+- `repository/calendar_course_repository.dart` - Interface + implémentation Drift (local-first)
 - `di/riverpod_di.dart` - Provider `calendarCourseRepositoryProvider`
 - `presentation/add/add_calendar_course_page.dart` - Modal d'ajout de séance
 - `presentation/calendar/controller/calendar_controller.dart` - Liste des séances
@@ -32,17 +33,20 @@ Module de gestion de l'emploi du temps. Permet d'ajouter des séances de cours a
 
 ## Dépendances principales
 - `flutter_riverpod` / `riverpod_annotation`
-- `supabase_flutter`
+- `drift` - Base de données locale
+- `uuid` - Génération d'IDs locaux
+- `clock` - Gestion du temps (testable)
 - `dartz`
-- `common` (handleErrors, PreferenceRepository)
+- `common` (handleErrors, AppDatabase, PreferencesService, WeekUtils)
 - `course` (pour lier les séances aux cours)
 
-## Tables Supabase
-- `calendar_courses` - Séances de l'emploi du temps
-  - id, device_id, course_id, room_name
-  - start_time_hour, start_time_minute, end_time_hour, end_time_minute
-  - week_type (BOTH/A/B), day_of_week (1-7)
+## Table Drift
+- `CalendarCourses` - Séances de l'emploi du temps (local uniquement)
+  - id, remoteId, courseId, roomName
+  - startHour, startMinute, endHour, endMinute
+  - weekType (BOTH/A/B), dayOfWeek (1-7)
 
 ## Notes
 - Le `TomorrowSupplyController` invalide son cache lors d'un import pour recalculer les fournitures
 - `WeekType` enum : BOTH (toutes les semaines), A, B
+- Batch queries optimisées pour éviter N+1 (voir getTomorrowCourses)

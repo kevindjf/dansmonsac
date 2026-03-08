@@ -64,7 +64,8 @@ class _OnboardingSetupTimePageState
                     TextButton(
                       onPressed: state.isLoading
                           ? null
-                          : () => ref.read(routerDelegateProvider).setRoute(OnboardingNotificationPermissionPage.routeName),
+                          : () => ref.read(routerDelegateProvider).setRoute(
+                              OnboardingNotificationPermissionPage.routeName),
                       child: Text(
                         "Passer",
                         style: TextStyle(
@@ -142,7 +143,8 @@ class _OnboardingSetupTimePageState
                     onPressed: state.isLoading
                         ? null
                         : () => ref
-                            .read(setupTimeOnboardingControllerProvider.notifier)
+                            .read(
+                                setupTimeOnboardingControllerProvider.notifier)
                             .store(),
                     style: FilledButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),

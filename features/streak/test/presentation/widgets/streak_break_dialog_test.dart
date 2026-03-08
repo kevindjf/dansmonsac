@@ -4,13 +4,14 @@ import 'package:streak/presentation/widgets/streak_break_dialog.dart';
 
 void main() {
   group('StreakBreakDialog', () {
-    Future<void> showStreakBreakDialog(WidgetTester tester, int previousStreak) async {
+    Future<void> showStreakBreakDialog(
+        WidgetTester tester, int previousStreak) async {
       await tester.pumpWidget(
         MaterialApp(
           theme: ThemeData.dark().copyWith(
             colorScheme: ThemeData.dark().colorScheme.copyWith(
-              secondary: const Color(0xFFB9A0FF),
-            ),
+                  secondary: const Color(0xFFB9A0FF),
+                ),
           ),
           home: Scaffold(
             body: Builder(
@@ -18,7 +19,8 @@ void main() {
                 onPressed: () => showDialog(
                   context: context,
                   barrierDismissible: false,
-                  builder: (_) => StreakBreakDialog(previousStreak: previousStreak),
+                  builder: (_) =>
+                      StreakBreakDialog(previousStreak: previousStreak),
                 ),
                 child: const Text('Show'),
               ),
@@ -76,7 +78,8 @@ void main() {
       await showStreakBreakDialog(tester, 5);
 
       // Find the dismiss button (the one inside the dialog, not the "Show" button)
-      final dismissButton = find.widgetWithText(ElevatedButton, 'C\'est reparti !');
+      final dismissButton =
+          find.widgetWithText(ElevatedButton, 'C\'est reparti !');
       expect(dismissButton, findsOneWidget);
 
       final buttonWidget = tester.widget<ElevatedButton>(dismissButton);
@@ -87,8 +90,7 @@ void main() {
       expect(minSize.width, greaterThanOrEqualTo(44));
     });
 
-    testWidgets('on dismiss, dialog closes',
-        (WidgetTester tester) async {
+    testWidgets('on dismiss, dialog closes', (WidgetTester tester) async {
       await showStreakBreakDialog(tester, 15);
 
       // Verify dialog is showing
@@ -102,8 +104,7 @@ void main() {
       expect(find.byType(AlertDialog), findsNothing);
     });
 
-    testWidgets('displays muscle emoji',
-        (WidgetTester tester) async {
+    testWidgets('displays muscle emoji', (WidgetTester tester) async {
       await showStreakBreakDialog(tester, 7);
 
       // The muscle emoji (U+1F4AA)
@@ -129,7 +130,8 @@ void main() {
         (WidgetTester tester) async {
       await showStreakBreakDialog(tester, 5);
 
-      final dismissButton = find.widgetWithText(ElevatedButton, 'C\'est reparti !');
+      final dismissButton =
+          find.widgetWithText(ElevatedButton, 'C\'est reparti !');
       final buttonWidget = tester.widget<ElevatedButton>(dismissButton);
       final style = buttonWidget.style;
       final bgColor = style?.backgroundColor?.resolve({});

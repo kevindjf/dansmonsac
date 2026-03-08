@@ -140,7 +140,9 @@ class ContentSupplyHolder extends ConsumerWidget {
             left: 16,
             right: 16,
             top: 16,
-            bottom: MediaQuery.of(sheetContext).viewInsets.bottom + bottomSafeArea + 16,
+            bottom: MediaQuery.of(sheetContext).viewInsets.bottom +
+                bottomSafeArea +
+                16,
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -170,7 +172,8 @@ class ContentSupplyHolder extends ConsumerWidget {
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: Theme.of(sheetContext).colorScheme.primary),
+                    borderSide: BorderSide(
+                        color: Theme.of(sheetContext).colorScheme.primary),
                   ),
                   labelText: "Nom du cours",
                   labelStyle: const TextStyle(color: Colors.grey),
@@ -290,7 +293,9 @@ class ContentSupplyHolder extends ConsumerWidget {
                 left: 16,
                 right: 16,
                 top: 16,
-                bottom: MediaQuery.of(sheetContext).viewInsets.bottom + bottomSafeArea + 16,
+                bottom: MediaQuery.of(sheetContext).viewInsets.bottom +
+                    bottomSafeArea +
+                    16,
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -320,7 +325,8 @@ class ContentSupplyHolder extends ConsumerWidget {
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: Theme.of(sheetContext).colorScheme.primary),
+                        borderSide: BorderSide(
+                            color: Theme.of(sheetContext).colorScheme.primary),
                       ),
                       errorBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -350,7 +356,8 @@ class ContentSupplyHolder extends ConsumerWidget {
                     child: FilledButton(
                       onPressed: () {
                         final newName = controller.text.trim();
-                        final validation = Validators.validateSupplyName(newName);
+                        final validation =
+                            Validators.validateSupplyName(newName);
                         if (validation != null) {
                           setState(() => errorText = validation);
                           return;

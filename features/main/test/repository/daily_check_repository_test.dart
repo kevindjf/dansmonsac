@@ -30,7 +30,8 @@ void main() {
     });
 
     group('toggleSupplyCheck - Insert New Check (AC1)', () {
-      test('should insert new daily check when toggling supply for first time', () async {
+      test('should insert new daily check when toggling supply for first time',
+          () async {
         final date = DateTime(2026, 2, 8);
         final supplyId = 'supply-1';
         final courseId = 'course-1';
@@ -187,7 +188,8 @@ void main() {
 
         await repository.toggleSupplyCheck('supply-8', 'course-8', date, true);
         await repository.toggleSupplyCheck('supply-9', 'course-9', date, true);
-        await repository.toggleSupplyCheck('supply-10', 'course-10', date, false);
+        await repository.toggleSupplyCheck(
+            'supply-10', 'course-10', date, false);
 
         final result = await repository.getDailyChecksForDate(date);
 
@@ -206,8 +208,10 @@ void main() {
         final yesterday = DateTime(2026, 2, 7);
 
         // Add checks for different dates
-        await repository.toggleSupplyCheck('supply-11', 'course-11', yesterday, true);
-        await repository.toggleSupplyCheck('supply-12', 'course-12', today, true);
+        await repository.toggleSupplyCheck(
+            'supply-11', 'course-11', yesterday, true);
+        await repository.toggleSupplyCheck(
+            'supply-12', 'course-12', today, true);
 
         // Query today only
         final todayResult = await repository.getDailyChecksForDate(today);
@@ -220,7 +224,8 @@ void main() {
         );
 
         // Query yesterday only
-        final yesterdayResult = await repository.getDailyChecksForDate(yesterday);
+        final yesterdayResult =
+            await repository.getDailyChecksForDate(yesterday);
         yesterdayResult.fold(
           (failure) => fail('Expected success but got failure: $failure'),
           (checks) {
@@ -272,13 +277,17 @@ void main() {
     });
 
     group('Integration Tests', () {
-      test('should complete full workflow: toggle -> load -> verify state', () async {
+      test('should complete full workflow: toggle -> load -> verify state',
+          () async {
         final date = DateTime(2026, 2, 8);
 
         // Toggle multiple supplies
-        await repository.toggleSupplyCheck('supply-13', 'course-13', date, true);
-        await repository.toggleSupplyCheck('supply-14', 'course-14', date, true);
-        await repository.toggleSupplyCheck('supply-15', 'course-15', date, false);
+        await repository.toggleSupplyCheck(
+            'supply-13', 'course-13', date, true);
+        await repository.toggleSupplyCheck(
+            'supply-14', 'course-14', date, true);
+        await repository.toggleSupplyCheck(
+            'supply-15', 'course-15', date, false);
 
         // Load checks
         final result = await repository.getDailyChecksForDate(date);
@@ -289,10 +298,12 @@ void main() {
             expect(checks.length, 3);
 
             // Verify state persisted correctly
-            final supply13 = checks.firstWhere((c) => c.supplyId == 'supply-13');
+            final supply13 =
+                checks.firstWhere((c) => c.supplyId == 'supply-13');
             expect(supply13.isChecked, true);
 
-            final supply15 = checks.firstWhere((c) => c.supplyId == 'supply-15');
+            final supply15 =
+                checks.firstWhere((c) => c.supplyId == 'supply-15');
             expect(supply15.isChecked, false);
           },
         );

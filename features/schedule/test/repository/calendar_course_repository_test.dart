@@ -37,7 +37,8 @@ void main() {
   group('getTomorrowCourses', () {
     test('AC3: returns empty list for Saturday (weekend)', () async {
       // Arrange: Insert test data for Monday-Friday only
-      await _insertTestCourse(database, dayOfWeek: 1, courseName: 'Mathématiques');
+      await _insertTestCourse(database,
+          dayOfWeek: 1, courseName: 'Mathématiques');
       await _insertTestCourse(database, dayOfWeek: 5, courseName: 'Français');
 
       // Act: Mock system date to Friday (tomorrow = Saturday)
@@ -48,7 +49,8 @@ void main() {
         // Assert
         expect(result.isRight(), true);
         final courses = result.getOrElse(() => []);
-        expect(courses, isEmpty, reason: 'Saturday should return empty list (no classes scheduled)');
+        expect(courses, isEmpty,
+            reason: 'Saturday should return empty list (no classes scheduled)');
       });
     });
 
@@ -121,7 +123,8 @@ void main() {
         // Assert
         expect(result.isRight(), true);
         final courses = result.getOrElse(() => []);
-        expect(courses.length, 2, reason: 'Week A: should return Math (A) and English (BOTH)');
+        expect(courses.length, 2,
+            reason: 'Week A: should return Math (A) and English (BOTH)');
         expect(courses.any((c) => c.courseName == 'Mathématiques'), true);
         expect(courses.any((c) => c.courseName == 'Anglais'), true);
         expect(courses.any((c) => c.courseName == 'Physique'), false,
@@ -156,7 +159,8 @@ void main() {
         // Assert
         expect(result.isRight(), true);
         final courses = result.getOrElse(() => []);
-        expect(courses.length, 1, reason: 'Week B: should return only History (B)');
+        expect(courses.length, 1,
+            reason: 'Week B: should return only History (B)');
         expect(courses.first.courseName, 'Histoire');
       });
     });
@@ -199,8 +203,10 @@ void main() {
         final courses = result.getOrElse(() => []);
         expect(courses.length, 3);
         expect(courses[0].courseName, 'Maths', reason: 'First class at 8:00');
-        expect(courses[1].courseName, 'Français', reason: 'Second class at 10:00');
-        expect(courses[2].courseName, 'Anglais', reason: 'Third class at 14:30');
+        expect(courses[1].courseName, 'Français',
+            reason: 'Second class at 10:00');
+        expect(courses[2].courseName, 'Anglais',
+            reason: 'Third class at 14:30');
       });
     });
 

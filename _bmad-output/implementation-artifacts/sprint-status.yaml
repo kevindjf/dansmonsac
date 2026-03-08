@@ -48,7 +48,7 @@ development_status:
   epic-1-retrospective: optional
 
   # Epic 2: Daily Bag Preparation with Smart Streak System
-  epic-2: in-progress
+  epic-2: done
   2-1-drift-schema-v3-migration: done
   2-2-create-streak-module-foundation: done
   2-3-implement-daily-checklist-persistence: done
@@ -63,15 +63,15 @@ development_status:
   epic-2-retrospective: optional
 
   # Epic 3: Enhanced Retention with Double Reminder
-  epic-3: backlog
-  3-1-implement-user-configurable-reminder-time: backlog
+  epic-3: in-progress
+  3-1-implement-user-configurable-reminder-time: ready-for-dev
   3-2-implement-double-reminder-logic: backlog
   3-3-implement-auto-cancel-on-bag-completion: backlog
   epic-3-retrospective: optional
 
   # Epic 4: Premium Personalization & Monetization
-  epic-4: backlog
-  4-1-create-premium-module-foundation: backlog
+  epic-4: in-progress
+  4-1-create-premium-module-foundation: ready-for-dev
   4-2-integrate-in-app-purchase-for-099: backlog
   4-3-implement-purchase-restoration: backlog
   4-4-implement-background-image-picker: backlog

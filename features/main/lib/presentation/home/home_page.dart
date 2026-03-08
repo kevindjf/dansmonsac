@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
 import 'package:common/src/di/riverpod_di.dart';
+import 'package:common/src/providers/database_provider.dart';
+import 'package:common/src/services/notification_service.dart';
 import 'package:common/src/services/preferences_service.dart';
 import 'package:common/src/services/rating_service.dart';
 import 'package:common/src/ui/ui.dart';
@@ -11,6 +13,8 @@ import 'package:main/presentation/home/controller/home_state_ui.dart';
 import 'package:course/presentation/list/courses_page.dart';
 import 'package:main/presentation/home/list_supply_page.dart';
 import 'package:main/presentation/home/settings_page.dart';
+import 'package:schedule/di/riverpod_di.dart';
+import 'package:streak/di/riverpod_di.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   static const String routeName = "/home";
@@ -34,6 +38,25 @@ class _HomePageState extends ConsumerState<HomePage> {
   void initState() {
     super.initState();
     _initRatingService();
+    _refreshNotification();
+  }
+
+  /// Refresh notifications at app startup: schedules 14 days of smart notifications
+  Future<void> _refreshNotification() async {
+    final repository = ref.read(calendarCourseRepositoryProvider);
+    final database = ref.read(databaseProvider);
+
+    // Get current streak for reminder notifications
+    int currentStreak = 0;
+    try {
+      currentStreak = await ref.read(currentStreakProvider.future);
+    } catch (_) {}
+
+    await NotificationService.updateNotificationIfEnabled(
+      repository: repository,
+      database: database,
+      currentStreak: currentStreak,
+    );
   }
 
   Future<void> _initRatingService() async {

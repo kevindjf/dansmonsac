@@ -111,14 +111,14 @@ void main() {
             currentStreakProvider.overrideWith((ref) async => 3),
             previousStreakProvider.overrideWith((ref) async => 0),
             weeklyStreakDataProvider.overrideWith((ref) async => [
-              WeekDayStatus.completed,
-              WeekDayStatus.missed,
-              WeekDayStatus.future,
-              WeekDayStatus.future,
-              WeekDayStatus.future,
-              WeekDayStatus.inactive,
-              WeekDayStatus.inactive,
-            ]),
+                  WeekDayStatus.completed,
+                  WeekDayStatus.missed,
+                  WeekDayStatus.future,
+                  WeekDayStatus.future,
+                  WeekDayStatus.future,
+                  WeekDayStatus.inactive,
+                  WeekDayStatus.inactive,
+                ]),
           ],
           child: MaterialApp(
             home: Scaffold(
@@ -163,10 +163,12 @@ void main() {
 
       // Find the Container with constraints
       final container = tester.widget<Container>(
-        find.descendant(
-          of: find.byType(GestureDetector),
-          matching: find.byType(Container),
-        ).first,
+        find
+            .descendant(
+              of: find.byType(GestureDetector),
+              matching: find.byType(Container),
+            )
+            .first,
       );
 
       // Verify minimum constraints

@@ -21,49 +21,32 @@ void main() {
 
         // Mathématiques should have 4 supplies
         expect(subjects[0].supplies.length, 4);
-        expect(subjects[0].supplies, [
-          'Cahier de maths',
-          'Calculatrice',
-          'Règle',
-          'Compas'
-        ]);
+        expect(subjects[0].supplies,
+            ['Cahier de maths', 'Calculatrice', 'Règle', 'Compas']);
 
         // Français should have 3 supplies
         expect(subjects[1].supplies.length, 3);
-        expect(subjects[1].supplies, [
-          'Cahier de français',
-          'Dictionnaire',
-          'Bescherelle'
-        ]);
+        expect(subjects[1].supplies,
+            ['Cahier de français', 'Dictionnaire', 'Bescherelle']);
 
         // Histoire-Géographie should have 2 supplies
         expect(subjects[2].supplies.length, 2);
-        expect(subjects[2].supplies, [
-          'Cahier d\'histoire-géo',
-          'Crayons de couleur'
-        ]);
+        expect(subjects[2].supplies,
+            ['Cahier d\'histoire-géo', 'Crayons de couleur']);
 
         // Sciences should have 2 supplies
         expect(subjects[3].supplies.length, 2);
-        expect(subjects[3].supplies, [
-          'Cahier de sciences',
-          'Blouse'
-        ]);
+        expect(subjects[3].supplies, ['Cahier de sciences', 'Blouse']);
 
         // Anglais should have 2 supplies
         expect(subjects[4].supplies.length, 2);
-        expect(subjects[4].supplies, [
-          'Cahier d\'anglais',
-          'Dictionnaire anglais'
-        ]);
+        expect(subjects[4].supplies,
+            ['Cahier d\'anglais', 'Dictionnaire anglais']);
 
         // EPS should have 3 supplies
         expect(subjects[5].supplies.length, 3);
-        expect(subjects[5].supplies, [
-          'Tenue de sport',
-          'Baskets',
-          'Serviette'
-        ]);
+        expect(
+            subjects[5].supplies, ['Tenue de sport', 'Baskets', 'Serviette']);
       });
 
       test('each default subject should have a category', () {
@@ -81,9 +64,10 @@ void main() {
         final subjects = DefaultSupplies.getDefaultSubjects();
 
         // Trying to modify the list should throw
-        expect(() => subjects.add(
-          DefaultSubject(name: 'Test', supplies: [], category: 'test')
-        ), throwsUnsupportedError);
+        expect(
+            () => subjects.add(
+                DefaultSubject(name: 'Test', supplies: [], category: 'test')),
+            throwsUnsupportedError);
       });
     });
 
@@ -134,7 +118,9 @@ void main() {
     });
 
     group('Story 1.3 Acceptance Criteria Validation', () {
-      test('AC1: Each default subject is created with suggested supplies from shared utility', () {
+      test(
+          'AC1: Each default subject is created with suggested supplies from shared utility',
+          () {
         final subjects = DefaultSupplies.getDefaultSubjects();
 
         // Verify all subjects have supplies
@@ -150,10 +136,13 @@ void main() {
         );
 
         expect(totalSupplies, 16,
-            reason: 'Should have 16 total supplies across all default subjects');
+            reason:
+                'Should have 16 total supplies across all default subjects');
       });
 
-      test('AC2: Students should see default subjects with supplies after onboarding', () {
+      test(
+          'AC2: Students should see default subjects with supplies after onboarding',
+          () {
         final subjects = DefaultSupplies.getDefaultSubjects();
 
         // Simulate post-onboarding state
@@ -179,7 +168,8 @@ void main() {
 
         // Simulate the check
         if (existingCourses.isEmpty) {
-          fail('Should not create default courses when user has existing courses');
+          fail(
+              'Should not create default courses when user has existing courses');
         }
 
         // Test passes if we don't create courses
@@ -192,7 +182,8 @@ void main() {
         // 2. getSuppliesBySubjectName() - for manual creation (Story 1.2)
 
         final defaultSubjects = DefaultSupplies.getDefaultSubjects();
-        final manualSuggestions = DefaultSupplies.getSuppliesBySubjectName('Mathématiques');
+        final manualSuggestions =
+            DefaultSupplies.getSuppliesBySubjectName('Mathématiques');
 
         // Both methods should return data independently
         expect(defaultSubjects.isNotEmpty, true);

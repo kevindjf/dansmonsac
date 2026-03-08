@@ -28,7 +28,8 @@ class OnboardingImportStepPage extends ConsumerStatefulWidget {
 
 class _OnboardingImportStepPageState
     extends ConsumerState<OnboardingImportStepPage> {
-  final GlobalKey<CodeInputWidgetState> _codeInputKey = GlobalKey<CodeInputWidgetState>();
+  final GlobalKey<CodeInputWidgetState> _codeInputKey =
+      GlobalKey<CodeInputWidgetState>();
   bool _isLoading = false;
   String? _errorMessage;
 
@@ -116,7 +117,8 @@ class _OnboardingImportStepPageState
                 CodeInputWidget(
                   key: _codeInputKey,
                   enabled: !_isLoading,
-                  onScanQrCode: null, // No QR button here, we have the card above
+                  onScanQrCode:
+                      null, // No QR button here, we have the card above
                   onCodeComplete: _handleImport,
                 ),
 
@@ -124,7 +126,8 @@ class _OnboardingImportStepPageState
                   const SizedBox(height: 12),
                   Text(
                     _errorMessage!,
-                    style: const TextStyle(color: Colors.redAccent, fontSize: 13),
+                    style:
+                        const TextStyle(color: Colors.redAccent, fontSize: 13),
                     textAlign: TextAlign.center,
                   ),
                 ],
@@ -311,7 +314,9 @@ class _OnboardingImportStepPageState
                   height: 1.4,
                 ),
                 children: [
-                  const TextSpan(text: "DEMANDE A TON AMI D'OUVRIR L'APP ET D'ALLER DANS "),
+                  const TextSpan(
+                      text:
+                          "DEMANDE A TON AMI D'OUVRIR L'APP ET D'ALLER DANS "),
                   TextSpan(
                     text: "PARAMETRES > PARTAGER",
                     style: TextStyle(
@@ -319,7 +324,7 @@ class _OnboardingImportStepPageState
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const TextSpan(text: " POUR OBTENIR UN CODE,"),
+                  const TextSpan(text: " POUR OBTENIR UN CODE."),
                 ],
               ),
             ),
@@ -367,7 +372,9 @@ class _OnboardingImportStepPageState
                   if (widget.onImportComplete != null) {
                     widget.onImportComplete!();
                   } else {
-                    ref.read(routerDelegateProvider).setRoute(OnboardingWeekExplanationPage.routeName);
+                    ref
+                        .read(routerDelegateProvider)
+                        .setRoute(OnboardingWeekExplanationPage.routeName);
                   }
                 },
                 onCancel: () {
@@ -385,7 +392,9 @@ class _OnboardingImportStepPageState
   }
 
   void _skipImport() {
-    ref.read(routerDelegateProvider).setRoute(OnboardingWeekExplanationPage.routeName);
+    ref
+        .read(routerDelegateProvider)
+        .setRoute(OnboardingWeekExplanationPage.routeName);
   }
 
   void _openQrScanner() {
@@ -413,7 +422,9 @@ class _OnboardingImportStepPageState
     if (rawValue == null) return null;
 
     // Check if it's a deep link (dansmonsac://share/CODE)
-    final deepLinkMatch = RegExp(r'dansmonsac://share/([A-Za-z0-9]{6})', caseSensitive: false).firstMatch(rawValue);
+    final deepLinkMatch =
+        RegExp(r'dansmonsac://share/([A-Za-z0-9]{6})', caseSensitive: false)
+            .firstMatch(rawValue);
     if (deepLinkMatch != null) {
       return deepLinkMatch.group(1)!.toUpperCase();
     }

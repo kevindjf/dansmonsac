@@ -27,7 +27,9 @@ class OnboardingWeekExplanationPage extends ConsumerWidget {
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     TextButton(
-                      onPressed: () => ref.read(routerDelegateProvider).setRoute(OnboardingSchoolYearPage.routeName),
+                      onPressed: () => ref
+                          .read(routerDelegateProvider)
+                          .setRoute(OnboardingSchoolYearPage.routeName),
                       child: Text(
                         "Passer",
                         style: TextStyle(
@@ -111,7 +113,9 @@ class OnboardingWeekExplanationPage extends ConsumerWidget {
                 SizedBox(
                   width: double.infinity,
                   child: FilledButton(
-                    onPressed: () => ref.read(routerDelegateProvider).setRoute(OnboardingSchoolYearPage.routeName),
+                    onPressed: () => ref
+                        .read(routerDelegateProvider)
+                        .setRoute(OnboardingSchoolYearPage.routeName),
                     style: FilledButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
@@ -133,7 +137,8 @@ class OnboardingWeekExplanationPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildWeekCard(String label, Color accentColor, ColorScheme colorScheme) {
+  Widget _buildWeekCard(
+      String label, Color accentColor, ColorScheme colorScheme) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       decoration: BoxDecoration(

@@ -25,7 +25,8 @@ class StreakBreakDialog extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
       ),
       content: Semantics(
-        label: 'Ton streak de $previousStreak ${previousStreak == 1 ? 'jour' : 'jours'} est terminé. Recommence aujourd\'hui !',
+        label:
+            'Ton streak de $previousStreak ${previousStreak == 1 ? 'jour' : 'jours'} est terminé. Recommence aujourd\'hui !',
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [

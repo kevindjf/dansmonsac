@@ -11,18 +11,82 @@ import 'package:streak/presentation/widgets/weekly_streak_row.dart';
 /// Streak detail page showing weekly progress and motivational messages
 ///
 /// Displays:
-/// - Fire icon (48-64px)
-/// - Weekly progress row (Task 2 will add this widget)
+/// - Fire icon (48-64px) with optional scale animation
+/// - Streak counter with optional count-up animation
+/// - Weekly progress row with optional delayed appearance
 /// - Motivational message based on streak state
 ///
 /// Navigation:
-/// - Accessed via StreakCounterWidget tap
+/// - Accessed via StreakCounterWidget tap or bag completion
 /// - Back button returns to home screen
-class StreakDetailPage extends ConsumerWidget {
-  const StreakDetailPage({super.key});
+class StreakDetailPage extends ConsumerStatefulWidget {
+  final bool showCelebration;
+
+  const StreakDetailPage({super.key, this.showCelebration = false});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<StreakDetailPage> createState() => _StreakDetailPageState();
+}
+
+class _StreakDetailPageState extends ConsumerState<StreakDetailPage>
+    with TickerProviderStateMixin {
+  late AnimationController _flameController;
+  late AnimationController _weeklyRowController;
+  late Animation<double> _flameScale;
+  late Animation<double> _weeklyRowOpacity;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _flameController = AnimationController(
+      duration: const Duration(milliseconds: 800),
+      vsync: this,
+    );
+
+    _weeklyRowController = AnimationController(
+      duration: const Duration(milliseconds: 600),
+      vsync: this,
+    );
+
+    _flameScale = Tween<double>(
+      begin: widget.showCelebration ? 0.5 : 1.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _flameController,
+      curve: Curves.elasticOut,
+    ));
+
+    _weeklyRowOpacity = Tween<double>(
+      begin: widget.showCelebration ? 0.0 : 1.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _weeklyRowController,
+      curve: Curves.easeIn,
+    ));
+
+    if (widget.showCelebration) {
+      // Start flame animation immediately
+      _flameController.forward();
+      // Delay weekly row appearance
+      Future.delayed(const Duration(milliseconds: 600), () {
+        if (mounted) _weeklyRowController.forward();
+      });
+    } else {
+      _flameController.value = 1.0;
+      _weeklyRowController.value = 1.0;
+    }
+  }
+
+  @override
+  void dispose() {
+    _flameController.dispose();
+    _weeklyRowController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final currentStreakAsync = ref.watch(currentStreakProvider);
     final previousStreakAsync = ref.watch(previousStreakProvider);
     final weeklyDataAsync = ref.watch(weeklyStreakDataProvider);
@@ -75,21 +139,55 @@ class StreakDetailPage extends ConsumerWidget {
         children: [
           const SizedBox(height: 32),
 
-          // Animated flame with error handling
-          _buildFlameAnimation(context, colorScheme),
+          // Animated flame with scale animation
+          ScaleTransition(
+            scale: _flameScale,
+            child: _buildFlameAnimation(context, colorScheme),
+          ),
 
-          const SizedBox(height: 32),
+          const SizedBox(height: 16),
 
-          // Weekly streak row
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              border: Border.all(
-                color: colorScheme.secondary.withValues(alpha: 0.3),
+          // Streak counter with count-up animation
+          widget.showCelebration
+              ? TweenAnimationBuilder<int>(
+                  tween: IntTween(begin: 0, end: currentStreak),
+                  duration: const Duration(milliseconds: 1200),
+                  curve: Curves.easeOutCubic,
+                  builder: (context, value, child) {
+                    return Text(
+                      '$value',
+                      style: TextStyle(
+                        fontSize: 56,
+                        fontWeight: FontWeight.bold,
+                        color: colorScheme.secondary,
+                      ),
+                    );
+                  },
+                )
+              : Text(
+                  '$currentStreak',
+                  style: TextStyle(
+                    fontSize: 56,
+                    fontWeight: FontWeight.bold,
+                    color: colorScheme.secondary,
+                  ),
+                ),
+
+          const SizedBox(height: 16),
+
+          // Weekly streak row with fade-in
+          FadeTransition(
+            opacity: _weeklyRowOpacity,
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: colorScheme.secondary.withValues(alpha: 0.3),
+                ),
+                borderRadius: BorderRadius.circular(12),
               ),
-              borderRadius: BorderRadius.circular(12),
+              child: WeeklyStreakRow(statuses: weeklyData),
             ),
-            child: WeeklyStreakRow(statuses: weeklyData),
           ),
 
           const SizedBox(height: 32),
@@ -200,7 +298,7 @@ class StreakDetailPage extends ConsumerWidget {
     } else if (previousStreak > 0) {
       // Streak brisé
       final daysText = previousStreak == 1 ? 'jour' : 'jours';
-      title = 'On repart à zéro ? 🔄';
+      title = 'On repart à zéro ?';
       subtitle =
           'Ton record est de $previousStreak $daysText. Relève le défi !';
 
@@ -214,7 +312,7 @@ class StreakDetailPage extends ConsumerWidget {
       );
     } else {
       // Jamais commencé
-      title = 'Active ton premier feu ! ⚡';
+      title = 'Active ton premier feu !';
       subtitle = 'Organise ton sac chaque jour pour monter en niveau.';
 
       titleWidget = Text(

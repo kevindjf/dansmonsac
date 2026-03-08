@@ -13,7 +13,8 @@ part 'app_database.g.dart';
 @DataClassName('CourseEntity')
 class Courses extends Table {
   TextColumn get id => text()();
-  TextColumn get remoteId => text().nullable()(); // ID from Supabase (kept for debugging)
+  TextColumn get remoteId =>
+      text().nullable()(); // ID from Supabase (kept for debugging)
   TextColumn get name => text()();
   TextColumn get color => text()();
   TextColumn get weekType => text()(); // 'A', 'B', or 'AB'
@@ -28,7 +29,8 @@ class Courses extends Table {
 @DataClassName('SupplyEntity')
 class Supplies extends Table {
   TextColumn get id => text()();
-  TextColumn get remoteId => text().nullable()(); // ID from Supabase (kept for debugging)
+  TextColumn get remoteId =>
+      text().nullable()(); // ID from Supabase (kept for debugging)
   TextColumn get courseId => text()();
   TextColumn get name => text()();
   BoolColumn get isChecked => boolean().withDefault(const Constant(false))();
@@ -44,7 +46,8 @@ class Supplies extends Table {
 @DataClassName('CalendarCourseEntity')
 class CalendarCourses extends Table {
   TextColumn get id => text()();
-  TextColumn get remoteId => text().nullable()(); // ID from Supabase (kept for debugging)
+  TextColumn get remoteId =>
+      text().nullable()(); // ID from Supabase (kept for debugging)
   TextColumn get courseId => text()();
   TextColumn get roomName => text().withDefault(const Constant(''))();
   IntColumn get dayOfWeek => integer()(); // 1-7 (Monday-Sunday)
@@ -52,7 +55,8 @@ class CalendarCourses extends Table {
   IntColumn get startMinute => integer()();
   IntColumn get endHour => integer()();
   IntColumn get endMinute => integer()();
-  TextColumn get weekType => text().withDefault(const Constant('AB'))(); // 'A', 'B', or 'AB'
+  TextColumn get weekType =>
+      text().withDefault(const Constant('AB'))(); // 'A', 'B', or 'AB'
   DateTimeColumn get updatedAt => dateTime()();
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
 
@@ -60,12 +64,12 @@ class CalendarCourses extends Table {
   Set<Column> get primaryKey => {id};
 }
 
-
 /// Table for daily supply checks (Epic 2: Bag Preparation)
 @DataClassName('DailyCheckEntity')
 class DailyChecks extends Table {
   TextColumn get id => text()();
-  DateTimeColumn get date => dateTime()(); // The date for which supplies are checked
+  DateTimeColumn get date =>
+      dateTime()(); // The date for which supplies are checked
   TextColumn get supplyId => text()();
   TextColumn get courseId => text()();
   BoolColumn get isChecked => boolean().withDefault(const Constant(false))();
@@ -79,7 +83,8 @@ class DailyChecks extends Table {
 @DataClassName('BagCompletionEntity')
 class BagCompletions extends Table {
   TextColumn get id => text()();
-  DateTimeColumn get date => dateTime()(); // The date for which bag was prepared
+  DateTimeColumn get date =>
+      dateTime()(); // The date for which bag was prepared
   DateTimeColumn get completedAt => dateTime()(); // Timestamp of completion
   TextColumn get deviceId => text()();
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
@@ -93,7 +98,8 @@ class BagCompletions extends Table {
 class PremiumStatus extends Table {
   TextColumn get id => text()();
   BoolColumn get hasPurchased => boolean().withDefault(const Constant(false))();
-  TextColumn get linkedParentId => text().nullable()(); // Parent device ID if linked (Epic 5)
+  TextColumn get linkedParentId =>
+      text().nullable()(); // Parent device ID if linked (Epic 5)
   DateTimeColumn get updatedAt => dateTime()();
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
 
@@ -127,11 +133,16 @@ class AppDatabase extends _$AppDatabase {
         onUpgrade: (Migrator m, int from, int to) async {
           if (from < 2) {
             // Migration v1 → v2: Add remoteId columns to existing tables
-            await customStatement('ALTER TABLE courses ADD COLUMN remote_id TEXT');
-            await customStatement('ALTER TABLE supplies ADD COLUMN remote_id TEXT');
-            await customStatement('ALTER TABLE calendar_courses ADD COLUMN remote_id TEXT');
-            await customStatement('ALTER TABLE calendar_courses ADD COLUMN room_name TEXT DEFAULT ""');
-            await customStatement('ALTER TABLE calendar_courses ADD COLUMN week_type TEXT DEFAULT "AB"');
+            await customStatement(
+                'ALTER TABLE courses ADD COLUMN remote_id TEXT');
+            await customStatement(
+                'ALTER TABLE supplies ADD COLUMN remote_id TEXT');
+            await customStatement(
+                'ALTER TABLE calendar_courses ADD COLUMN remote_id TEXT');
+            await customStatement(
+                'ALTER TABLE calendar_courses ADD COLUMN room_name TEXT DEFAULT ""');
+            await customStatement(
+                'ALTER TABLE calendar_courses ADD COLUMN week_type TEXT DEFAULT "AB"');
           }
           if (from < 3) {
             // Migration v2 → v3: Add new tables for Epic 2 (Bag Preparation & Streak)
@@ -148,7 +159,8 @@ class AppDatabase extends _$AppDatabase {
             // Note: SQLite supports ALTER TABLE DROP COLUMN since version 3.35.0 (2021)
             await customStatement('ALTER TABLE courses DROP COLUMN is_synced');
             await customStatement('ALTER TABLE supplies DROP COLUMN is_synced');
-            await customStatement('ALTER TABLE calendar_courses DROP COLUMN is_synced');
+            await customStatement(
+                'ALTER TABLE calendar_courses DROP COLUMN is_synced');
           }
         },
       );
@@ -213,22 +225,28 @@ class AppDatabase extends _$AppDatabase {
     int dayOfWeek,
     String weekType,
   ) async {
-    LogService.d('AppDatabase.getCalendarCoursesByDayAndWeek: Query with dayOfWeek=$dayOfWeek, weekType=$weekType');
+    LogService.d(
+        'AppDatabase.getCalendarCoursesByDayAndWeek: Query with dayOfWeek=$dayOfWeek, weekType=$weekType');
 
     // Get all courses first to debug
     final allCourses = await select(calendarCourses).get();
-    LogService.d('AppDatabase.getCalendarCoursesByDayAndWeek: Total courses in DB = ${allCourses.length}');
+    LogService.d(
+        'AppDatabase.getCalendarCoursesByDayAndWeek: Total courses in DB = ${allCourses.length}');
     for (final course in allCourses) {
-      LogService.d('  Course: id=${course.id}, dayOfWeek=${course.dayOfWeek}, weekType=${course.weekType}, courseId=${course.courseId}');
+      LogService.d(
+          '  Course: id=${course.id}, dayOfWeek=${course.dayOfWeek}, weekType=${course.weekType}, courseId=${course.courseId}');
     }
 
     final result = await (select(calendarCourses)
           ..where((c) =>
               c.dayOfWeek.equals(dayOfWeek) &
-              (c.weekType.equals('BOTH') | c.weekType.equals('AB') | c.weekType.equals(weekType))))
+              (c.weekType.equals('BOTH') |
+                  c.weekType.equals('AB') |
+                  c.weekType.equals(weekType))))
         .get();
 
-    LogService.d('AppDatabase.getCalendarCoursesByDayAndWeek: Filtered result = ${result.length} courses');
+    LogService.d(
+        'AppDatabase.getCalendarCoursesByDayAndWeek: Filtered result = ${result.length} courses');
     return result;
   }
 
@@ -251,8 +269,7 @@ class AppDatabase extends _$AppDatabase {
       (delete(calendarCourses)..where((c) => c.id.equals(id))).go();
 
   Future<int> deleteCalendarCoursesByCourse(String courseId) =>
-      (delete(calendarCourses)..where((c) => c.courseId.equals(courseId)))
-          .go();
+      (delete(calendarCourses)..where((c) => c.courseId.equals(courseId))).go();
 
   Future<int> updateCalendarCourseRemoteId(String localId, String remoteId) {
     return (update(calendarCourses)..where((c) => c.id.equals(localId)))
@@ -271,7 +288,6 @@ class AppDatabase extends _$AppDatabase {
   Future<CalendarCourseEntity?> getCalendarCourseByRemoteId(String remoteId) =>
       (select(calendarCourses)..where((c) => c.remoteId.equals(remoteId)))
           .getSingleOrNull();
-
 
   // DailyChecks operations (Epic 2: Bag Preparation)
   Future<List<DailyCheckEntity>> getDailyChecksByDate(DateTime date) {
@@ -328,8 +344,9 @@ class AppDatabase extends _$AppDatabase {
   Future<List<BagCompletionEntity>> getBagCompletionsInRange(
       DateTime start, DateTime end) {
     return (select(bagCompletions)
-          ..where(
-              (b) => b.date.isBiggerOrEqualValue(start) & b.date.isSmallerOrEqualValue(end))
+          ..where((b) =>
+              b.date.isBiggerOrEqualValue(start) &
+              b.date.isSmallerOrEqualValue(end))
           ..orderBy([(b) => OrderingTerm.desc(b.date)]))
         .get();
   }
@@ -353,15 +370,13 @@ class AppDatabase extends _$AppDatabase {
   Future<int> setPurchased(bool purchased) {
     return (update(premiumStatus)..where((p) => p.id.isNotNull())).write(
         PremiumStatusCompanion(
-            hasPurchased: Value(purchased),
-            updatedAt: Value(DateTime.now())));
+            hasPurchased: Value(purchased), updatedAt: Value(DateTime.now())));
   }
 
   Future<int> setLinkedParent(String? parentId) {
     return (update(premiumStatus)..where((p) => p.id.isNotNull())).write(
         PremiumStatusCompanion(
-            linkedParentId: Value(parentId),
-            updatedAt: Value(DateTime.now())));
+            linkedParentId: Value(parentId), updatedAt: Value(DateTime.now())));
   }
 
   /// Migrate calendar courses from Supabase to local Drift DB
@@ -370,29 +385,34 @@ class AppDatabase extends _$AppDatabase {
     SupabaseClient supabaseClient,
     String deviceId,
   ) async {
-    LogService.d('AppDatabase.migrateCalendarCoursesFromSupabase: Starting migration');
+    LogService.d(
+        'AppDatabase.migrateCalendarCoursesFromSupabase: Starting migration');
 
     try {
       // 1. Check if Drift table is empty
       final localCourses = await select(calendarCourses).get();
       if (localCourses.isNotEmpty) {
-        LogService.d('AppDatabase.migrateCalendarCoursesFromSupabase: Local DB not empty (${localCourses.length} courses), skipping migration');
+        LogService.d(
+            'AppDatabase.migrateCalendarCoursesFromSupabase: Local DB not empty (${localCourses.length} courses), skipping migration');
         return;
       }
 
       // 2. Fetch from Supabase
-      LogService.d('AppDatabase.migrateCalendarCoursesFromSupabase: Fetching from Supabase');
+      LogService.d(
+          'AppDatabase.migrateCalendarCoursesFromSupabase: Fetching from Supabase');
       final response = await supabaseClient
           .from('calendar_courses')
           .select()
           .eq('device_id', deviceId);
 
       if (response.isEmpty) {
-        LogService.d('AppDatabase.migrateCalendarCoursesFromSupabase: No courses in Supabase, migration complete');
+        LogService.d(
+            'AppDatabase.migrateCalendarCoursesFromSupabase: No courses in Supabase, migration complete');
         return;
       }
 
-      LogService.d('AppDatabase.migrateCalendarCoursesFromSupabase: Found ${response.length} courses in Supabase');
+      LogService.d(
+          'AppDatabase.migrateCalendarCoursesFromSupabase: Found ${response.length} courses in Supabase');
 
       // 3. Insert into Drift
       // IMPORTANT: Always provide updatedAt field to avoid silent insertion failures
@@ -418,9 +438,13 @@ class AppDatabase extends _$AppDatabase {
         migratedCount++;
       }
 
-      LogService.d('AppDatabase.migrateCalendarCoursesFromSupabase: Migrated $migratedCount courses successfully');
+      LogService.d(
+          'AppDatabase.migrateCalendarCoursesFromSupabase: Migrated $migratedCount courses successfully');
     } catch (e, stackTrace) {
-      LogService.e('AppDatabase.migrateCalendarCoursesFromSupabase: Migration failed', e, stackTrace);
+      LogService.e(
+          'AppDatabase.migrateCalendarCoursesFromSupabase: Migration failed',
+          e,
+          stackTrace);
       // Don't rethrow - migration is optional and shouldn't block app startup
     }
   }
@@ -465,15 +489,18 @@ class AppDatabase extends _$AppDatabase {
         final toKeep = courseList.first;
         final toDelete = courseList.skip(1).toList();
 
-        LogService.d('AppDatabase.cleanDuplicates: Course "${entry.key}" has ${toDelete.length} duplicates');
+        LogService.d(
+            'AppDatabase.cleanDuplicates: Course "${entry.key}" has ${toDelete.length} duplicates');
 
         for (final duplicate in toDelete) {
           // Update supplies to point to kept course
-          await (update(supplies)..where((s) => s.courseId.equals(duplicate.id)))
+          await (update(supplies)
+                ..where((s) => s.courseId.equals(duplicate.id)))
               .write(SuppliesCompanion(courseId: Value(toKeep.id)));
 
           // Update calendar courses to point to kept course
-          await (update(calendarCourses)..where((c) => c.courseId.equals(duplicate.id)))
+          await (update(calendarCourses)
+                ..where((c) => c.courseId.equals(duplicate.id)))
               .write(CalendarCoursesCompanion(courseId: Value(toKeep.id)));
 
           // Delete duplicate course
@@ -508,7 +535,8 @@ class AppDatabase extends _$AppDatabase {
           );
 
           // Delete duplicate supply
-          await (delete(supplies)..where((s) => s.id.equals(duplicate.id))).go();
+          await (delete(supplies)..where((s) => s.id.equals(duplicate.id)))
+              .go();
           suppliesRemoved++;
         }
       }
@@ -519,7 +547,8 @@ class AppDatabase extends _$AppDatabase {
     final calendarCoursesByKey = <String, List<CalendarCourseEntity>>{};
 
     for (final cc in allCalendarCourses) {
-      final key = '${cc.courseId}:${cc.dayOfWeek}:${cc.startHour}:${cc.startMinute}:${cc.weekType}';
+      final key =
+          '${cc.courseId}:${cc.dayOfWeek}:${cc.startHour}:${cc.startMinute}:${cc.weekType}';
       calendarCoursesByKey.putIfAbsent(key, () => []).add(cc);
     }
 
@@ -528,17 +557,19 @@ class AppDatabase extends _$AppDatabase {
       if (ccList.length > 1) {
         ccList.sort((a, b) => a.createdAt.compareTo(b.createdAt));
 
-        final toKeep = ccList.first;
         final toDelete = ccList.skip(1).toList();
 
         for (final duplicate in toDelete) {
-          await (delete(calendarCourses)..where((c) => c.id.equals(duplicate.id))).go();
+          await (delete(calendarCourses)
+                ..where((c) => c.id.equals(duplicate.id)))
+              .go();
           calendarCoursesRemoved++;
         }
       }
     }
 
-    LogService.i('AppDatabase.cleanDuplicates: Removed $coursesRemoved courses, $suppliesRemoved supplies, $calendarCoursesRemoved calendar courses');
+    LogService.i(
+        'AppDatabase.cleanDuplicates: Removed $coursesRemoved courses, $suppliesRemoved supplies, $calendarCoursesRemoved calendar courses');
 
     return {
       'courses': coursesRemoved,

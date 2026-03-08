@@ -52,8 +52,8 @@ class ContentCourseHolder extends ConsumerWidget {
                     duration: Duration(milliseconds: 150),
                     curve: Curves.easeInOut,
                     turns: isOpen ? 0.25 : 0,
-                    child: Icon(Icons.chevron_right,
-                        size: 24, color: accentColor),
+                    child:
+                        Icon(Icons.chevron_right, size: 24, color: accentColor),
                   )
                 ],
               ),

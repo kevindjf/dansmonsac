@@ -19,25 +19,27 @@ class SupplyDriftRepository extends SupplyRepository {
   @override
   Future<Either<Failure, Supply>> store(AddSupplyCommand command) {
     return handleErrors(() async {
-      LogService.d('SupplyDriftRepository.store: Creating supply "${command.name}" for course ${command.courseId}');
+      LogService.d(
+          'SupplyDriftRepository.store: Creating supply "${command.name}" for course ${command.courseId}');
 
       final supplyId = uuid.v4();
       final now = DateTime.now();
 
       await database.into(database.supplies).insert(
-        SuppliesCompanion(
-          id: Value(supplyId),
-          remoteId: const Value(null),
-          courseId: Value(command.courseId),
-          name: Value(command.name),
-          isChecked: const Value(false),
-          checkedDate: const Value(null),
-          updatedAt: Value(now),
-          createdAt: Value(now),
-        ),
-      );
+            SuppliesCompanion(
+              id: Value(supplyId),
+              remoteId: const Value(null),
+              courseId: Value(command.courseId),
+              name: Value(command.name),
+              isChecked: const Value(false),
+              checkedDate: const Value(null),
+              updatedAt: Value(now),
+              createdAt: Value(now),
+            ),
+          );
 
-      LogService.d('SupplyDriftRepository.store: Inserted supply with ID $supplyId');
+      LogService.d(
+          'SupplyDriftRepository.store: Inserted supply with ID $supplyId');
       return Supply(id: supplyId, name: command.name);
     });
   }
@@ -52,7 +54,8 @@ class SupplyDriftRepository extends SupplyRepository {
             ..where((c) => c.supplyId.equals(id)))
           .go();
 
-      LogService.d('SupplyDriftRepository.deleteSupply: Deleted $dailyChecksDeleted daily checks');
+      LogService.d(
+          'SupplyDriftRepository.deleteSupply: Deleted $dailyChecksDeleted daily checks');
 
       // Delete the supply
       final suppliesDeleted = await (database.delete(database.supplies)
@@ -60,7 +63,8 @@ class SupplyDriftRepository extends SupplyRepository {
           .go();
 
       if (suppliesDeleted == 0) {
-        LogService.w('SupplyDriftRepository.deleteSupply: Supply $id not found');
+        LogService.w(
+            'SupplyDriftRepository.deleteSupply: Supply $id not found');
         throw Exception('Supply not found');
       }
 
@@ -71,7 +75,8 @@ class SupplyDriftRepository extends SupplyRepository {
   @override
   Future<Either<Failure, void>> updateSupplyName(String id, String newName) {
     return handleErrors(() async {
-      LogService.d('SupplyDriftRepository.updateSupplyName: Updating supply $id to "$newName"');
+      LogService.d(
+          'SupplyDriftRepository.updateSupplyName: Updating supply $id to "$newName"');
 
       final updated = await (database.update(database.supplies)
             ..where((s) => s.id.equals(id)))
@@ -83,11 +88,13 @@ class SupplyDriftRepository extends SupplyRepository {
       );
 
       if (updated == 0) {
-        LogService.w('SupplyDriftRepository.updateSupplyName: Supply $id not found');
+        LogService.w(
+            'SupplyDriftRepository.updateSupplyName: Supply $id not found');
         throw Exception('Supply not found');
       }
 
-      LogService.d('SupplyDriftRepository.updateSupplyName: Updated supply $id');
+      LogService.d(
+          'SupplyDriftRepository.updateSupplyName: Updated supply $id');
     });
   }
 }

@@ -76,7 +76,8 @@ class CourseSupabaseRepository extends CourseRepository {
     return handleErrors(() async {
       final response = await supabaseClient
           .from('courses_user')
-          .select('courses(id, course_name, course_supplies(supply_id, supplies(id, name)))')
+          .select(
+              'courses(id, course_name, course_supplies(supply_id, supplies(id, name)))')
           .eq('device_id', deviceId);
 
       if (response.isEmpty) return [];
@@ -110,13 +111,9 @@ class CourseSupabaseRepository extends CourseRepository {
 
       // 3. Supprimer les fournitures si nécessaire
       if (supplyIds.isNotEmpty) {
-
         // Alternative: supprimer les fournitures une par une
         for (final supplyId in supplyIds) {
-          await supabaseClient
-              .from('supplies')
-              .delete()
-              .eq('id', supplyId);
+          await supabaseClient.from('supplies').delete().eq('id', supplyId);
         }
       }
 
