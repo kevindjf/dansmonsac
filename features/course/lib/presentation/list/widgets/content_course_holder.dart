@@ -1,14 +1,10 @@
 import 'package:course/presentation/list/controller/course_list_state.dart';
 import 'package:course/presentation/list/widgets/content_supplies_holder.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:common/src/ui/ui.dart';
 
 class ContentCourseHolder extends ConsumerWidget {
-  final _contentOpenProvider = StateProvider<bool>((ref) => false);
-
   final ValueChanged<CourseItemUI> onAddSupply;
   final ValueChanged<CourseItemUI> onExpandCourse;
   final ValueChanged<SupplyItemUI> onDeleteSupply;

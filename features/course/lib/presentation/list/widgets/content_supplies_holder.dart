@@ -3,7 +3,6 @@ import 'package:course/presentation/list/controller/course_list_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:common/src/ui/ui.dart';
 
 class ContentSupplyHolder extends ConsumerWidget {
   final List<SupplyItemUI> supplies;
@@ -30,7 +29,7 @@ class ContentSupplyHolder extends ConsumerWidget {
     return Column(
       children: [
         // Liste des fournitures
-        ...supplies.map((supply) => _buildSupplyItem(supply, context)).toList(),
+        ...supplies.map((supply) => _buildSupplyItem(supply, context)),
         const SizedBox(height: 16),
 
         // Bouton pour ajouter une fourniture
