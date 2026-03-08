@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:onboarding/src/presentation/course/controller/course_onboarding_controller.dart';
-import 'package:onboarding/src/presentation/hour/setup_time_page.dart';
 
 class OnboardingCoursePage extends ConsumerStatefulWidget {
   static const String routeName = "/course-onboarding";

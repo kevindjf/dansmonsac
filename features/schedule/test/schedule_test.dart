@@ -1,12 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:schedule/schedule.dart';
-
 void main() {
-  test('adds one to input values', () {
-    final calculator = Calculator();
-    expect(calculator.addOne(2), 3);
-    expect(calculator.addOne(-7), -6);
-    expect(calculator.addOne(0), 1);
+  // Default auto-generated test removed - Calculator class does not exist.
+  // See test/repository/calendar_course_repository_test.dart for actual schedule tests.
+  test('placeholder test', () {
+    expect(true, isTrue);
   });
 }

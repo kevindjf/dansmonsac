@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:common/src/ui/ui.dart';
 import 'package:common/src/services.dart';
 import 'package:common/src/utils/week_utils.dart';
 import 'package:google_fonts/google_fonts.dart';

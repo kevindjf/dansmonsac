@@ -1,23 +1,14 @@
 import 'package:clock/clock.dart';
 import 'package:common/src/database/app_database.dart';
-import 'package:common/src/repository/preference_repository.dart';
-import 'package:common/src/services/preferences_service.dart';
-import 'package:dartz/dartz.dart';
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:schedule/models/calendar_course_with_supplies.dart';
 import 'package:schedule/repository/calendar_course_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:supply/models/supply.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 void main() {
   late AppDatabase database;
   late CalendarCourseSupabaseRepository repository;
-  late SupabaseClient mockSupabaseClient;
-  late PreferenceRepository mockPreferenceRepository;
 
   setUpAll(() {
     // Initialize Flutter binding for SharedPreferences
@@ -36,16 +27,7 @@ void main() {
     // Create in-memory database for testing
     database = AppDatabase.forTesting(NativeDatabase.memory());
 
-    // Note: Supabase client and preference repository not needed for getTomorrowCourses
-    // (offline-first, uses only local Drift database)
-    mockSupabaseClient = _MockSupabaseClient();
-    mockPreferenceRepository = _MockPreferenceRepository();
-
-    repository = CalendarCourseSupabaseRepository(
-      mockSupabaseClient,
-      mockPreferenceRepository,
-      database,
-    );
+    repository = CalendarCourseSupabaseRepository(database);
   });
 
   tearDown(() async {
@@ -281,18 +263,6 @@ void main() {
 }
 
 // Helper functions
-
-class _MockSupabaseClient extends SupabaseClient {
-  _MockSupabaseClient() : super('https://test.supabase.co', 'test-key');
-}
-
-class _MockPreferenceRepository implements PreferenceRepository {
-  @override
-  Future<String> getUserId() async => 'test-device-id';
-
-  @override
-  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
-}
 
 Future<String> _insertTestCourse(
   AppDatabase db, {

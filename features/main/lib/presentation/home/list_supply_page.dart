@@ -2,12 +2,14 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:common/src/services.dart';
+import 'package:common/src/providers/database_provider.dart';
 import 'package:common/src/utils/week_utils.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:main/presentation/home/controller/daily_check_controller.dart';
 import 'package:schedule/presentation/supply_list/controller/tomorrow_supply_controller.dart';
 import 'package:streak/presentation/widgets/streak_counter_widget.dart';
 import 'package:streak/presentation/widgets/streak_break_dialog.dart';
+import 'package:streak/presentation/pages/streak_detail_page.dart';
 import 'package:streak/di/riverpod_di.dart';
 
 class ListSupplyPage extends ConsumerWidget {
@@ -61,21 +63,34 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
   // Map to track checked state of supplies by ID
   final Map<String, bool> _checkedState = {};
   DateTime? _targetDate;
-  bool _isLoaded = false;
   List<String> _standaloneSupplies = [];
   String? _currentWeekType;
   final ScrollController _scrollController = ScrollController();
   bool _isScrolling = false;
   Timer? _scrollTimer;
   bool _bagCompletionMarked = false; // Track if bag completion was already marked for today
+  bool _isVacationMode = false;
+  DateTime? _vacationEndDate;
 
   @override
   void initState() {
     super.initState();
+    _loadVacationMode();
     _loadCheckedState();
     _loadStandaloneSupplies();
     _loadWeekType();
     _scrollController.addListener(_onScroll);
+  }
+
+  Future<void> _loadVacationMode() async {
+    final active = await PreferencesService.isVacationModeActive();
+    final endDate = await PreferencesService.getVacationModeEndDate();
+    if (mounted) {
+      setState(() {
+        _isVacationMode = active;
+        _vacationEndDate = endDate;
+      });
+    }
   }
 
   Future<void> _loadWeekType() async {
@@ -132,11 +147,19 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
     final controller = ref.read(dailyCheckControllerProvider.notifier);
     final savedState = await controller.loadChecksForDate(_targetDate!);
 
+    // Check if bag completion already exists for this date
+    final database = ref.read(databaseProvider);
+    final existingCompletion = await database.getBagCompletionByDate(
+      DateTime(targetDate.year, targetDate.month, targetDate.day),
+    );
+    if (existingCompletion != null) {
+      _bagCompletionMarked = true;
+    }
+
     if (mounted) {
       setState(() {
         _checkedState.addAll(savedState);
-        _isLoaded = true;
-      });
+});
     }
 
     // Check for streak break after load completes
@@ -197,48 +220,43 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
       final streakRepository = ref.read(streakRepositoryProvider);
       final result = await streakRepository.markBagComplete(_targetDate ?? DateTime.now());
 
-      result.fold(
-        (failure) {
-          // Log error but don't show to user (non-critical)
-          LogService.e('Failed to mark bag completion', failure);
-        },
-        (_) async {
-          // Success - invalidate streak provider to refresh UI
-          ref.invalidate(currentStreakProvider);
+      final isSuccess = result.isRight();
 
-          // Log new streak value for debugging
-          final newStreak = await ref.read(currentStreakProvider.future);
-          LogService.d('BagCompletion: targetDate=$_targetDate, new streak=$newStreak');
+      if (!isSuccess) {
+        final failure = result.fold((f) => f, (_) => null);
+        LogService.e('Failed to mark bag completion', failure);
+        return;
+      }
 
-          // Show a celebratory snackbar
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Row(
-                  children: [
-                    const Icon(Icons.celebration, color: Colors.white),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        'Ton sac est prêt ! Ton streak a été mis à jour 🔥',
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                  ],
-                ),
-                backgroundColor: Theme.of(context).colorScheme.secondary,
-                duration: const Duration(seconds: 3),
-                behavior: SnackBarBehavior.floating,
-              ),
-            );
-          }
-        },
-      );
+      // Success - invalidate streak providers to refresh UI
+      ref.invalidate(currentStreakProvider);
+      ref.invalidate(weeklyStreakDataProvider);
+
+      // Cancel streak reminder notifications (bag is done, no need to remind)
+      await NotificationService.cancelStreakReminders();
+
+      // Log new streak value for debugging
+      final newStreak = await ref.read(currentStreakProvider.future);
+      LogService.d('BagCompletion: targetDate=$_targetDate, new streak=$newStreak');
+
+      // Navigate to StreakDetailPage with celebration animation
+      if (mounted) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const StreakDetailPage(showCelebration: true),
+          ),
+        );
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    if (_isVacationMode) {
+      return _buildVacationView();
+    }
+
     final tomorrowSuppliesState = ref.watch(tomorrowSupplyControllerProvider);
 
     return FutureBuilder<TimeOfDay>(
@@ -318,6 +336,123 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
           error: (error, stack) => _buildEmptyState(packTime, _EmptyReason.noCourses),
         );
       },
+    );
+  }
+
+  String _formatVacationDate(DateTime date) {
+    const days = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
+    const months = [
+      'Janvier', 'Fevrier', 'Mars', 'Avril', 'Mai', 'Juin',
+      'Juillet', 'Aout', 'Septembre', 'Octobre', 'Novembre', 'Decembre'
+    ];
+    return "${days[date.weekday - 1]} ${date.day} ${months[date.month - 1]}";
+  }
+
+  Widget _buildVacationView() {
+    const orangeColor = Color(0xFFFF9800);
+
+    // Calculate days remaining
+    String? daysRemainingText;
+    if (_vacationEndDate != null) {
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+      final end = DateTime(_vacationEndDate!.year, _vacationEndDate!.month, _vacationEndDate!.day);
+      final daysLeft = end.difference(today).inDays;
+      if (daysLeft == 0) {
+        daysRemainingText = "c'est aujourd'hui !";
+      } else if (daysLeft == 1) {
+        daysRemainingText = "dans 1 jour";
+      } else {
+        daysRemainingText = "dans $daysLeft jours";
+      }
+    }
+
+    return Column(
+      children: [
+        // Simplified header
+        Container(
+          width: double.infinity,
+          color: Theme.of(context).scaffoldBackgroundColor,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(24.0, 16.0, 24.0, 16.0),
+            child: Text(
+              "Mon Sac",
+              style: GoogleFonts.robotoCondensed(
+                color: Colors.white,
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ),
+        // Vacation content
+        Expanded(
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(32.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      color: orangeColor.withValues(alpha: 0.15),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.beach_access,
+                      size: 56,
+                      color: orangeColor,
+                    ),
+                  ),
+                  const SizedBox(height: 28),
+                  Text(
+                    "Mode vacances actif",
+                    style: GoogleFonts.robotoCondensed(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  if (_vacationEndDate != null) ...[
+                    const SizedBox(height: 16),
+                    Text(
+                      "Reprise le ${_formatVacationDate(_vacationEndDate!)}",
+                      style: GoogleFonts.roboto(
+                        fontSize: 16,
+                        color: orangeColor,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    if (daysRemainingText != null) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        daysRemainingText,
+                        style: GoogleFonts.roboto(
+                          fontSize: 14,
+                          color: Colors.white54,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ],
+                  const SizedBox(height: 24),
+                  Text(
+                    "Profite bien de tes vacances !",
+                    style: GoogleFonts.roboto(
+                      fontSize: 15,
+                      color: Colors.white54,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -570,7 +705,7 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "Votre sac est prêt !",
+                      checked == total ? "Ton sac est pret !" : "Prepare ton sac",
                       style: GoogleFonts.robotoCondensed(
                         fontSize: 18,
                         color: Colors.white,
@@ -579,7 +714,9 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      "Prévu à ${packTime.hour.toString().padLeft(2, '0')}:${packTime.minute.toString().padLeft(2, '0')}",
+                      checked == total
+                          ? "Tout est bon, bravo !"
+                          : "Prevu a ${packTime.hour.toString().padLeft(2, '0')}:${packTime.minute.toString().padLeft(2, '0')}",
                       style: GoogleFonts.roboto(
                         fontSize: 12,
                         color: Colors.white54,
@@ -785,11 +922,6 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
         ),
       ),
     );
-  }
-
-  Future<void> _deleteStandaloneSupply(String supplyName) async {
-    await PreferencesService.removeStandaloneSupply(supplyName);
-    await _loadStandaloneSupplies();
   }
 
   Future<void> _showAddSupplyDialog() async {

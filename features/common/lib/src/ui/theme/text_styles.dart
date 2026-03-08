@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'colors.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 /// Classe qui définit tous les styles de texte de l'application
 class AppTextStyles {

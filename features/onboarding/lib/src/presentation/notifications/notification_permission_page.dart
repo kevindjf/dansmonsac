@@ -118,7 +118,6 @@ class _OnboardingNotificationPermissionPageState
   @override
   Widget build(BuildContext context) {
     final accentColor = Theme.of(context).colorScheme.secondary;
-    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
         body: SafeArea(

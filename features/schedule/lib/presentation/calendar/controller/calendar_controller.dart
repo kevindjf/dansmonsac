@@ -1,7 +1,6 @@
 import 'package:common/src/utils/week_utils.dart';
 import 'package:common/src/services.dart';
 import 'package:common/src/services/log_service.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:schedule/di/riverpod_di.dart';
@@ -91,9 +90,6 @@ class CalendarController extends _$CalendarController {
 
     // Fetch all calendar courses
     final result = await repository.fetchCalendarCourses();
-
-    // Get school year start from preferences
-    final schoolYearStart = await PreferencesService.getSchoolYearStart();
 
     return result.fold(
       (failure) {

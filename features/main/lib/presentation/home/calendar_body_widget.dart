@@ -71,11 +71,6 @@ class CalendarBodyWidget extends ConsumerWidget {
     required this.weekFilter,
   }) : super(key: key);
 
-  List<Event> _getDefaultEvents() {
-    // Return empty list by default
-    return [];
-  }
-
   bool hasOverlappingEvent(Event event, List<Event> events) {
     for (var other in events) {
       if (event != other) {
