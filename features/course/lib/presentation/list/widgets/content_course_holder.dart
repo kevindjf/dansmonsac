@@ -14,6 +14,7 @@ class ContentCourseHolder extends ConsumerWidget {
   final ValueChanged<SupplyItemUI> onDeleteSupply;
   final ValueChanged<CourseItemUI> onDeleteCourse;
   final void Function(CourseItemUI course, String newName) onRenameCourse;
+  final void Function(SupplyItemUI supply, String newName) onRenameSupply;
 
   final CourseItemUI course;
 
@@ -24,7 +25,8 @@ class ContentCourseHolder extends ConsumerWidget {
       required this.onAddSupply,
       required this.onDeleteSupply,
       required this.onDeleteCourse,
-      required this.onRenameCourse});
+      required this.onRenameCourse,
+      required this.onRenameSupply});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -74,6 +76,7 @@ class ContentCourseHolder extends ConsumerWidget {
                     onRenameCourse: (newName) {
                       onRenameCourse(course, newName);
                     },
+                    onRenameSupply: onRenameSupply,
                   )
                 : const SizedBox()
           ],

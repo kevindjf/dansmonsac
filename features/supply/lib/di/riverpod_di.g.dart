@@ -6,7 +6,7 @@ part of 'riverpod_di.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$supplyRepositoryHash() => r'8033b90034a7bf4df7ceafb20103c56057fffe76';
+String _$supplyRepositoryHash() => r'bc385d0f407ea4b2b072bfea42acc6a82b240a70';
 
 /// See also [supplyRepository].
 @ProviderFor(supplyRepository)

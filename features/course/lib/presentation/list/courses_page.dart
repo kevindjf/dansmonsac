@@ -165,6 +165,11 @@ class CoursesPage extends ConsumerWidget {
                       .read(coursesControllerProvider.notifier)
                       .onRenameCourse(realIndex, newName);
                 },
+                onRenameSupply: (SupplyItemUI supply, String newName) {
+                  ref
+                      .read(coursesControllerProvider.notifier)
+                      .onRenameSupply(realIndex, supply, newName);
+                },
               );
             } else {
               return const SizedBox(height: 80);

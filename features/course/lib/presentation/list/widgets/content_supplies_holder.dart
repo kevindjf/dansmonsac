@@ -1,3 +1,4 @@
+import 'package:common/src/utils/validators.dart';
 import 'package:course/presentation/list/controller/course_list_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,6 +12,7 @@ class ContentSupplyHolder extends ConsumerWidget {
   final ValueChanged<SupplyItemUI> onDeleteSupply;
   final VoidCallback onDeleteCourse;
   final ValueChanged<String> onRenameCourse;
+  final void Function(SupplyItemUI supply, String newName) onRenameSupply;
 
   const ContentSupplyHolder({
     super.key,
@@ -20,6 +22,7 @@ class ContentSupplyHolder extends ConsumerWidget {
     required this.onDeleteSupply,
     required this.onDeleteCourse,
     required this.onRenameCourse,
+    required this.onRenameSupply,
   });
 
   @override
@@ -230,7 +233,6 @@ class ContentSupplyHolder extends ConsumerWidget {
     });
   }
 
-  /// 📝 Widget pour afficher une fourniture
   Widget _buildSupplyItem(SupplyItemUI supply, BuildContext context) {
     final accentColor = Theme.of(context).colorScheme.secondary;
 
@@ -239,20 +241,164 @@ class ContentSupplyHolder extends ConsumerWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            supply.name,
-            style: GoogleFonts.roboto(color: Colors.white70),
-          ),
-          GestureDetector(
-            onTap: () => onDeleteSupply(supply),
-            child: Icon(
-              Icons.delete,
-              color: accentColor,
+          Expanded(
+            child: GestureDetector(
+              onTap: () => _showRenameSupplyBottomSheet(context, supply),
+              child: Text(
+                supply.name,
+                style: GoogleFonts.roboto(color: Colors.white70),
+              ),
             ),
+          ),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              GestureDetector(
+                onTap: () => _showRenameSupplyBottomSheet(context, supply),
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 12.0),
+                  child: Icon(Icons.edit, color: accentColor, size: 20),
+                ),
+              ),
+              GestureDetector(
+                onTap: () => onDeleteSupply(supply),
+                child: Icon(Icons.delete, color: accentColor),
+              ),
+            ],
           ),
         ],
       ),
     );
+  }
+
+  void _showRenameSupplyBottomSheet(BuildContext context, SupplyItemUI supply) {
+    final controller = TextEditingController(text: supply.name);
+    String? errorText;
+
+    showModalBottomSheet<String>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: const Color(0xFF303030),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (sheetContext) {
+        final bottomSafeArea = MediaQuery.of(sheetContext).viewPadding.bottom;
+        return StatefulBuilder(
+          builder: (builderContext, setState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                left: 16,
+                right: 16,
+                top: 16,
+                bottom: MediaQuery.of(sheetContext).viewInsets.bottom + bottomSafeArea + 16,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    "Renommer la fourniture",
+                    style: GoogleFonts.robotoCondensed(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: controller,
+                    autofocus: true,
+                    decoration: InputDecoration(
+                      filled: false,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Colors.grey),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Colors.grey),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Theme.of(sheetContext).colorScheme.primary),
+                      ),
+                      errorBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Colors.red),
+                      ),
+                      labelText: "Nom de la fourniture",
+                      labelStyle: const TextStyle(color: Colors.grey),
+                      errorText: errorText,
+                    ),
+                    onChanged: (_) {
+                      if (errorText != null) {
+                        setState(() => errorText = null);
+                      }
+                    },
+                    onSubmitted: (value) {
+                      final validation = Validators.validateSupplyName(value);
+                      if (validation != null) {
+                        setState(() => errorText = validation);
+                        return;
+                      }
+                      Navigator.of(sheetContext).pop(value.trim());
+                    },
+                  ),
+                  const SizedBox(height: 32),
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton(
+                      onPressed: () {
+                        final newName = controller.text.trim();
+                        final validation = Validators.validateSupplyName(newName);
+                        if (validation != null) {
+                          setState(() => errorText = validation);
+                          return;
+                        }
+                        Navigator.of(sheetContext).pop(newName);
+                      },
+                      style: FilledButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text(
+                        "Renommer",
+                        style: TextStyle(fontSize: 16),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton(
+                      onPressed: () => Navigator.of(sheetContext).pop(),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: Colors.transparent,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text(
+                        "Annuler",
+                        style: TextStyle(fontSize: 16),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    ).then((newName) {
+      if (newName != null && newName.isNotEmpty && newName != supply.name) {
+        onRenameSupply(supply, newName);
+      }
+    });
   }
 
   /// 📝 Widget générique pour un bouton d'action
