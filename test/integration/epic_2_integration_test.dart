@@ -2,15 +2,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:drift/native.dart';
 import 'package:common/src/database/app_database.dart';
 import 'package:common/src/repository/preference_repository.dart';
-import 'package:common/src/sync/sync_manager.dart';
 import 'package:schedule/repository/calendar_course_repository.dart';
 import 'package:streak/repository/streak_repository.dart';
 import 'package:main/repository/daily_check_repository.dart';
 import 'package:drift/drift.dart' as drift;
 import 'package:uuid/uuid.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:supply/models/supply.dart';
 import 'package:flutter/services.dart';
 
 /// Mock PreferenceRepository for testing
@@ -31,12 +28,6 @@ class MockPreferenceRepository extends PreferenceRepository {
   }
 }
 
-/// Mock SupabaseClient for testing
-class MockSupabaseClient implements SupabaseClient {
-  @override
-  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
-}
-
 /// Epic 2 Integration Tests
 ///
 /// Story 2.10: Integrate Streak with Bag Completion Workflow
@@ -50,7 +41,6 @@ void main() {
   late DailyCheckRepository dailyCheckRepository;
   late CalendarCourseSupabaseRepository calendarCourseRepository;
   late PreferenceRepository preferenceRepository;
-  late SyncManager syncManager;
   final uuid = const Uuid();
 
   // Initialize Flutter binding for tests
@@ -85,17 +75,11 @@ void main() {
 
     // Initialize mock dependencies
     preferenceRepository = MockPreferenceRepository();
-    final mockSupabaseClient = MockSupabaseClient();
-    syncManager = SyncManager(database, mockSupabaseClient, preferenceRepository);
 
-    // Initialize repositories
+    // Initialize repositories (local-first architecture)
     streakRepository = StreakRepository(database, preferenceRepository);
-    dailyCheckRepository = DailyCheckRepository(database, syncManager);
-    calendarCourseRepository = CalendarCourseSupabaseRepository(
-      mockSupabaseClient,
-      preferenceRepository,
-      database,
-    );
+    dailyCheckRepository = DailyCheckRepository(database);
+    calendarCourseRepository = CalendarCourseSupabaseRepository(database);
 
     // Set up test data
     await _setupTestData(database, uuid);
