@@ -7,7 +7,7 @@ part of 'tomorrow_supply_controller.dart';
 // **************************************************************************
 
 String _$tomorrowSupplyControllerHash() =>
-    r'ee76902f369b166017397e6f754a9f3926c9d6dc';
+    r'e78a02aa540f2481de3fb7243fb26cff6f5f765b';
 
 /// Controller for tomorrow's supplies
 /// Uses pack time to determine target date:

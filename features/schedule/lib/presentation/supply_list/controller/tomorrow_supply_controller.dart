@@ -64,48 +64,14 @@ class TomorrowSupplyController extends _$TomorrowSupplyController {
           LogService.d(
               'TomorrowSupplyController: Loaded ${courses.length} courses for $targetDate');
 
-        // Determine target date: if current time is before pack time, show today's supplies
-        // Otherwise, show tomorrow's supplies
-        final targetDate = (now.hour < packTime.hour ||
-                (now.hour == packTime.hour && now.minute < packTime.minute))
-            ? DateTime.now()
-            : WeekUtils.getTomorrow();
-
-        final targetWeekday = targetDate.weekday; // 1=Monday, 7=Sunday
-
-        // Filter courses for target date
-        final targetCourses = calendarCourses.where((course) {
-          // Check if course is for target date's day of week
-          if (course.dayOfWeek != targetWeekday) {
-            return false;
-          }
-
-          // Check if course should be shown for target date's week (A/B or BOTH)
-          return WeekUtils.shouldShowCourseForDate(
-            course.weekType.value,
-            schoolYearStart,
-            targetDate,
-          );
-        }).toList();
-
-        // Build list of courses with supplies (deduplicated by course ID)
-        final coursesMap = <String, CourseWithSuppliesForTomorrow>{};
-
-        for (final calendarCourse in targetCourses) {
-          final courseData = courseMap[calendarCourse.courseId];
-          if (courseData == null) continue;
-
-          // Get supplies from CourseWithSupplies
-          final supplies = courseData.supplies;
-
-          // Only add if course has supplies and not already added
-          if (supplies.isNotEmpty && !coursesMap.containsKey(courseData.id)) {
-            coursesMap[courseData.id] = CourseWithSuppliesForTomorrow(
-              courseId: courseData.id,
-              courseName: courseData.name,
-              supplies: supplies,
-            );
-          }).toList();
+          return courses
+              .where((c) => c.supplies.isNotEmpty)
+              .map((c) => CourseWithSuppliesForTomorrow(
+                    courseId: c.courseId,
+                    courseName: c.courseName,
+                    supplies: c.supplies,
+                  ))
+              .toList();
         },
       );
     } catch (e, stackTrace) {

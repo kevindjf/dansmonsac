@@ -7,7 +7,7 @@ part of 'add_course_controller.dart';
 // **************************************************************************
 
 String _$addCourseControllerHash() =>
-    r'1cc0958dfbe8df381388ec79b1f34db62114cfe4';
+    r'28be11d450b117386a457952c18e9cba8049d546';
 
 /// See also [AddCourseController].
 @ProviderFor(AddCourseController)

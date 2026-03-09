@@ -68,11 +68,37 @@ class CalendarCourses extends Table {
 @DataClassName('DailyCheckEntity')
 class DailyChecks extends Table {
   TextColumn get id => text()();
-  TextColumn get entityType =>
-      text()(); // 'course', 'supply', 'calendar_course'
-  TextColumn get entityId => text()();
-  TextColumn get operationType => text()(); // 'create', 'update', 'delete'
-  TextColumn get data => text().nullable()(); // JSON data for create/update
+  DateTimeColumn get date => dateTime()();
+  TextColumn get supplyId => text()();
+  TextColumn get courseId => text()();
+  BoolColumn get isChecked => boolean().withDefault(const Constant(false))();
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+/// Table for bag completions (Epic 2: Streak System)
+@DataClassName('BagCompletionEntity')
+class BagCompletions extends Table {
+  TextColumn get id => text()();
+  DateTimeColumn get date => dateTime()();
+  DateTimeColumn get completedAt => dateTime()();
+  TextColumn get deviceId => text()();
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+/// Table for premium status (Epic 4: Premium)
+@DataClassName('PremiumStatusEntity')
+class PremiumStatus extends Table {
+  TextColumn get id => text()();
+  BoolColumn get hasPurchased =>
+      boolean().withDefault(const Constant(false))();
+  TextColumn get linkedParentId => text().nullable()();
+  DateTimeColumn get updatedAt => dateTime()();
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
 
   @override
@@ -92,7 +118,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   // Test constructor for in-memory database
-  AppDatabase.forTesting(QueryExecutor executor) : super(executor);
+  AppDatabase.forTesting(super.executor);
 
   @override
   int get schemaVersion => 4;
@@ -252,9 +278,6 @@ class AppDatabase extends _$AppDatabase {
   Future<CourseEntity?> getCourseByRemoteId(String remoteId) =>
       (select(courses)..where((c) => c.remoteId.equals(remoteId)))
           .getSingleOrNull();
-
-  Future<int> insertPendingOperation(PendingOperationsCompanion operation) =>
-      into(pendingOperations).insert(operation);
 
   Future<CalendarCourseEntity?> getCalendarCourseByRemoteId(String remoteId) =>
       (select(calendarCourses)..where((c) => c.remoteId.equals(remoteId)))

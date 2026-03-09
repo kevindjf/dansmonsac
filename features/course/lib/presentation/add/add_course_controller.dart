@@ -66,29 +66,61 @@ class AddCourseController extends _$AddCourseController {
   /// Toggle a suggested supply's checked state
   void toggleSupplySuggestion(int index, bool isChecked) {
     LogService.d(
-        '🔘 toggleSupplySuggestion: index=$index, isChecked=$isChecked');
+        'toggleSupplySuggestion: index=$index, isChecked=$isChecked');
 
     if (index < 0 || index >= state.suggestedSupplies.length) {
       LogService.w('Invalid index for toggleSupplySuggestion: $index');
       return;
     }
 
-    var response =
-        await courseRepository.store(AddCourseCommand(state.courseName, []));
+    final updatedSupplies = List<SuggestedSupply>.from(state.suggestedSupplies);
+    updatedSupplies[index] = SuggestedSupply(
+      name: updatedSupplies[index].name,
+      isChecked: isChecked,
+      isModified: updatedSupplies[index].isModified,
+    );
+    state = state.copyWith(suggestedSupplies: updatedSupplies);
+  }
+
+  Future<void> store() async {
+    final name = Validators.clean(state.courseName);
+    final error = Validators.validateCourseName(name);
+    if (error != null) {
+      state = state.copyWith(errorCourseName: error);
+      return;
+    }
+
+    state = state.copyWith(isLoading: true);
+
+    // Get checked suggested supplies as supply names
+    final supplyNames = state.suggestedSupplies
+        .where((s) => s.isChecked)
+        .map((s) => s.name)
+        .toList();
+
+    var response = await courseRepository.store(AddCourseCommand(name, supplyNames));
 
     response.fold((failure) {
       state = state.copyWith(isLoading: false);
       LogService.e('Store failed: $failure');
       _errorController.add(ErrorMessages.getMessageForFailure(failure));
     }, (course) {
-      LogService.i('✅ Course created successfully!');
-      LogService.i('  Course ID: ${course.id}');
-      LogService.i('  Course name: ${course.name}');
-      LogService.i('  Supplies returned: ${course.supplies.length}');
+      LogService.i('Course created successfully: ${course.name}');
       _successController.add(course);
-      // Invalidate courses provider to refresh course list everywhere
       ref.invalidate(coursesProvider);
     });
+  }
+
+  void updateSuggestionText(int index, String text) {
+    if (index < 0 || index >= state.suggestedSupplies.length) return;
+
+    final updatedSupplies = List<SuggestedSupply>.from(state.suggestedSupplies);
+    updatedSupplies[index] = SuggestedSupply(
+      name: text,
+      isChecked: updatedSupplies[index].isChecked,
+      isModified: true,
+    );
+    state = state.copyWith(suggestedSupplies: updatedSupplies);
   }
 
   skip() {

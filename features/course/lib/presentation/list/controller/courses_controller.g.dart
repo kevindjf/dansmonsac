@@ -6,7 +6,7 @@ part of 'courses_controller.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$coursesControllerHash() => r'a523c6ab54366a3a5c56c49aeac69e8f48cb407b';
+String _$coursesControllerHash() => r'd4f44e1760f17399ad7a2583764e057440798cea';
 
 /// See also [CoursesController].
 @ProviderFor(CoursesController)

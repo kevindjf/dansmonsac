@@ -156,7 +156,8 @@ class AddCalendarCourseController extends _$AddCalendarCourseController {
         ref.invalidate(tomorrowSupplyControllerProvider);
         ref.invalidate(coursesProvider);
         // Refresh notifications after course addition
-        unawaited(NotificationHelper.refreshAfterCalendarChangeFromProvider(ref));
+        unawaited(
+            NotificationHelper.refreshAfterCalendarChangeFromProvider(ref));
       },
     );
   }
@@ -189,7 +190,8 @@ class AddCalendarCourseController extends _$AddCalendarCourseController {
         ref.invalidate(tomorrowSupplyControllerProvider);
         ref.invalidate(coursesProvider);
         // Refresh notifications after course update
-        unawaited(NotificationHelper.refreshAfterCalendarChangeFromProvider(ref));
+        unawaited(
+            NotificationHelper.refreshAfterCalendarChangeFromProvider(ref));
       },
     );
   }

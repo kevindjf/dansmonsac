@@ -7,7 +7,7 @@ part of 'add_calendar_course_controller.dart';
 // **************************************************************************
 
 String _$addCalendarCourseControllerHash() =>
-    r'2afd530858806260f8dd88d3d34c67e6a1b59761';
+    r'd4f608b73c1f642b1e13b335b163bbe6b6606adb';
 
 /// See also [AddCalendarCourseController].
 @ProviderFor(AddCalendarCourseController)
