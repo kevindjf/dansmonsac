@@ -45,7 +45,8 @@ class StreakCounterWidget extends ConsumerWidget {
           color: Colors.transparent,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: Theme.of(context).colorScheme.secondary.withValues(alpha: 0.5),
+            color:
+                Theme.of(context).colorScheme.secondary.withValues(alpha: 0.5),
             width: 1.5,
           ),
         ),

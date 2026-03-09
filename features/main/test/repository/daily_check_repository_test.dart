@@ -1,52 +1,12 @@
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:common/src/database/app_database.dart';
-import 'package:common/src/repository/preference_repository.dart';
-import 'package:common/src/sync/sync_manager.dart';
 import 'package:main/repository/daily_check_repository.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-
-// Mock PreferenceRepository for testing
-class MockPreferenceRepository extends PreferenceRepository {
-  @override
-  Future<String> getUserId() async {
-    return 'test-device-id';
-  }
-
-  @override
-  Future<bool> showingOnboarding() async {
-    return false;
-  }
-
-  @override
-  Future<void> storeFinishOnboarding() async {
-    // No-op for tests
-  }
-}
-
-// Mock SupabaseClient for testing (minimal implementation)
-class MockSupabaseClient implements SupabaseClient {
-  @override
-  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
-}
 
 // Helper to create test database
 AppDatabase createTestDatabase() {
   return AppDatabase.forTesting(NativeDatabase.memory());
-}
-
-// Helper to create test sync manager
-SyncManager createTestSyncManager(
-  AppDatabase database,
-  PreferenceRepository preferenceRepo,
-) {
-  return SyncManager(
-    database,
-    MockSupabaseClient(),
-    preferenceRepo,
-  );
 }
 
 void main() {
@@ -56,37 +16,22 @@ void main() {
   // Disable database warning for tests (multiple instances expected in test environment)
   driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
 
-  // Mock connectivity method channel to avoid "Binding not initialized" errors
-  TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-      .setMockMethodCallHandler(
-    const MethodChannel('dev.fluttercommunity.plus/connectivity'),
-    (MethodCall methodCall) async {
-      if (methodCall.method == 'check') {
-        // Return List<String> matching connectivity_plus v6.x format
-        return ['none']; // Simulate no connection in tests
-      }
-      return null;
-    },
-  );
-
   group('Story 2.3 - DailyCheckRepository Tests', () {
     late AppDatabase database;
-    late SyncManager syncManager;
     late DailyCheckRepository repository;
 
     setUp(() {
       database = createTestDatabase();
-      final preferenceRepo = MockPreferenceRepository();
-      syncManager = createTestSyncManager(database, preferenceRepo);
-      repository = DailyCheckRepository(database, syncManager);
+      repository = DailyCheckRepository(database);
     });
 
-    tearDown() async {
+    tearDown(() async {
       await database.close();
-    }
+    });
 
     group('toggleSupplyCheck - Insert New Check (AC1)', () {
-      test('should insert new daily check when toggling supply for first time', () async {
+      test('should insert new daily check when toggling supply for first time',
+          () async {
         final date = DateTime(2026, 2, 8);
         final supplyId = 'supply-1';
         final courseId = 'course-1';
@@ -138,24 +83,6 @@ void main() {
         );
       });
 
-      test('should queue sync INSERT operation when creating new check', () async {
-        final date = DateTime(2026, 2, 8);
-        final supplyId = 'supply-3';
-        final courseId = 'course-3';
-
-        await repository.toggleSupplyCheck(supplyId, courseId, date, true);
-
-        // Verify sync operation was queued in database
-        final pendingOps = await database.getAllPendingOperations();
-        expect(pendingOps.length, greaterThanOrEqualTo(1));
-
-        final dailyCheckOps = pendingOps.where((op) => op.entityType == 'daily_check').toList();
-        expect(dailyCheckOps.length, 1);
-        expect(dailyCheckOps[0].operationType, 'insert');
-        expect(dailyCheckOps[0].data, contains('supply_id'));
-        expect(dailyCheckOps[0].data, contains('course_id'));
-      });
-
       test('should handle empty courseId for standalone supplies', () async {
         final date = DateTime(2026, 2, 8);
         final supplyId = 'supply-standalone';
@@ -204,32 +131,6 @@ void main() {
             expect(checks[0].isChecked, false); // Updated to false
           },
         );
-      });
-
-      test('should queue sync UPDATE operation when updating existing check', () async {
-        final date = DateTime(2026, 2, 8);
-        final supplyId = 'supply-5';
-        final courseId = 'course-5';
-
-        // Insert initial check
-        await repository.toggleSupplyCheck(supplyId, courseId, date, true);
-
-        // Clear pending operations to isolate the update operation
-        final initialOps = await database.getAllPendingOperations();
-        for (var op in initialOps) {
-          await database.deletePendingOperation(op.id);
-        }
-
-        // Update check
-        await repository.toggleSupplyCheck(supplyId, courseId, date, false);
-
-        // Verify UPDATE sync operation was queued
-        final pendingOps = await database.getAllPendingOperations();
-        expect(pendingOps.length, greaterThanOrEqualTo(1));
-
-        final updateOps = pendingOps.where((op) => op.operationType == 'update').toList();
-        expect(updateOps.length, 1);
-        expect(updateOps[0].data, contains('is_checked'));
       });
 
       test('should toggle check multiple times correctly', () async {
@@ -287,7 +188,8 @@ void main() {
 
         await repository.toggleSupplyCheck('supply-8', 'course-8', date, true);
         await repository.toggleSupplyCheck('supply-9', 'course-9', date, true);
-        await repository.toggleSupplyCheck('supply-10', 'course-10', date, false);
+        await repository.toggleSupplyCheck(
+            'supply-10', 'course-10', date, false);
 
         final result = await repository.getDailyChecksForDate(date);
 
@@ -306,8 +208,10 @@ void main() {
         final yesterday = DateTime(2026, 2, 7);
 
         // Add checks for different dates
-        await repository.toggleSupplyCheck('supply-11', 'course-11', yesterday, true);
-        await repository.toggleSupplyCheck('supply-12', 'course-12', today, true);
+        await repository.toggleSupplyCheck(
+            'supply-11', 'course-11', yesterday, true);
+        await repository.toggleSupplyCheck(
+            'supply-12', 'course-12', today, true);
 
         // Query today only
         final todayResult = await repository.getDailyChecksForDate(today);
@@ -320,7 +224,8 @@ void main() {
         );
 
         // Query yesterday only
-        final yesterdayResult = await repository.getDailyChecksForDate(yesterday);
+        final yesterdayResult =
+            await repository.getDailyChecksForDate(yesterday);
         yesterdayResult.fold(
           (failure) => fail('Expected success but got failure: $failure'),
           (checks) {
@@ -372,13 +277,17 @@ void main() {
     });
 
     group('Integration Tests', () {
-      test('should complete full workflow: toggle -> load -> verify state', () async {
+      test('should complete full workflow: toggle -> load -> verify state',
+          () async {
         final date = DateTime(2026, 2, 8);
 
         // Toggle multiple supplies
-        await repository.toggleSupplyCheck('supply-13', 'course-13', date, true);
-        await repository.toggleSupplyCheck('supply-14', 'course-14', date, true);
-        await repository.toggleSupplyCheck('supply-15', 'course-15', date, false);
+        await repository.toggleSupplyCheck(
+            'supply-13', 'course-13', date, true);
+        await repository.toggleSupplyCheck(
+            'supply-14', 'course-14', date, true);
+        await repository.toggleSupplyCheck(
+            'supply-15', 'course-15', date, false);
 
         // Load checks
         final result = await repository.getDailyChecksForDate(date);
@@ -389,17 +298,15 @@ void main() {
             expect(checks.length, 3);
 
             // Verify state persisted correctly
-            final supply13 = checks.firstWhere((c) => c.supplyId == 'supply-13');
+            final supply13 =
+                checks.firstWhere((c) => c.supplyId == 'supply-13');
             expect(supply13.isChecked, true);
 
-            final supply15 = checks.firstWhere((c) => c.supplyId == 'supply-15');
+            final supply15 =
+                checks.firstWhere((c) => c.supplyId == 'supply-15');
             expect(supply15.isChecked, false);
           },
         );
-
-        // Verify sync operations were queued
-        final pendingOps = await database.getAllPendingOperations();
-        expect(pendingOps.length, greaterThanOrEqualTo(3));
       });
     });
 

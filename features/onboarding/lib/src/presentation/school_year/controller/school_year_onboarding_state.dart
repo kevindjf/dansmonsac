@@ -1,5 +1,3 @@
-import 'package:flutter/material.dart';
-
 class SchoolYearOnboardingState {
   final DateTime schoolYearStart;
   final bool isLoading;

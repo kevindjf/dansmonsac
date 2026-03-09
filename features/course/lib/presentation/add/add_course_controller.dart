@@ -65,7 +65,8 @@ class AddCourseController extends _$AddCourseController {
 
   /// Toggle a suggested supply's checked state
   void toggleSupplySuggestion(int index, bool isChecked) {
-    LogService.d('🔘 toggleSupplySuggestion: index=$index, isChecked=$isChecked');
+    LogService.d(
+        '🔘 toggleSupplySuggestion: index=$index, isChecked=$isChecked');
 
     if (index < 0 || index >= state.suggestedSupplies.length) {
       LogService.w('Invalid index for toggleSupplySuggestion: $index');
@@ -73,16 +74,20 @@ class AddCourseController extends _$AddCourseController {
     }
 
     final oldSupply = state.suggestedSupplies[index];
-    LogService.d('  Before: ${oldSupply.name} - checked: ${oldSupply.isChecked}');
+    LogService.d(
+        '  Before: ${oldSupply.name} - checked: ${oldSupply.isChecked}');
 
     final updatedSupplies = List<SuggestedSupply>.from(state.suggestedSupplies);
-    updatedSupplies[index] = updatedSupplies[index].copyWith(isChecked: isChecked);
+    updatedSupplies[index] =
+        updatedSupplies[index].copyWith(isChecked: isChecked);
 
-    LogService.d('  After: ${updatedSupplies[index].name} - checked: ${updatedSupplies[index].isChecked}');
+    LogService.d(
+        '  After: ${updatedSupplies[index].name} - checked: ${updatedSupplies[index].isChecked}');
 
     state = state.copyWith(suggestedSupplies: updatedSupplies);
 
-    LogService.d('  State updated - total suggestions: ${state.suggestedSupplies.length}');
+    LogService.d(
+        '  State updated - total suggestions: ${state.suggestedSupplies.length}');
   }
 
   /// Update a suggested supply's text and mark as modified
@@ -115,10 +120,12 @@ class AddCourseController extends _$AddCourseController {
     // DEBUG: Log current state
     LogService.d('=== STORE DEBUG ===');
     LogService.d('Course name: $cleanName');
-    LogService.d('Total suggestions in state: ${state.suggestedSupplies.length}');
+    LogService.d(
+        'Total suggestions in state: ${state.suggestedSupplies.length}');
     for (var i = 0; i < state.suggestedSupplies.length; i++) {
       final s = state.suggestedSupplies[i];
-      LogService.d('  [$i] ${s.name} - checked: ${s.isChecked}, modified: ${s.isModified}');
+      LogService.d(
+          '  [$i] ${s.name} - checked: ${s.isChecked}, modified: ${s.isModified}');
     }
 
     // Collect checked suggested supplies
@@ -136,13 +143,15 @@ class AddCourseController extends _$AddCourseController {
     for (final supplyName in checkedSupplies) {
       final supplyError = Validators.validateSupplyName(supplyName);
       if (supplyError != null) {
-        LogService.e('Supply validation failed for: $supplyName - $supplyError');
+        LogService.e(
+            'Supply validation failed for: $supplyName - $supplyError');
         _errorController.add('Fourniture invalide: $supplyError');
         return;
       }
     }
 
-    LogService.d('Calling repository.store() with ${checkedSupplies.length} supplies');
+    LogService.d(
+        'Calling repository.store() with ${checkedSupplies.length} supplies');
     var response = await courseRepository
         .store(AddCourseCommand(cleanName, checkedSupplies));
 

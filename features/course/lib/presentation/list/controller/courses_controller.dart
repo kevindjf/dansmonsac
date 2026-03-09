@@ -1,19 +1,7 @@
-import 'dart:async';
-import 'dart:developer' as developer;
 import 'package:course/di/riverpod_di.dart';
 import 'package:course/presentation/list/controller/course_list_state.dart';
 import 'package:course/repository/course_repository.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:main/presentation/home/controller/home_state_ui.dart';
-import 'package:onboarding/src/di/riverpod_di.dart';
-import 'package:onboarding/src/models/command/pack_time_command.dart';
-import 'package:onboarding/src/presentation/course/controller/course_onboarding_state.dart';
-import 'package:onboarding/src/presentation/course/course_page.dart';
-import 'package:onboarding/src/presentation/hour/controller/setup_time_onboarding_state.dart';
-import 'package:onboarding/src/repositories/onboarding_repository.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:common/src/di/riverpod_di.dart';
 import 'package:supply/di/riverpod_di.dart';
 import 'package:supply/models/supply.dart';
 import 'package:supply/repository/supply_repository.dart';
@@ -214,7 +202,6 @@ class CoursesController extends _$CoursesController {
           await courseRepository.deleteCourse(courseToDelete.id);
 
       if (deleteResult.isLeft()) {
-        print(deleteResult);
         // En cas d'erreur, restaurer l'état précédent
         state = AsyncValue.data(DataCourseListState(currentCourses));
         // Vous pourriez afficher un snackbar ou une notification d'erreur
@@ -333,6 +320,60 @@ class CoursesController extends _$CoursesController {
       ref.invalidate(tomorrowSupplyControllerProvider);
     } catch (e) {
       // Keep optimistic state on network error
+    }
+  }
+
+  Future<void> onRenameSupply(
+      int courseIndex, SupplyItemUI supply, String newName) async {
+    final currentState = state.value as DataCourseListState;
+    final currentCourses = List<CourseItemUI>.from(currentState.items);
+
+    // Optimistic update
+    final optimisticCourses = List<CourseItemUI>.from(currentCourses);
+    final targetCourse = optimisticCourses[courseIndex];
+    final updatedSupplies = targetCourse.supplies.map((s) {
+      if (s.id == supply.id) {
+        return SupplyItemUI(id: s.id, name: newName, isChecked: s.isChecked);
+      }
+      return s;
+    }).toList();
+    optimisticCourses[courseIndex] = targetCourse.copyWith(
+      supplies: updatedSupplies,
+      isExpand: true,
+    );
+    state = AsyncValue.data(DataCourseListState(optimisticCourses));
+
+    try {
+      final result =
+          await supplyRepository.updateSupplyName(supply.id, newName);
+
+      if (result.isLeft()) {
+        // Rollback on error
+        state = AsyncValue.data(DataCourseListState(currentCourses));
+        return;
+      }
+
+      // Refresh from DB
+      final coursesResult = await courseRepository.fetchCourses();
+      if (coursesResult.isRight()) {
+        final updatedCourses = coursesResult.getOrElse(() => []);
+        final expansionMap = {
+          for (var course in optimisticCourses) course.id: course.isExpand
+        };
+        final updatedUI = apiToUI(updatedCourses).map((course) {
+          return course.copyWith(isExpand: expansionMap[course.id] ?? false);
+        }).toList();
+
+        listCourses
+          ..clear()
+          ..addAll(updatedCourses);
+        state = AsyncValue.data(DataCourseListState(updatedUI));
+      }
+
+      ref.invalidate(coursesProvider);
+      ref.invalidate(tomorrowSupplyControllerProvider);
+    } catch (e) {
+      // Keep optimistic state
     }
   }
 

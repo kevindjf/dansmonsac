@@ -7,14 +7,14 @@ part of 'riverpod_di.dart';
 // **************************************************************************
 
 String _$dailyCheckRepositoryHash() =>
-    r'eb1fb9d28779dc80f2a98c598fed114762f4a533';
+    r'd2d5a89452409e54b6850e37b12d241ec0a6e5db';
 
 /// Provider for the DailyCheckRepository
 ///
 /// Provides access to daily checklist persistence functionality including:
 /// - Toggle supply check state (checked/unchecked)
 /// - Load daily checks for a specific date
-/// - Offline-first architecture with automatic sync
+/// - Local-first architecture (no sync to Supabase)
 ///
 /// Copied from [dailyCheckRepository].
 @ProviderFor(dailyCheckRepository)

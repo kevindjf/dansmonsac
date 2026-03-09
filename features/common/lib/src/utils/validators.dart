@@ -26,10 +26,10 @@ class Validators {
     return null;
   }
 
-  /// Valide le nom d'une salle
+  /// Valide le nom d'une salle (optionnel)
   static String? validateRoomName(String? value) {
     if (value == null || value.trim().isEmpty) {
-      return 'La salle est obligatoire';
+      return null; // Room is optional
     }
     if (value.trim().length > maxRoomNameLength) {
       return 'Le nom de salle ne peut pas depasser $maxRoomNameLength caracteres';

@@ -25,6 +25,7 @@ class PreferencesService {
   static const String _keyCalendarMigrationDone = 'calendar_migration_done';
   static const String _keyVacationModeEnabled = 'vacation_mode_enabled';
   static const String _keyVacationModeEndDate = 'vacation_mode_end_date';
+  static const String _keyMigrationV3Completed = 'migration_v3_completed';
 
   static Future<void> setPackTime(TimeOfDay time) async {
     final prefs = await SharedPreferences.getInstance();
@@ -404,5 +405,19 @@ class PreferencesService {
       return DateTime.parse(dateString);
     }
     return null;
+  }
+
+  // ===== Local-First Architecture Migration (V3) =====
+
+  /// Check if migration from Supabase to local-first architecture is completed
+  static Future<bool> getMigrationV3Completed() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_keyMigrationV3Completed) ?? false;
+  }
+
+  /// Mark migration V3 as completed
+  static Future<void> setMigrationV3Completed(bool completed) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_keyMigrationV3Completed, completed);
   }
 }

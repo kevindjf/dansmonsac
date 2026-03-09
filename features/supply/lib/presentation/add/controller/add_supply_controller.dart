@@ -39,8 +39,8 @@ class AddSupplyController extends _$AddSupplyController {
     }
 
     final cleanName = Validators.clean(state.supplyName);
-    var response = await supplyRepository
-        .store(AddSupplyCommand(cleanName, courseId));
+    var response =
+        await supplyRepository.store(AddSupplyCommand(cleanName, courseId));
 
     response.fold((failure) {
       state = state.copyWith(isLoading: false);

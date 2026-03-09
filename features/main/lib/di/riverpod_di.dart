@@ -10,10 +10,9 @@ part 'riverpod_di.g.dart';
 /// Provides access to daily checklist persistence functionality including:
 /// - Toggle supply check state (checked/unchecked)
 /// - Load daily checks for a specific date
-/// - Offline-first architecture with automatic sync
+/// - Local-first architecture (no sync to Supabase)
 @riverpod
 DailyCheckRepository dailyCheckRepository(Ref ref) {
   final database = ref.watch(databaseProvider);
-  final syncManager = ref.watch(syncManagerProvider);
-  return DailyCheckRepository(database, syncManager);
+  return DailyCheckRepository(database);
 }

@@ -201,7 +201,8 @@ class _AddCoursePageState extends ConsumerState<AddCoursePage> {
     );
   }
 
-  Widget _buildSuggestedSuppliesSection(AddCourseState state, ColorScheme colorScheme) {
+  Widget _buildSuggestedSuppliesSection(
+      AddCourseState state, ColorScheme colorScheme) {
     if (state.suggestedSupplies.isEmpty) {
       return const SizedBox.shrink();
     }

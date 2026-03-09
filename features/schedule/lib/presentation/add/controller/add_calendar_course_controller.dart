@@ -8,7 +8,6 @@ import 'package:schedule/models/calendar_course.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../repository/calendar_course_repository.dart';
 import '../../../di/riverpod_di.dart';
 import '../../calendar/controller/calendar_controller.dart';
 import '../../supply_list/controller/tomorrow_supply_controller.dart';
@@ -100,7 +99,8 @@ class AddCalendarCourseController extends _$AddCalendarCourseController {
 
     // Validation du cours
     if (currentState.courseId == null || currentState.courseId!.isEmpty) {
-      state = AsyncValue.data(currentState.copyWith(errorCourseId: "Veuillez selectionner un cours"));
+      state = AsyncValue.data(currentState.copyWith(
+          errorCourseId: "Veuillez selectionner un cours"));
       isValid = false;
     }
 

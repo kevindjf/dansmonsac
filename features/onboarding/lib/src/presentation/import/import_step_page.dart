@@ -117,7 +117,8 @@ class _OnboardingImportStepPageState
                 CodeInputWidget(
                   key: _codeInputKey,
                   enabled: !_isLoading,
-                  onScanQrCode: null, // No QR button here, we have the card above
+                  onScanQrCode:
+                      null, // No QR button here, we have the card above
                   onCodeComplete: _handleImport,
                 ),
 
@@ -125,7 +126,8 @@ class _OnboardingImportStepPageState
                   const SizedBox(height: 12),
                   Text(
                     _errorMessage!,
-                    style: const TextStyle(color: Colors.redAccent, fontSize: 13),
+                    style:
+                        const TextStyle(color: Colors.redAccent, fontSize: 13),
                     textAlign: TextAlign.center,
                   ),
                 ],
@@ -312,7 +314,9 @@ class _OnboardingImportStepPageState
                   height: 1.4,
                 ),
                 children: [
-                  const TextSpan(text: "DEMANDE A TON AMI D'OUVRIR L'APP ET D'ALLER DANS "),
+                  const TextSpan(
+                      text:
+                          "DEMANDE A TON AMI D'OUVRIR L'APP ET D'ALLER DANS "),
                   TextSpan(
                     text: "PARAMETRES > PARTAGER",
                     style: TextStyle(
@@ -320,7 +324,7 @@ class _OnboardingImportStepPageState
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const TextSpan(text: " POUR OBTENIR UN CODE,"),
+                  const TextSpan(text: " POUR OBTENIR UN CODE."),
                 ],
               ),
             ),
@@ -368,7 +372,9 @@ class _OnboardingImportStepPageState
                   if (widget.onImportComplete != null) {
                     widget.onImportComplete!();
                   } else {
-                    ref.read(routerDelegateProvider).setRoute(OnboardingWeekExplanationPage.routeName);
+                    ref
+                        .read(routerDelegateProvider)
+                        .setRoute(OnboardingWeekExplanationPage.routeName);
                   }
                 },
                 onCancel: () {

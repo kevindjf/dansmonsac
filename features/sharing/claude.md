@@ -6,10 +6,25 @@ Module de partage d'emploi du temps entre utilisateurs. Permet de générer un c
 ## Responsabilités
 - Génération de code de partage (6 caractères)
 - Affichage QR code pour partage
-- Synchronisation des données vers Supabase
-- Import d'emploi du temps via code
+- Upload manuel des données vers Supabase (via bouton "Partager")
+- Import d'emploi du temps via code (fetch Supabase → insert Drift)
 - Gestion des conflits lors de l'import
 - Deep links (`dansmonsac://share/CODE`)
+
+## Flux de Partage (Local → Supabase)
+1. User clique "Partager"
+2. ShareController → ScheduleSerializer lit toutes les données de Drift (courses, supplies, calendar_courses)
+3. Serialization en SharedScheduleData (JSON)
+4. Upload vers Supabase table `shared_schedules` (upsert par code)
+5. QR code généré avec deep link
+
+## Flux d'Import (Supabase → Local)
+1. User scanne QR ou entre code
+2. ImportController fetch SharedScheduleData depuis Supabase
+3. Détection de conflits avec données locales Drift
+4. Résolution conflits (keep/replace/merge)
+5. Insert dans Drift (courses, supplies, calendar_courses)
+6. Données immédiatement visibles dans l'app
 
 ## Architecture
 - **Pattern Repository** avec `SharingRepository` et `SharingSupabaseRepository`
@@ -29,11 +44,13 @@ Module de partage d'emploi du temps entre utilisateurs. Permet de générer un c
 - `models/shared_schedule.dart` - Modèle de partage Supabase
 - `models/shared_schedule_data.dart` - Structure JSON des données partagées
 - `repository/sharing_repository.dart` - Interface abstraite
-- `repository/sharing_supabase_repository.dart` - Implémentation Supabase
+- `repository/sharing_supabase_repository.dart` - Implémentation Supabase (upload/fetch)
+- `services/schedule_serializer.dart` - Sérialisation Drift → JSON
 - `services/code_generator.dart` - Génération code 6 caractères
 - `services/deep_link_service.dart` - Gestion deep links
 - `presentation/share/share_page.dart` - Modal de partage avec QR
-- `presentation/share/controller/share_controller.dart` - Logique de partage
+- `presentation/share/controller/share_controller.dart` - Logique de partage (utilise ScheduleSerializer)
+- `presentation/import/controller/import_controller.dart` - Logique d'import (fetch Supabase → insert Drift)
 - `presentation/import/import_preview_page.dart` - Aperçu avant import
 - `presentation/import/import_conflict_dialog.dart` - Résolution conflits
 
@@ -76,6 +93,7 @@ Module de partage d'emploi du temps entre utilisateurs. Permet de générer un c
 
 ## Notes importantes
 - `@JsonSerializable(explicitToJson: true)` requis pour sérialiser les objets imbriqués
-- La sync vers Supabase se fait automatiquement à l'ouverture de SharePage si un code existe
+- Le partage est MANUEL : l'upload vers Supabase se fait uniquement quand l'utilisateur clique "Partager"
 - Le state `syncFailed` permet d'afficher un avertissement et bouton de retry
 - Les RLS policies Supabase doivent autoriser les UPDATE (bug rencontré)
+- ImportController utilise les repositories Drift-only (CourseDriftRepository, CalendarCourseRepository)

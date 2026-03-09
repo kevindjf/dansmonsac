@@ -7,7 +7,7 @@ part of 'riverpod_di.dart';
 // **************************************************************************
 
 String _$onboardingRepositoryHash() =>
-    r'337aadd2170ec5027129d1a265e881eb5de59ee3';
+    r'a74e749df3dc0e9b0cfb87cde28f803cd3886a27';
 
 /// See also [onboardingRepository].
 @ProviderFor(onboardingRepository)

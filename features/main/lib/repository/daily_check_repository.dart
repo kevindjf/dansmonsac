@@ -1,10 +1,7 @@
-import 'dart:convert';
-
 import 'package:common/src/database/app_database.dart';
 import 'package:common/src/models/network/network_failure.dart';
 import 'package:common/src/repository/repository_helper.dart';
 import 'package:common/src/services/log_service.dart';
-import 'package:common/src/sync/sync_manager.dart';
 import 'package:dartz/dartz.dart';
 import 'package:drift/drift.dart' as drift;
 import 'package:uuid/uuid.dart';
@@ -14,20 +11,17 @@ import 'package:uuid/uuid.dart';
 /// Responsibilities:
 /// - Toggle supply check state (checked/unchecked)
 /// - Load daily checks for a specific date
-/// - Queue sync operations to Supabase via SyncManager
-/// - Maintain offline-first architecture
+/// - Local-first architecture (no sync to Supabase)
 class DailyCheckRepository {
   final AppDatabase _database;
-  final SyncManager _syncManager;
   final _uuid = const Uuid();
 
-  DailyCheckRepository(this._database, this._syncManager);
+  DailyCheckRepository(this._database);
 
   /// Toggle supply check state (insert new or update existing)
   ///
   /// AC1: Immediate persistence on check/uncheck
   /// AC3: Uncheck updates state
-  /// AC5: Sync queued for Supabase
   ///
   /// Parameters:
   /// - [supplyId]: ID of the supply being checked
@@ -78,16 +72,6 @@ class DailyCheckRepository {
           ),
         );
 
-        // Queue sync UPDATE operation (AC5: Sync queued for Supabase)
-        await _syncManager.queueOperation(
-          entityType: 'daily_check',
-          entityId: existing.id,
-          operationType: 'update',
-          data: jsonEncode({
-            'is_checked': isChecked,
-          }),
-        );
-
         LogService.i(
           'Daily check updated: supply=$supplyId, checked=$isChecked',
         );
@@ -107,19 +91,6 @@ class DailyCheckRepository {
             courseId: courseId,
             isChecked: drift.Value(isChecked),
           ),
-        );
-
-        // Queue sync INSERT operation (AC5: Sync queued for Supabase)
-        await _syncManager.queueOperation(
-          entityType: 'daily_check',
-          entityId: checkId,
-          operationType: 'insert',
-          data: jsonEncode({
-            'supply_id': supplyId,
-            'course_id': courseId,
-            'date': normalizedDate.toIso8601String(),
-            'is_checked': isChecked,
-          }),
         );
 
         LogService.i(

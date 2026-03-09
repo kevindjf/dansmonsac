@@ -34,7 +34,8 @@ void main() {
       when(mockRepository.getTomorrowCourses())
           .thenAnswer((_) async => const Right([]));
 
-      final content = await NotificationService.buildTomorrowNotificationContent(
+      final content =
+          await NotificationService.buildTomorrowNotificationContent(
         mockRepository,
         mockDatabase,
       );
@@ -47,7 +48,8 @@ void main() {
       when(mockRepository.getTomorrowCourses())
           .thenAnswer((_) async => Left(NetworkFailure('Network error')));
 
-      final content = await NotificationService.buildTomorrowNotificationContent(
+      final content =
+          await NotificationService.buildTomorrowNotificationContent(
         mockRepository,
         mockDatabase,
       );
@@ -65,21 +67,24 @@ void main() {
           startMinute: 0,
           endHour: 9,
           endMinute: 30,
-          supplies: List.generate(5, (i) => Supply(id: 'supply-$i', name: 'Supply $i')),
+          supplies: List.generate(
+              5, (i) => Supply(id: 'supply-$i', name: 'Supply $i')),
         ),
       ];
 
       when(mockRepository.getTomorrowCourses())
           .thenAnswer((_) async => Right(courses));
 
-      final content = await NotificationService.buildTomorrowNotificationContent(
+      final content =
+          await NotificationService.buildTomorrowNotificationContent(
         mockRepository,
         mockDatabase,
       );
 
       expect(content, isNotNull);
       expect(content!.title, equals('Prépare ton sac pour demain 🎒'));
-      expect(content.body, equals('Demain tu as Mathématiques. 5 fournitures à préparer.'));
+      expect(content.body,
+          equals('Demain tu as Mathématiques. 5 fournitures à préparer.'));
     });
 
     test('lists subjects when 2 courses', () async {
@@ -92,7 +97,10 @@ void main() {
           startMinute: 0,
           endHour: 9,
           endMinute: 30,
-          supplies: [Supply(id: '1', name: 'Cahier'), Supply(id: '2', name: 'Stylo')],
+          supplies: [
+            Supply(id: '1', name: 'Cahier'),
+            Supply(id: '2', name: 'Stylo')
+          ],
         ),
         CalendarCourseWithSupplies(
           courseId: '2',
@@ -108,13 +116,17 @@ void main() {
       when(mockRepository.getTomorrowCourses())
           .thenAnswer((_) async => Right(courses));
 
-      final content = await NotificationService.buildTomorrowNotificationContent(
+      final content =
+          await NotificationService.buildTomorrowNotificationContent(
         mockRepository,
         mockDatabase,
       );
 
       expect(content, isNotNull);
-      expect(content!.body, equals('Demain tu as Mathématiques et Français. 3 fournitures à préparer.'));
+      expect(
+          content!.body,
+          equals(
+              'Demain tu as Mathématiques et Français. 3 fournitures à préparer.'));
     });
 
     test('lists subjects when 3-4 courses with "et" before last', () async {
@@ -127,7 +139,11 @@ void main() {
           startMinute: 0,
           endHour: 9,
           endMinute: 0,
-          supplies: [Supply(id: '1', name: 'Cahier'), Supply(id: '2', name: 'Stylo'), Supply(id: '3', name: 'Règle')],
+          supplies: [
+            Supply(id: '1', name: 'Cahier'),
+            Supply(id: '2', name: 'Stylo'),
+            Supply(id: '3', name: 'Règle')
+          ],
         ),
         CalendarCourseWithSupplies(
           courseId: '2',
@@ -136,7 +152,10 @@ void main() {
           startMinute: 0,
           endHour: 10,
           endMinute: 0,
-          supplies: [Supply(id: '4', name: 'Livre'), Supply(id: '5', name: 'Cahier')],
+          supplies: [
+            Supply(id: '4', name: 'Livre'),
+            Supply(id: '5', name: 'Cahier')
+          ],
         ),
         CalendarCourseWithSupplies(
           courseId: '3',
@@ -145,20 +164,29 @@ void main() {
           startMinute: 0,
           endHour: 11,
           endMinute: 0,
-          supplies: [Supply(id: '6', name: 'Atlas'), Supply(id: '7', name: 'Cahier'), Supply(id: '8', name: 'Stylo'), Supply(id: '9', name: 'Trousse')],
+          supplies: [
+            Supply(id: '6', name: 'Atlas'),
+            Supply(id: '7', name: 'Cahier'),
+            Supply(id: '8', name: 'Stylo'),
+            Supply(id: '9', name: 'Trousse')
+          ],
         ),
       ];
 
       when(mockRepository.getTomorrowCourses())
           .thenAnswer((_) async => Right(courses));
 
-      final content = await NotificationService.buildTomorrowNotificationContent(
+      final content =
+          await NotificationService.buildTomorrowNotificationContent(
         mockRepository,
         mockDatabase,
       );
 
       expect(content, isNotNull);
-      expect(content!.body, equals('Demain tu as Maths, Français et Histoire-Géo. 9 fournitures à préparer.'));
+      expect(
+          content!.body,
+          equals(
+              'Demain tu as Maths, Français et Histoire-Géo. 9 fournitures à préparer.'));
     });
 
     test('summarizes when 5+ courses', () async {
@@ -172,20 +200,23 @@ void main() {
           startMinute: 0,
           endHour: 9 + i,
           endMinute: 0,
-          supplies: List.generate(3, (j) => Supply(id: 'supply-$i-$j', name: 'Supply $i-$j')),
+          supplies: List.generate(
+              3, (j) => Supply(id: 'supply-$i-$j', name: 'Supply $i-$j')),
         ),
       );
 
       when(mockRepository.getTomorrowCourses())
           .thenAnswer((_) async => Right(courses));
 
-      final content = await NotificationService.buildTomorrowNotificationContent(
+      final content =
+          await NotificationService.buildTomorrowNotificationContent(
         mockRepository,
         mockDatabase,
       );
 
       expect(content, isNotNull);
-      expect(content!.body, equals('Demain tu as 6 matières. 18 fournitures à préparer.'));
+      expect(content!.body,
+          equals('Demain tu as 6 matières. 18 fournitures à préparer.'));
     });
 
     test('counts supplies correctly across multiple courses', () async {
@@ -198,7 +229,8 @@ void main() {
           startMinute: 0,
           endHour: 9,
           endMinute: 0,
-          supplies: List.generate(3, (i) => Supply(id: 'math-$i', name: 'Math Supply $i')),
+          supplies: List.generate(
+              3, (i) => Supply(id: 'math-$i', name: 'Math Supply $i')),
         ),
         CalendarCourseWithSupplies(
           courseId: '2',
@@ -207,7 +239,8 @@ void main() {
           startMinute: 0,
           endHour: 10,
           endMinute: 0,
-          supplies: List.generate(2, (i) => Supply(id: 'french-$i', name: 'French Supply $i')),
+          supplies: List.generate(
+              2, (i) => Supply(id: 'french-$i', name: 'French Supply $i')),
         ),
         CalendarCourseWithSupplies(
           courseId: '3',
@@ -216,14 +249,16 @@ void main() {
           startMinute: 0,
           endHour: 11,
           endMinute: 0,
-          supplies: List.generate(4, (i) => Supply(id: 'history-$i', name: 'History Supply $i')),
+          supplies: List.generate(
+              4, (i) => Supply(id: 'history-$i', name: 'History Supply $i')),
         ),
       ];
 
       when(mockRepository.getTomorrowCourses())
           .thenAnswer((_) async => Right(courses));
 
-      final content = await NotificationService.buildTomorrowNotificationContent(
+      final content =
+          await NotificationService.buildTomorrowNotificationContent(
         mockRepository,
         mockDatabase,
       );
@@ -235,7 +270,8 @@ void main() {
     test('shows completed message when bag ready', () async {
       // Insert bag completion for tomorrow
       final tomorrow = DateTime.now().add(const Duration(days: 1));
-      final tomorrowDate = DateTime(tomorrow.year, tomorrow.month, tomorrow.day);
+      final tomorrowDate =
+          DateTime(tomorrow.year, tomorrow.month, tomorrow.day);
 
       await mockDatabase.into(mockDatabase.bagCompletions).insert(
             BagCompletionsCompanion.insert(
@@ -271,7 +307,8 @@ void main() {
       when(mockRepository.getTomorrowCourses())
           .thenAnswer((_) async => Right(courses));
 
-      final content = await NotificationService.buildTomorrowNotificationContent(
+      final content =
+          await NotificationService.buildTomorrowNotificationContent(
         mockRepository,
         mockDatabase,
       );
@@ -298,13 +335,15 @@ void main() {
       when(mockRepository.getTomorrowCourses())
           .thenAnswer((_) async => Right(courses));
 
-      final content = await NotificationService.buildTomorrowNotificationContent(
+      final content =
+          await NotificationService.buildTomorrowNotificationContent(
         mockRepository,
         mockDatabase,
       );
 
       expect(content, isNotNull);
-      expect(content!.body, equals('Demain tu as Étude. 0 fournitures à préparer.'));
+      expect(content!.body,
+          equals('Demain tu as Étude. 0 fournitures à préparer.'));
     });
   });
 }

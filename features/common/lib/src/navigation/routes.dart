@@ -106,7 +106,7 @@ class AppRouteInformationParser extends RouteInformationParser<String> {
   @override
   Future<String> parseRouteInformation(
       RouteInformation routeInformation) async {
-    return routeInformation.location ?? AppRoutes.splash;
+    return routeInformation.location;
   }
 
   @override

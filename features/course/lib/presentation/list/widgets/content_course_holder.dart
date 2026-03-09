@@ -1,19 +1,16 @@
 import 'package:course/presentation/list/controller/course_list_state.dart';
 import 'package:course/presentation/list/widgets/content_supplies_holder.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:common/src/ui/ui.dart';
 
 class ContentCourseHolder extends ConsumerWidget {
-  final _contentOpenProvider = StateProvider<bool>((ref) => false);
-
   final ValueChanged<CourseItemUI> onAddSupply;
   final ValueChanged<CourseItemUI> onExpandCourse;
   final ValueChanged<SupplyItemUI> onDeleteSupply;
   final ValueChanged<CourseItemUI> onDeleteCourse;
   final void Function(CourseItemUI course, String newName) onRenameCourse;
+  final void Function(SupplyItemUI supply, String newName) onRenameSupply;
 
   final CourseItemUI course;
 
@@ -24,7 +21,8 @@ class ContentCourseHolder extends ConsumerWidget {
       required this.onAddSupply,
       required this.onDeleteSupply,
       required this.onDeleteCourse,
-      required this.onRenameCourse});
+      required this.onRenameCourse,
+      required this.onRenameSupply});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -74,6 +72,7 @@ class ContentCourseHolder extends ConsumerWidget {
                     onRenameCourse: (newName) {
                       onRenameCourse(course, newName);
                     },
+                    onRenameSupply: onRenameSupply,
                   )
                 : const SizedBox()
           ],

@@ -15,8 +15,10 @@ class WeekUtils {
     // Si le nombre de semaines est pair, c'est semaine A, sinon semaine B
     final weekType = weeksDiff % 2 == 0 ? 'A' : 'B';
 
-    LogService.d('WeekUtils.getCurrentWeekType: schoolYearStart=$schoolYearStart, date=$date');
-    LogService.d('WeekUtils.getCurrentWeekType: daysDiff=$daysDiff, weeksDiff=$weeksDiff, weekType=$weekType');
+    LogService.d(
+        'WeekUtils.getCurrentWeekType: schoolYearStart=$schoolYearStart, date=$date');
+    LogService.d(
+        'WeekUtils.getCurrentWeekType: daysDiff=$daysDiff, weeksDiff=$weeksDiff, weekType=$weekType');
 
     return weekType;
   }

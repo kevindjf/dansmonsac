@@ -1,9 +1,6 @@
 import 'dart:async';
 
 import 'package:common/src/ui/ui.dart';
-import 'package:common/src/utils/week_utils.dart';
-import 'package:course/models/cours_with_supplies.dart';
-import 'package:course/presentation/add/add_course_controller.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -239,10 +236,10 @@ class _AddCalendarCoursePageState extends ConsumerState<AddCalendarCoursePage> {
                           ],
                         ),
 
-                  // Champ pour la salle
+                  // Champ pour la salle (optionnel)
                   _buildTextField(
                     controller: _roomController,
-                    labelText: "Salle",
+                    labelText: "Salle (optionnel)",
                     hintText: "Exemple : A102",
                     context: context,
                   ),

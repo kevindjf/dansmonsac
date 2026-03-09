@@ -1,4 +1,9 @@
+import 'dart:ui';
+
 import 'package:common/src/ui/theme/theme_data.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,13 +14,37 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:common/src/services.dart';
 import 'package:common/src/providers.dart';
 
+import 'firebase_options.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Firebase init (first to catch errors from subsequent inits)
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
+  // Disable Crashlytics in debug to avoid noise
+  await FirebaseCrashlytics.instance
+      .setCrashlyticsCollectionEnabled(!kDebugMode);
+
+  // Flutter framework errors → Crashlytics
+  FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
+
+  // Async Dart errors → Crashlytics
+  PlatformDispatcher.instance.onError = (error, stack) {
+    FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+    return true;
+  };
+
   await dotenv.load(fileName: '.env');
   await RepositoryHelper.initialize();
   await NotificationService.initialize();
 
-  runApp(ProviderScope(child: MyApp()));
+  // Mark migration as completed so old users skip the migration screen
+  await PreferencesService.setMigrationV3Completed(true);
+
+  runApp(const ProviderScope(
+    child: MyApp(),
+  ));
 }
 
 class MyApp extends ConsumerWidget {

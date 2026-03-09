@@ -54,7 +54,6 @@ class SchoolYearOnboardingController extends _$SchoolYearOnboardingController {
         .setRoute(OnboardingSetupTimePage.routeName);
   }
 
-  @override
   void dispose() {
     _errorStreamController.close();
     //super.dispose();

@@ -7,7 +7,7 @@ part of 'add_supply_controller.dart';
 // **************************************************************************
 
 String _$addSupplyControllerHash() =>
-    r'875b41488fd06d910e19aeeb2f16db3a85063ec5';
+    r'cfa2e5bbd063e6855d756f4848b71f288da7951b';
 
 /// Copied from Dart SDK
 class _SystemHash {

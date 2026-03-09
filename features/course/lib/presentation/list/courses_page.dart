@@ -4,7 +4,6 @@ import 'package:course/presentation/list/widgets/content_course_holder.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:common/src/ui/ui.dart';
 import 'package:course/presentation/add/add_course_page.dart';
 import 'package:supply/models/supply.dart';
 import 'package:supply/presentation/add/add_supply_page.dart';
@@ -164,6 +163,11 @@ class CoursesPage extends ConsumerWidget {
                         ref
                             .read(coursesControllerProvider.notifier)
                             .onRenameCourse(realIndex, newName);
+                      },
+                      onRenameSupply: (SupplyItemUI supply, String newName) {
+                        ref
+                            .read(coursesControllerProvider.notifier)
+                            .onRenameSupply(realIndex, supply, newName);
                       },
                     );
                   } else {

@@ -1,4 +1,3 @@
-import 'package:common/src/database/app_database.dart';
 import 'package:common/src/services/log_service.dart';
 import 'package:main/di/riverpod_di.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -105,4 +104,3 @@ class DailyCheckController extends _$DailyCheckController {
     );
   }
 }
-

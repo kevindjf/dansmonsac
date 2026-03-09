@@ -5,7 +5,6 @@ import 'package:course/repository/course_repository.dart';
 import 'package:supply/models/supply.dart';
 import 'package:dartz/dartz.dart';
 import 'package:common/src/repository/preference_repository.dart';
-import 'package:common/src/models/network/network_failure.dart';
 import 'package:common/src/repository/repository_helper.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 

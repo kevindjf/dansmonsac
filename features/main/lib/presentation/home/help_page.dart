@@ -166,21 +166,31 @@ class HelpPage extends StatelessWidget {
                   onPressed: () async {
                     final Uri emailUri = Uri(
                       scheme: 'mailto',
-                      path: 'support@kappsmobile.fr',
+                      path: 'contact@kappsmobile.fr',
                       queryParameters: {
                         'subject': 'DansMonSac - Support',
                       },
                     );
-                    if (await canLaunchUrl(emailUri)) {
+                    try {
                       await launchUrl(emailUri);
+                    } catch (_) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                                'Impossible d\'ouvrir l\'application email. Ecris-nous a contact@kappsmobile.fr'),
+                          ),
+                        );
+                      }
                     }
                   },
                   icon: const Icon(Icons.email, size: 18),
-                  label: const Text('support@kappsmobile.fr'),
+                  label: const Text('contact@kappsmobile.fr'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: accentColor,
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 12),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(25),
                     ),

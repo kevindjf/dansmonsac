@@ -42,7 +42,8 @@ class SplashController extends _$SplashController {
       // Check if migration already done
       final migrationDone = await PreferencesService.getCalendarMigrationDone();
       if (migrationDone) {
-        LogService.d('SplashController: Calendar migration already done, skipping');
+        LogService.d(
+            'SplashController: Calendar migration already done, skipping');
         return;
       }
 
@@ -59,7 +60,8 @@ class SplashController extends _$SplashController {
 
       LogService.d('SplashController: Calendar migration complete');
     } catch (e, stackTrace) {
-      LogService.e('SplashController: Calendar migration failed', e, stackTrace);
+      LogService.e(
+          'SplashController: Calendar migration failed', e, stackTrace);
       // Don't block app startup on migration failure
     }
   }

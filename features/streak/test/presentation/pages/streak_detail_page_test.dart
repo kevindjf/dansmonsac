@@ -89,7 +89,8 @@ void main() {
       // Should display encouraging message for first-time user
       expect(find.textContaining('Commence ton streak aujourd\'hui'),
           findsOneWidget);
-      expect(find.textContaining('Prepare ton sac chaque jour'), findsOneWidget);
+      expect(
+          find.textContaining('Prepare ton sac chaque jour'), findsOneWidget);
     });
 
     testWidgets(

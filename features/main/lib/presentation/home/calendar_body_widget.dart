@@ -71,11 +71,6 @@ class CalendarBodyWidget extends ConsumerWidget {
     required this.weekFilter,
   }) : super(key: key);
 
-  List<Event> _getDefaultEvents() {
-    // Return empty list by default
-    return [];
-  }
-
   bool hasOverlappingEvent(Event event, List<Event> events) {
     for (var other in events) {
       if (event != other) {
@@ -197,7 +192,8 @@ class CalendarBodyWidget extends ConsumerWidget {
     final double pixelsPerMinute = 25.0 / 15.0;
 
     // Container height based on exact minutes
-    final totalMinutes = endDay.endTime.difference(startDay.startTime).inMinutes;
+    final totalMinutes =
+        endDay.endTime.difference(startDay.startTime).inMinutes;
     final containerHeight = totalMinutes * pixelsPerMinute + 40;
 
     List<Widget> widgets = [];
@@ -213,8 +209,10 @@ class CalendarBodyWidget extends ConsumerWidget {
           width = calculateEventWidth(event, groupOverlappingEvents(events), i);
         }
 
-        final minutesFromStart = event.startTime.difference(startDay.startTime).inMinutes.toDouble();
-        final durationMinutes = event.endTime.difference(event.startTime).inMinutes.toDouble();
+        final minutesFromStart =
+            event.startTime.difference(startDay.startTime).inMinutes.toDouble();
+        final durationMinutes =
+            event.endTime.difference(event.startTime).inMinutes.toDouble();
 
         widgets.add(Container(
           margin: EdgeInsets.only(
@@ -300,17 +298,21 @@ class CalendarBodyWidget extends ConsumerWidget {
       if (i < events.length - 1) {
         final nextStart = events[i + 1].startTime;
         // Only consider it a gap if next event starts after the latest end so far
-        if (nextStart.isAfter(latestEnd) || nextStart.isAtSameMomentAs(latestEnd)) {
+        if (nextStart.isAfter(latestEnd) ||
+            nextStart.isAtSameMomentAs(latestEnd)) {
           final gapMinutes = nextStart.difference(latestEnd).inMinutes;
           if (gapMinutes >= 60) {
-            final gapStartFromDay = latestEnd.difference(startDay.startTime).inMinutes.toDouble();
+            final gapStartFromDay =
+                latestEnd.difference(startDay.startTime).inMinutes.toDouble();
             final gapTop = gapStartFromDay * pixelsPerMinute;
             final gapHeight = gapMinutes.toDouble() * pixelsPerMinute;
 
             // Format pause duration
             final hours = gapMinutes ~/ 60;
             final mins = gapMinutes % 60;
-            final pauseLabel = mins > 0 ? "Pause - ${hours}h${mins.toString().padLeft(2, '0')}" : "Pause - ${hours}h";
+            final pauseLabel = mins > 0
+                ? "Pause - ${hours}h${mins.toString().padLeft(2, '0')}"
+                : "Pause - ${hours}h";
 
             widgets.add(Container(
               margin: EdgeInsets.only(top: gapTop),
@@ -553,4 +555,3 @@ class _DashedBorderPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
-

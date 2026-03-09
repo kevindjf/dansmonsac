@@ -1,13 +1,7 @@
-import 'dart:ffi';
-
 import 'package:common/src/models/network/network_failure.dart';
-import 'package:course/models/add_course_command.dart';
-import 'package:course/models/cours_with_supplies.dart';
-import 'package:course/repository/course_repository.dart';
-import 'package:dartz/dartz.dart';
 import 'package:common/src/repository/preference_repository.dart';
-import 'package:common/src/models/network/network_failure.dart';
 import 'package:common/src/repository/repository_helper.dart';
+import 'package:dartz/dartz.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:supply/models/command/add_supply_command.dart';
 import 'package:supply/models/supply.dart';
@@ -45,6 +39,15 @@ class SupplySupabaseRepository extends SupplyRepository {
   Future<Either<Failure, void>> deleteSupply(String id) {
     return handleErrors(() async {
       await supabaseClient.from('supplies').delete().eq('id', id);
+    });
+  }
+
+  @override
+  Future<Either<Failure, void>> updateSupplyName(String id, String newName) {
+    return handleErrors(() async {
+      await supabaseClient
+          .from('supplies')
+          .update({'name': newName}).eq('id', id);
     });
   }
 }

@@ -1,4 +1,5 @@
 import 'package:common/src/services/log_service.dart';
+import 'package:common/src/services/preferences_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:schedule/di/riverpod_di.dart';
@@ -21,7 +22,9 @@ class CourseWithSuppliesForTomorrow {
 }
 
 /// Controller for tomorrow's supplies
-/// Refactored to use getTomorrowCourses() repository method (Story 2.8)
+/// Uses pack time to determine target date:
+/// - Before pack time → show today's courses
+/// - After pack time → show tomorrow's courses
 @riverpod
 class TomorrowSupplyController extends _$TomorrowSupplyController {
   @override
@@ -31,22 +34,36 @@ class TomorrowSupplyController extends _$TomorrowSupplyController {
 
   Future<List<CourseWithSuppliesForTomorrow>> _fetchTomorrowSupplies() async {
     try {
-      LogService.d('TomorrowSupplyController: Fetching tomorrow courses via repository');
+      // Calculate target date based on pack time
+      final packTime = await PreferencesService.getPackTime();
+      final now = DateTime.now();
+      final DateTime targetDate;
 
-      // Use new repository method from Story 2.8
+      if (now.hour < packTime.hour ||
+          (now.hour == packTime.hour && now.minute < packTime.minute)) {
+        // Before pack time → show today's courses
+        targetDate = DateTime(now.year, now.month, now.day);
+      } else {
+        // After pack time → show tomorrow's courses
+        targetDate = DateTime(now.year, now.month, now.day + 1);
+      }
+
+      LogService.d(
+          'TomorrowSupplyController: packTime=${packTime.hour}:${packTime.minute}, targetDate=$targetDate');
+
       final repository = ref.watch(calendarCourseRepositoryProvider);
-      final result = await repository.getTomorrowCourses();
+      final result = await repository.getCoursesForDate(targetDate);
 
       return result.fold(
         (failure) {
-          LogService.e('TomorrowSupplyController: Failed to fetch tomorrow courses', failure);
+          LogService.e(
+              'TomorrowSupplyController: Failed to fetch courses', failure);
           return [];
         },
         (courses) {
-          LogService.d('TomorrowSupplyController: Loaded ${courses.length} courses for tomorrow');
+          LogService.d(
+              'TomorrowSupplyController: Loaded ${courses.length} courses for $targetDate');
 
-          // Map to legacy model for backwards compatibility
-          // TODO: Migrate UI to use CalendarCourseWithSupplies directly
           return courses.map((course) {
             return CourseWithSuppliesForTomorrow(
               courseId: course.courseId,

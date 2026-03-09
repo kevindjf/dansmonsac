@@ -1,7 +1,10 @@
+import 'package:drift/drift.dart' hide isNotNull;
 import 'package:drift/native.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:common/src/database/app_database.dart';
 import 'package:common/src/repository/preference_repository.dart';
+import 'package:common/src/services/preferences_service.dart';
 import 'package:streak/repository/streak_repository.dart';
 import 'package:streak/models/week_day_status.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -29,6 +32,47 @@ AppDatabase createTestDatabase() {
   return AppDatabase.forTesting(NativeDatabase.memory());
 }
 
+/// Helper to setup a timetable with Monday-Friday courses for both week types
+Future<void> setupTestTimetable(AppDatabase db) async {
+  await db.into(db.courses).insert(CoursesCompanion(
+        id: const Value('course-math'),
+        name: const Value('Mathematics'),
+        color: const Value('#9C27B0'),
+        weekType: const Value('AB'),
+        updatedAt: Value(DateTime.now()),
+      ));
+
+  for (int day = 1; day <= 5; day++) {
+    for (final wt in ['A', 'B']) {
+      await db.into(db.calendarCourses).insert(CalendarCoursesCompanion(
+            id: Value('cal-course-math-$day-$wt'),
+            courseId: const Value('course-math'),
+            dayOfWeek: Value(day),
+            startHour: const Value(9),
+            startMinute: const Value(0),
+            endHour: const Value(10),
+            endMinute: const Value(0),
+            weekType: Value(wt),
+            updatedAt: Value(DateTime.now()),
+          ));
+    }
+  }
+}
+
+/// Collect N recent weekdays going backwards from yesterday
+List<DateTime> _recentWeekdays(int count) {
+  final result = <DateTime>[];
+  var day = DateTime.now().subtract(const Duration(days: 1));
+  day = DateTime(day.year, day.month, day.day);
+  while (result.length < count) {
+    if (day.weekday <= 5) {
+      result.add(day);
+    }
+    day = day.subtract(const Duration(days: 1));
+  }
+  return result;
+}
+
 void main() {
   // Initialize Flutter binding for tests that use SharedPreferences
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -37,7 +81,7 @@ void main() {
     late AppDatabase database;
     late StreakRepository repository;
 
-    setUp(() {
+    setUp(() async {
       // Mock SharedPreferences for PreferencesService
       SharedPreferences.setMockInitialValues({
         'school_year_start': DateTime(2025, 9, 1).toIso8601String(),
@@ -48,6 +92,11 @@ void main() {
       database = createTestDatabase();
       final preferenceRepository = MockPreferenceRepository();
       repository = StreakRepository(database, preferenceRepository);
+
+      // Set school year start and pack time
+      await PreferencesService.setSchoolYearStart(DateTime(2025, 9, 1));
+      await PreferencesService.setPackTime(
+          const TimeOfDay(hour: 19, minute: 0));
     });
 
     tearDown(() async {
@@ -64,32 +113,22 @@ void main() {
         );
       });
 
-      test('should return count of all completions (foundation logic)', () async {
-        // Insert 3 bag completions
-        final today = DateTime.now();
-        final yesterday = today.subtract(const Duration(days: 1));
-        final twoDaysAgo = today.subtract(const Duration(days: 2));
+      test('should return count of all completions (foundation logic)',
+          () async {
+        // Set up timetable so school days are detected
+        await setupTestTimetable(database);
 
-        await database.insertBagCompletion(BagCompletionsCompanion.insert(
-          id: 'completion-1',
-          date: today,
-          completedAt: DateTime.now(),
-          deviceId: 'device-1',
-        ));
+        // Find 3 consecutive recent weekdays
+        final days = _recentWeekdays(3);
 
-        await database.insertBagCompletion(BagCompletionsCompanion.insert(
-          id: 'completion-2',
-          date: yesterday,
-          completedAt: DateTime.now(),
-          deviceId: 'device-1',
-        ));
-
-        await database.insertBagCompletion(BagCompletionsCompanion.insert(
-          id: 'completion-3',
-          date: twoDaysAgo,
-          completedAt: DateTime.now(),
-          deviceId: 'device-1',
-        ));
+        for (int i = 0; i < days.length; i++) {
+          await database.insertBagCompletion(BagCompletionsCompanion.insert(
+            id: 'completion-${i + 1}',
+            date: days[i],
+            completedAt: DateTime.now(),
+            deviceId: 'device-1',
+          ));
+        }
 
         final result = await repository.getCurrentStreak();
 
@@ -120,8 +159,10 @@ void main() {
 
         // Normalize dates to start of day for comparison
         final normalizedToday = DateTime(today.year, today.month, today.day);
-        final normalizedYesterday = DateTime(yesterday.year, yesterday.month, yesterday.day);
-        final normalizedTwoDaysAgo = DateTime(twoDaysAgo.year, twoDaysAgo.month, twoDaysAgo.day);
+        final normalizedYesterday =
+            DateTime(yesterday.year, yesterday.month, yesterday.day);
+        final normalizedTwoDaysAgo =
+            DateTime(twoDaysAgo.year, twoDaysAgo.month, twoDaysAgo.day);
 
         await database.insertBagCompletion(BagCompletionsCompanion.insert(
           id: 'completion-1',
@@ -186,7 +227,8 @@ void main() {
         result.fold(
           (failure) => fail('Expected success but got failure: $failure'),
           (_) async {
-            final completion = await database.getBagCompletionByDate(expectedDate);
+            final completion =
+                await database.getBagCompletionByDate(expectedDate);
             expect(completion, isNotNull);
             expect(completion!.date, expectedDate);
             // Verify time component was removed
@@ -212,7 +254,8 @@ void main() {
           (_) async {
             // Verify only one completion exists
             final allCompletions = await database.getAllBagCompletions();
-            final completionsForDate = allCompletions.where((c) => c.date == normalizedDate).toList();
+            final completionsForDate =
+                allCompletions.where((c) => c.date == normalizedDate).toList();
             expect(completionsForDate.length, 1);
           },
         );
@@ -231,15 +274,19 @@ void main() {
     });
 
     group('Integration Tests', () {
-      test('should complete full workflow: mark complete -> get history -> get streak', () async {
-        final today = DateTime.now();
-        final yesterday = today.subtract(const Duration(days: 1));
-        final twoDaysAgo = today.subtract(const Duration(days: 2));
+      test(
+          'should complete full workflow: mark complete -> get history -> get streak',
+          () async {
+        // Set up timetable so school days are detected
+        await setupTestTimetable(database);
+
+        // Find 3 consecutive recent weekdays
+        final days = _recentWeekdays(3);
 
         // Mark bag complete for 3 days
-        await repository.markBagComplete(twoDaysAgo);
-        await repository.markBagComplete(yesterday);
-        await repository.markBagComplete(today);
+        for (final d in days) {
+          await repository.markBagComplete(d);
+        }
 
         // Get history
         final historyResult = await repository.getBagCompletionHistory();
@@ -327,8 +374,10 @@ void main() {
         final historyResult = await repository.getBagCompletionHistory();
         expect(historyResult.isRight() || historyResult.isLeft(), true);
 
-        final markCompleteResult = await repository.markBagComplete(DateTime.now());
-        expect(markCompleteResult.isRight() || markCompleteResult.isLeft(), true);
+        final markCompleteResult =
+            await repository.markBagComplete(DateTime.now());
+        expect(
+            markCompleteResult.isRight() || markCompleteResult.isLeft(), true);
       });
     });
   });

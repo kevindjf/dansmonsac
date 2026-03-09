@@ -61,7 +61,8 @@ void main() {
         expect(french.supplies, contains('Bescherelle'));
 
         // Histoire-Géographie
-        final history = subjects.firstWhere((s) => s.name == 'Histoire-Géographie');
+        final history =
+            subjects.firstWhere((s) => s.name == 'Histoire-Géographie');
         expect(history.supplies, contains('Cahier d\'histoire-géo'));
         expect(history.supplies, contains('Crayons de couleur'));
 
@@ -84,8 +85,10 @@ void main() {
     });
 
     group('getSuppliesBySubjectName', () {
-      test('should return correct supplies for exact match "Mathématiques"', () {
-        final supplies = DefaultSupplies.getSuppliesBySubjectName('Mathématiques');
+      test('should return correct supplies for exact match "Mathématiques"',
+          () {
+        final supplies =
+            DefaultSupplies.getSuppliesBySubjectName('Mathématiques');
 
         expect(supplies, isNotNull);
         expect(supplies, contains('Cahier de maths'));
@@ -94,15 +97,20 @@ void main() {
         expect(supplies, contains('Compas'));
       });
 
-      test('should return correct supplies for case-insensitive match "mathématiques"', () {
-        final supplies = DefaultSupplies.getSuppliesBySubjectName('mathématiques');
+      test(
+          'should return correct supplies for case-insensitive match "mathématiques"',
+          () {
+        final supplies =
+            DefaultSupplies.getSuppliesBySubjectName('mathématiques');
 
         expect(supplies, isNotNull);
         expect(supplies, contains('Cahier de maths'));
         expect(supplies, contains('Calculatrice'));
       });
 
-      test('should return correct supplies for case-insensitive match "FRANÇAIS"', () {
+      test(
+          'should return correct supplies for case-insensitive match "FRANÇAIS"',
+          () {
         final supplies = DefaultSupplies.getSuppliesBySubjectName('FRANÇAIS');
 
         expect(supplies, isNotNull);
@@ -111,7 +119,8 @@ void main() {
       });
 
       test('should return null for non-existent subject', () {
-        final supplies = DefaultSupplies.getSuppliesBySubjectName('NonExistent');
+        final supplies =
+            DefaultSupplies.getSuppliesBySubjectName('NonExistent');
 
         expect(supplies, isNull);
       });
@@ -123,8 +132,10 @@ void main() {
       });
 
       test('should handle accents correctly in case-insensitive search', () {
-        final supplies1 = DefaultSupplies.getSuppliesBySubjectName('Histoire-Géographie');
-        final supplies2 = DefaultSupplies.getSuppliesBySubjectName('histoire-géographie');
+        final supplies1 =
+            DefaultSupplies.getSuppliesBySubjectName('Histoire-Géographie');
+        final supplies2 =
+            DefaultSupplies.getSuppliesBySubjectName('histoire-géographie');
 
         expect(supplies1, isNotNull);
         expect(supplies2, isNotNull);
