@@ -14,7 +14,32 @@
       "Bash(xcode-select:*)",
       "Bash(xcodebuild:*)",
       "Bash(xcrun simctl boot:*)",
-      "Bash(git -C /Users/kevin/kappsmobile/projects/interne/dansmonsac status)"
+      "Bash(git -C /Users/kevin/kappsmobile/projects/interne/dansmonsac status)",
+      "Bash(git -C /Users/kevin/kappsmobile/projects/interne/dansmonsac branch:*)",
+      "Bash(git -C /Users/kevin/kappsmobile/projects/interne/dansmonsac status --short)",
+      "Bash(git -C /Users/kevin/kappsmobile/projects/interne/dansmonsac add features/onboarding/lib/src/presentation/import/variants/ features/onboarding/lib/src/presentation/import/import_page_variants.dart features/onboarding/pubspec.yaml features/common/lib/src/navigation/routes.dart CLAUDE.md)",
+      "Bash(pod install:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(git -C /Users/kevin/kappsmobile/projects/interne/dansmonsac log --oneline --all)",
+      "Bash(git checkout:*)",
+      "Bash(git merge:*)",
+      "Bash(claude mcp add:*)",
+      "mcp__supabase__list_tables",
+      "mcp__supabase__apply_migration",
+      "mcp__supabase__execute_sql",
+      "Bash(sqlite3:*)",
+      "Bash(python3:*)",
+      "Bash(open:*)",
+      "WebSearch",
+      "WebFetch(domain:rive.app)",
+      "Bash(unzip:*)",
+      "Bash(md5:*)"
     ]
-  }
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "supabase"
+  ]
 }

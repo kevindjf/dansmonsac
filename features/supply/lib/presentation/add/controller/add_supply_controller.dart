@@ -1,7 +1,7 @@
 import 'dart:async';
-import 'dart:ffi';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:common/src/di/riverpod_di.dart';
+import 'package:common/src/utils.dart';
 import 'package:supply/di/riverpod_di.dart';
 import 'package:supply/models/command/add_supply_command.dart';
 import 'package:supply/models/supply.dart';
@@ -32,19 +32,19 @@ class AddSupplyController extends _$AddSupplyController {
   }
 
   store() async {
-    if (state.supplyName.trim().isEmpty) {
-      state = state.copyWith(
-          errorSupplyName: "Le nom de la fourniture ne peut pas être vide");
+    final validationError = Validators.validateSupplyName(state.supplyName);
+    if (validationError != null) {
+      state = state.copyWith(errorSupplyName: validationError);
       return;
     }
 
+    final cleanName = Validators.clean(state.supplyName);
     var response = await supplyRepository
-        .store(AddSupplyCommand(state.supplyName, courseId));
+        .store(AddSupplyCommand(cleanName, courseId));
 
     response.fold((failure) {
       state = state.copyWith(isLoading: false);
-      _errorController
-          .add("Une erreur est survenue, veuillez réessayer ultérieurement !");
+      _errorController.add(ErrorMessages.getMessageForFailure(failure));
     }, (supply) {
       _successController.add(supply);
     });

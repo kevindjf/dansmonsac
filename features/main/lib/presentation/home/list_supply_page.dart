@@ -1,10 +1,14 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:common/src/ui/ui.dart';
 import 'package:common/src/services.dart';
+import 'package:common/src/utils/week_utils.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:main/presentation/home/controller/daily_check_controller.dart';
 import 'package:schedule/presentation/supply_list/controller/tomorrow_supply_controller.dart';
+import 'package:streak/presentation/widgets/streak_counter_widget.dart';
+import 'package:streak/presentation/widgets/streak_break_dialog.dart';
+import 'package:streak/di/riverpod_di.dart';
 
 class ListSupplyPage extends ConsumerWidget {
   ListSupplyPage({super.key});
@@ -21,18 +25,29 @@ abstract class ListItem {}
 /// Item pour le titre d'un cours
 class CourseTitleItem implements ListItem {
   final String title;
+  final String courseId; // Course ID for persistence
   final List<String> supplyIds; // IDs of supplies for this course
 
-  CourseTitleItem({required this.title, required this.supplyIds});
+  CourseTitleItem({
+    required this.title,
+    required this.courseId,
+    required this.supplyIds,
+  });
 }
 
 /// Item pour une fourniture avec checkbox
 class SupplyItem implements ListItem {
   final String id;
+  final String courseId; // Course ID for persistence (empty for standalone)
   final String name;
   bool isChecked;
 
-  SupplyItem({required this.id, required this.name, this.isChecked = false});
+  SupplyItem({
+    required this.id,
+    required this.courseId,
+    required this.name,
+    this.isChecked = false,
+  });
 }
 
 enum _EmptyReason { noCourses, noSupplies }
@@ -48,16 +63,29 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
   DateTime? _targetDate;
   bool _isLoaded = false;
   List<String> _standaloneSupplies = [];
+  String? _currentWeekType;
   final ScrollController _scrollController = ScrollController();
   bool _isScrolling = false;
   Timer? _scrollTimer;
+  bool _bagCompletionMarked = false; // Track if bag completion was already marked for today
 
   @override
   void initState() {
     super.initState();
     _loadCheckedState();
     _loadStandaloneSupplies();
+    _loadWeekType();
     _scrollController.addListener(_onScroll);
+  }
+
+  Future<void> _loadWeekType() async {
+    final schoolYearStart = await PreferencesService.getSchoolYearStart();
+    final weekType = WeekUtils.getCurrentWeekType(schoolYearStart);
+    if (mounted) {
+      setState(() {
+        _currentWeekType = weekType;
+      });
+    }
   }
 
   @override
@@ -100,9 +128,9 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
 
     _targetDate = targetDate;
 
-    // Load saved state for this date
-    final savedState =
-        await PreferencesService.loadSupplyCheckedState(targetDate);
+    // Load saved state from Drift database via DailyCheckController
+    final controller = ref.read(dailyCheckControllerProvider.notifier);
+    final savedState = await controller.loadChecksForDate(_targetDate!);
 
     if (mounted) {
       setState(() {
@@ -111,8 +139,38 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
       });
     }
 
-    // Clean old states
-    PreferencesService.clearOldSupplyStates();
+    // Check for streak break after load completes
+    await _checkForStreakBreak();
+  }
+
+  Future<void> _checkForStreakBreak() async {
+    final streakRepository = ref.read(streakRepositoryProvider);
+    final breakResult = await streakRepository.detectBrokenStreak();
+
+    breakResult.fold(
+      (failure) => LogService.e('Failed to detect streak break', failure),
+      (isBroken) async {
+        if (isBroken) {
+          final previousResult = await streakRepository.getPreviousStreak();
+          final previousStreak = previousResult.fold(
+            (failure) => 0,
+            (streak) => streak,
+          );
+
+          if (previousStreak > 0 && mounted) {
+            await showDialog(
+              context: context,
+              barrierDismissible: false,
+              builder: (context) => StreakBreakDialog(
+                previousStreak: previousStreak,
+              ),
+            );
+            // After dismiss, refresh streak counter
+            ref.invalidate(currentStreakProvider);
+          }
+        }
+      },
+    );
   }
 
   Future<void> _loadStandaloneSupplies() async {
@@ -124,10 +182,58 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
     }
   }
 
-  Future<void> _saveCheckedState() async {
-    if (_targetDate != null) {
-      await PreferencesService.saveSupplyCheckedState(
-          _targetDate!, _checkedState);
+  // Removed: _saveCheckedState() - now handled by DailyCheckController.toggleCheck() inline
+
+  /// Check if all supplies are checked and mark bag as completed
+  Future<void> _checkAndMarkBagCompletion(int totalSupplies) async {
+    // Count currently checked supplies
+    int checkedCount = _checkedState.values.where((checked) => checked).length;
+
+    // If all supplies are checked and we haven't marked completion yet
+    if (totalSupplies > 0 && checkedCount == totalSupplies && !_bagCompletionMarked) {
+      _bagCompletionMarked = true;
+
+      // Insert into BagCompletions via StreakRepository
+      final streakRepository = ref.read(streakRepositoryProvider);
+      final result = await streakRepository.markBagComplete(_targetDate ?? DateTime.now());
+
+      result.fold(
+        (failure) {
+          // Log error but don't show to user (non-critical)
+          LogService.e('Failed to mark bag completion', failure);
+        },
+        (_) async {
+          // Success - invalidate streak provider to refresh UI
+          ref.invalidate(currentStreakProvider);
+
+          // Log new streak value for debugging
+          final newStreak = await ref.read(currentStreakProvider.future);
+          LogService.d('BagCompletion: targetDate=$_targetDate, new streak=$newStreak');
+
+          // Show a celebratory snackbar
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Row(
+                  children: [
+                    const Icon(Icons.celebration, color: Colors.white),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        'Ton sac est prêt ! Ton streak a été mis à jour 🔥',
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ],
+                ),
+                backgroundColor: Theme.of(context).colorScheme.secondary,
+                duration: const Duration(seconds: 3),
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+          }
+        },
+      );
     }
   }
 
@@ -152,7 +258,10 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
               // Collect supply IDs for this course
               final supplyIds = course.supplies.map((s) => s.id).toList();
               items.add(CourseTitleItem(
-                  title: course.courseName, supplyIds: supplyIds));
+                title: course.courseName,
+                courseId: course.courseId,
+                supplyIds: supplyIds,
+              ));
 
               for (final supply in course.supplies) {
                 totalSupplies++;
@@ -161,6 +270,7 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
 
                 items.add(SupplyItem(
                   id: supply.id,
+                  courseId: course.courseId,
                   name: supply.name,
                   isChecked: isChecked,
                 ));
@@ -170,11 +280,12 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
             // Add standalone supplies section if there are any
             if (_standaloneSupplies.isNotEmpty) {
               // Add section title
-              final standaloneIds = _standaloneSupplies
-                  .map((name) => 'standalone_$name')
-                  .toList();
+              final standaloneIds = _standaloneSupplies.map((name) => 'standalone_$name').toList();
               items.add(CourseTitleItem(
-                  title: "Autres fournitures", supplyIds: standaloneIds));
+                title: "Autres fournitures",
+                courseId: '', // Empty for standalone supplies
+                supplyIds: standaloneIds,
+              ));
 
               // Add standalone supplies
               for (final supplyName in _standaloneSupplies) {
@@ -185,6 +296,7 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
 
                 items.add(SupplyItem(
                   id: id,
+                  courseId: '', // Empty for standalone supplies
                   name: supplyName,
                   isChecked: isChecked,
                 ));
@@ -287,18 +399,14 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
     );
   }
 
-  Widget _buildSupplyList(BuildContext context, List<ListItem> items,
-      int checked, int total, TimeOfDay packTime) {
-    // Check if bag is ready (all supplies checked)
-    final bool isBagReady = total > 0 && checked == total;
-
+  Widget _buildSupplyList(BuildContext context, List<ListItem> items, int checked, int total, TimeOfDay packTime) {
     return Stack(
       children: [
         Column(
           children: [
             _buildHeader(checked, total, packTime),
-            // Show banner when bag is ready
-            if (isBagReady) _buildBagReadyBanner(context),
+            // Show banner always (with progress)
+            _buildBagReadyBanner(context, checked, total, packTime),
             Expanded(
               child: ListView.builder(
                 controller: _scrollController,
@@ -313,77 +421,104 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
                   final accentColor = Theme.of(context).colorScheme.secondary;
 
                   if (item is CourseTitleItem) {
-                    // Check if all supplies for this course are checked
-                    final allChecked = item.supplyIds.isNotEmpty &&
-                        item.supplyIds
-                            .every((id) => _checkedState[id] ?? false);
-
-                    return CheckboxListTile(
-                      checkboxShape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(4.0),
-                        side: BorderSide(
-                          width: 4.5,
-                          color: accentColor,
-                        ),
+                    return Padding(
+                      padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 8.0),
+                      child: Row(
+                        children: [
+                          // Bullet point
+                          Container(
+                            width: 6,
+                            height: 6,
+                            decoration: BoxDecoration(
+                              color: accentColor,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Text(
+                            item.title.toUpperCase(),
+                            style: GoogleFonts.robotoCondensed(
+                              fontSize: 13,
+                              color: accentColor,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ],
                       ),
-                      contentPadding:
-                          EdgeInsets.symmetric(horizontal: 8.0, vertical: 2.0),
-                      dense: false,
-                      controlAffinity: ListTileControlAffinity.leading,
-                      title: Text(
-                        item.title.toUpperCase(),
-                        style: GoogleFonts.robotoCondensed(
-                            fontSize: 16,
-                            color: accentColor,
-                            fontWeight: FontWeight.bold),
-                      ),
-                      value: allChecked,
-                      onChanged: item.supplyIds.isEmpty
-                          ? null
-                          : (value) {
-                              setState(() {
-                                // Check or uncheck all supplies for this course
-                                for (final supplyId in item.supplyIds) {
-                                  _checkedState[supplyId] = value ?? false;
-                                }
-                              });
-                              _saveCheckedState();
-                            },
                     );
                   } else if (item is SupplyItem) {
-                    // Check if this is a standalone supply
-                    final isStandalone = item.id.startsWith('standalone_');
-
-                    return CheckboxListTile(
-                      checkboxShape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(4.0),
-                        side: BorderSide(
-                          width: 4.5,
-                          color: Colors.grey,
+                    return Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF2D2D3A),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: ListTile(
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                        title: Text(
+                          item.name,
+                          style: GoogleFonts.roboto(
+                            color: item.isChecked ? Colors.white38 : Colors.white70,
+                            fontSize: 15,
+                            decoration: item.isChecked ? TextDecoration.lineThrough : null,
+                          ),
                         ),
+                        trailing: Checkbox(
+                          value: item.isChecked,
+                          onChanged: (value) async {
+                            final controller = ref.read(dailyCheckControllerProvider.notifier);
+                            setState(() {
+                              _checkedState[item.id] = value ?? false;
+                            });
+                            // Save to Drift via controller
+                            await controller.toggleCheck(
+                              item.id,
+                              item.courseId,
+                              _targetDate!,
+                              value ?? false,
+                            );
+
+                            // Check if bag is now complete
+                            final tomorrowSupplies = await ref.read(tomorrowSupplyControllerProvider.future);
+                            int totalSupplies = 0;
+                            for (final course in tomorrowSupplies) {
+                              totalSupplies += course.supplies.length;
+                            }
+                            totalSupplies += _standaloneSupplies.length;
+                            await _checkAndMarkBagCompletion(totalSupplies);
+                          },
+                          activeColor: accentColor,
+                          checkColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                        ),
+                        onTap: () async {
+                          // Toggle checkbox when tapping anywhere on the card
+                          final newValue = !item.isChecked;
+                          final controller = ref.read(dailyCheckControllerProvider.notifier);
+                          setState(() {
+                            _checkedState[item.id] = newValue;
+                          });
+                          // Save to Drift via controller
+                          await controller.toggleCheck(
+                            item.id,
+                            item.courseId,
+                            _targetDate!,
+                            newValue,
+                          );
+
+                          // Check if bag is now complete
+                          final tomorrowSupplies = await ref.read(tomorrowSupplyControllerProvider.future);
+                          int totalSupplies = 0;
+                          for (final course in tomorrowSupplies) {
+                            totalSupplies += course.supplies.length;
+                          }
+                          totalSupplies += _standaloneSupplies.length;
+                          await _checkAndMarkBagCompletion(totalSupplies);
+                        },
                       ),
-                      secondary: isStandalone
-                          ? IconButton(
-                              icon: Icon(Icons.delete, color: accentColor),
-                              onPressed: () =>
-                                  _deleteStandaloneSupply(item.name),
-                            )
-                          : SizedBox(width: 10),
-                      contentPadding:
-                          EdgeInsets.symmetric(horizontal: 8.0, vertical: 2.0),
-                      dense: false,
-                      controlAffinity: ListTileControlAffinity.leading,
-                      title: Text(
-                        item.name,
-                        style: GoogleFonts.roboto(color: Colors.white70),
-                      ),
-                      value: item.isChecked,
-                      onChanged: (value) {
-                        setState(() {
-                          _checkedState[item.id] = value ?? false;
-                        });
-                        _saveCheckedState();
-                      },
                     );
                   }
                   return Container();
@@ -397,49 +532,124 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
     );
   }
 
-  Widget _buildBagReadyBanner(BuildContext context) {
+  Widget _buildBagReadyBanner(BuildContext context, int checked, int total, TimeOfDay packTime) {
     final accentColor = Theme.of(context).colorScheme.secondary;
+    final progress = total > 0 ? checked / total : 0.0;
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: accentColor.withOpacity(0.15),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: accentColor.withOpacity(0.3),
-          width: 1,
+        gradient: RadialGradient(
+          center: Alignment.topLeft,
+          radius: 2.2,
+          colors: [
+            accentColor.withValues(alpha: 0.35),
+            accentColor.withValues(alpha: 0.2),
+            accentColor.withValues(alpha: 0.1),
+          ],
+          stops: const [0.0, 0.6, 1.0],
         ),
+        borderRadius: BorderRadius.circular(16),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(
-            Icons.check_circle,
-            color: accentColor,
-            size: 28,
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: accentColor.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(
+                  Icons.check_circle,
+                  color: accentColor,
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Votre sac est prêt !",
+                      style: GoogleFonts.robotoCondensed(
+                        fontSize: 18,
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      "Prévu à ${packTime.hour.toString().padLeft(2, '0')}:${packTime.minute.toString().padLeft(2, '0')}",
+                      style: GoogleFonts.roboto(
+                        fontSize: 12,
+                        color: Colors.white54,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Text(
+                "$checked/$total",
+                style: GoogleFonts.robotoCondensed(
+                  fontSize: 24,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "Votre sac est prêt !",
-                  style: GoogleFonts.robotoCondensed(
-                    fontSize: 16,
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
+          const SizedBox(height: 4),
+          Text(
+            "FOURNITURES",
+            style: GoogleFonts.robotoCondensed(
+              fontSize: 11,
+              color: Colors.white54,
+              fontWeight: FontWeight.w500,
+              letterSpacing: 1.2,
+            ),
+          ),
+          const SizedBox(height: 12),
+          // Gradient progress bar
+          ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: SizedBox(
+              height: 8,
+              child: Stack(
+                children: [
+                  // Background
+                  Container(
+                    width: double.infinity,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  "Toutes vos fournitures sont cochées",
-                  style: GoogleFonts.roboto(
-                    fontSize: 12,
-                    color: Colors.white54,
+                  // Gradient progress
+                  FractionallySizedBox(
+                    widthFactor: progress,
+                    child: Container(
+                      height: 8,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            accentColor,
+                            const Color(0xFFFF6B9D), // Pink
+                          ],
+                          begin: Alignment.centerLeft,
+                          end: Alignment.centerRight,
+                        ),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ],
@@ -447,87 +657,74 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
     );
   }
 
-  String _formatTargetDate(DateTime? date) {
+  String _formatTargetDateShort(DateTime? date) {
     if (date == null) return '';
 
-    const days = [
-      'lundi',
-      'mardi',
-      'mercredi',
-      'jeudi',
-      'vendredi',
-      'samedi',
-      'dimanche'
-    ];
+    const days = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
     const months = [
-      'janvier',
-      'fevrier',
-      'mars',
-      'avril',
-      'mai',
-      'juin',
-      'juillet',
-      'aout',
-      'septembre',
-      'octobre',
-      'novembre',
-      'decembre'
+      'Janvier', 'Fevrier', 'Mars', 'Avril', 'Mai', 'Juin',
+      'Juillet', 'Aout', 'Septembre', 'Octobre', 'Novembre', 'Decembre'
     ];
 
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    final tomorrow = today.add(const Duration(days: 1));
-    final targetDay = DateTime(date.year, date.month, date.day);
-
-    String prefix;
-    if (targetDay == today) {
-      prefix = "aujourd'hui";
-    } else if (targetDay == tomorrow) {
-      prefix = "demain";
-    } else {
-      prefix = days[date.weekday - 1];
-    }
-
-    return "pour $prefix ${date.day} ${months[date.month - 1]}";
+    return "${days[date.weekday - 1]} ${date.day} ${months[date.month - 1]}";
   }
 
   Widget _buildHeader(int checked, int total, TimeOfDay packTime) {
+    final accentColor = Theme.of(context).colorScheme.secondary;
+
     return Container(
       width: double.infinity,
-      color: Color(0xFF303030),
+      color: Theme.of(context).scaffoldBackgroundColor,
       child: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        padding: const EdgeInsets.fromLTRB(24.0, 16.0, 24.0, 16.0),
+        child: Stack(
           children: [
-            const SizedBox(height: 8),
-            Text(
-              "A mettre dans votre sac",
-              style: GoogleFonts.robotoCondensed(
-                  color: Colors.white38, fontSize: 14),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Title
+                Text(
+                  "Mon Sac",
+                  style: GoogleFonts.robotoCondensed(
+                    color: Colors.white,
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                // Date + Week inline
+                Row(
+                  children: [
+                    if (_targetDate != null)
+                      Text(
+                        _formatTargetDateShort(_targetDate),
+                        style: GoogleFonts.roboto(
+                          color: accentColor,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    if (_currentWeekType != null && _targetDate != null)
+                      Text(
+                        " • Semaine $_currentWeekType",
+                        style: GoogleFonts.roboto(
+                          color: Colors.white70,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                  ],
+                ),
+              ],
             ),
-            if (_targetDate != null)
-              Text(
-                _formatTargetDate(_targetDate),
-                style: GoogleFonts.robotoCondensed(
-                    color: Theme.of(context).colorScheme.secondary,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500),
+            // Streak badge top-right
+            Positioned(
+              top: 0,
+              right: 0,
+              child: StreakCounterWidget(
+                checkedCount: checked,
+                totalCount: total,
               ),
-            const SizedBox(height: 16),
-            Text(
-              "$checked/$total fournitures",
-              style: GoogleFonts.robotoCondensed(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold),
-            ),
-            Text(
-              "Heure de preparation du sac : ${packTime.hour.toString().padLeft(2, '0')}:${packTime.minute.toString().padLeft(2, '0')}",
-              style: GoogleFonts.roboto(
-                  color: Colors.white38,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w300),
             ),
           ],
         ),

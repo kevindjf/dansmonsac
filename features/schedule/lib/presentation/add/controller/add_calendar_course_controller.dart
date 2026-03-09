@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:common/src/utils.dart';
 import 'package:course/di/riverpod_di.dart';
 import 'package:course/models/cours_with_supplies.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -99,15 +100,14 @@ class AddCalendarCourseController extends _$AddCalendarCourseController {
 
     // Validation du cours
     if (currentState.courseId == null || currentState.courseId!.isEmpty) {
-      state = AsyncValue.data(currentState.copyWith(
-          errorCourseId: "Veuillez sélectionner un cours"));
+      state = AsyncValue.data(currentState.copyWith(errorCourseId: "Veuillez selectionner un cours"));
       isValid = false;
     }
 
     // Validation de la salle
-    if (currentState.roomName.isEmpty) {
-      state = AsyncValue.data(
-          currentState.copyWith(errorRoomName: "La salle est obligatoire"));
+    final roomError = Validators.validateRoomName(currentState.roomName);
+    if (roomError != null) {
+      state = AsyncValue.data(currentState.copyWith(errorRoomName: roomError));
       isValid = false;
     }
 
@@ -119,7 +119,7 @@ class AddCalendarCourseController extends _$AddCalendarCourseController {
 
     if (endMinutes <= startMinutes) {
       state = AsyncValue.data(currentState.copyWith(
-          errorEndTime: "L'heure de fin doit être après l'heure de début"));
+          errorEndTime: "L'heure de fin doit etre apres l'heure de debut"));
       isValid = false;
     }
 
@@ -135,7 +135,7 @@ class AddCalendarCourseController extends _$AddCalendarCourseController {
     final calendarCourse = CalendarCourse(
       id: DateTime.now().millisecondsSinceEpoch.toString(), // ID temporaire
       courseId: currentState.courseId!,
-      roomName: currentState.roomName,
+      roomName: Validators.clean(currentState.roomName),
       startTime: currentState.startTime,
       endTime: currentState.endTime,
       weekType: currentState.weekType,
@@ -167,7 +167,7 @@ class AddCalendarCourseController extends _$AddCalendarCourseController {
     final calendarCourse = CalendarCourse(
       id: existingId,
       courseId: currentState.courseId!,
-      roomName: currentState.roomName,
+      roomName: Validators.clean(currentState.roomName),
       startTime: currentState.startTime,
       endTime: currentState.endTime,
       weekType: currentState.weekType,

@@ -1,5 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../database/app_database.dart';
+import '../di/riverpod_di.dart';
 import '../sync/sync_manager.dart';
 
 /// Provider for the app database
@@ -17,8 +19,14 @@ final databaseProvider = Provider<AppDatabase>((ref) {
 /// Provider for the sync manager
 final syncManagerProvider = Provider<SyncManager>((ref) {
   final database = ref.watch(databaseProvider);
+  final supabaseClientInstance = ref.watch(supabaseClient);
+  final preferenceRepo = ref.watch(preferenceRepositoryProvider);
 
-  final syncManager = SyncManager(database);
+  final syncManager = SyncManager(
+    database,
+    supabaseClientInstance,
+    preferenceRepo,
+  );
 
   // Dispose the sync manager when the provider is disposed
   ref.onDispose(() {

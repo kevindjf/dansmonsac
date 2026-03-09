@@ -15,6 +15,16 @@ class PreferencesService {
   static const String _keyShareCode = 'share_code';
   static const String _keySharerName = 'sharer_name';
   static const String _keyShowWeekend = 'show_weekend';
+  static const String _keyFirstLaunchDate = 'first_launch_date';
+  static const String _keyHasRated = 'has_rated';
+  static const String _keyRatingDismissedDate = 'rating_dismissed_date';
+  static const String _keyRatingDismissCount = 'rating_dismiss_count';
+  static const String _keyPreviousStreak = 'previous_streak';
+  static const String _keyBestStreak = 'best_streak';
+  static const String _keyLastStreakCheckDate = 'last_streak_check_date';
+  static const String _keyCalendarMigrationDone = 'calendar_migration_done';
+  static const String _keyVacationModeEnabled = 'vacation_mode_enabled';
+  static const String _keyVacationModeEndDate = 'vacation_mode_end_date';
 
   static Future<void> setPackTime(TimeOfDay time) async {
     final prefs = await SharedPreferences.getInstance();
@@ -219,5 +229,180 @@ class PreferencesService {
   static Future<bool> getShowWeekend() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getBool(_keyShowWeekend) ?? true;
+  }
+
+  // ===== Rating Popup Methods =====
+
+  /// Set first launch date (called once on first app launch)
+  static Future<void> setFirstLaunchDate(DateTime date) async {
+    final prefs = await SharedPreferences.getInstance();
+    // Only set if not already set
+    if (!prefs.containsKey(_keyFirstLaunchDate)) {
+      await prefs.setString(_keyFirstLaunchDate, date.toIso8601String());
+    }
+  }
+
+  /// Get first launch date
+  static Future<DateTime?> getFirstLaunchDate() async {
+    final prefs = await SharedPreferences.getInstance();
+    final dateString = prefs.getString(_keyFirstLaunchDate);
+    if (dateString != null) {
+      return DateTime.parse(dateString);
+    }
+    return null;
+  }
+
+  /// Set whether user has rated the app
+  static Future<void> setHasRated(bool hasRated) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_keyHasRated, hasRated);
+  }
+
+  /// Get whether user has rated the app
+  static Future<bool> getHasRated() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_keyHasRated) ?? false;
+  }
+
+  /// Set the date when user dismissed the rating popup
+  static Future<void> setRatingDismissedDate(DateTime date) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_keyRatingDismissedDate, date.toIso8601String());
+  }
+
+  /// Get the date when user last dismissed the rating popup
+  static Future<DateTime?> getRatingDismissedDate() async {
+    final prefs = await SharedPreferences.getInstance();
+    final dateString = prefs.getString(_keyRatingDismissedDate);
+    if (dateString != null) {
+      return DateTime.parse(dateString);
+    }
+    return null;
+  }
+
+  /// Increment rating dismiss count
+  static Future<void> incrementRatingDismissCount() async {
+    final prefs = await SharedPreferences.getInstance();
+    final count = prefs.getInt(_keyRatingDismissCount) ?? 0;
+    await prefs.setInt(_keyRatingDismissCount, count + 1);
+  }
+
+  /// Get rating dismiss count
+  static Future<int> getRatingDismissCount() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getInt(_keyRatingDismissCount) ?? 0;
+  }
+
+  // ===== Streak Tracking Methods =====
+
+  /// Get the previous streak value (before last break)
+  /// Returns 0 if no previous streak exists
+  static Future<int> getPreviousStreak() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getInt(_keyPreviousStreak) ?? 0;
+  }
+
+  /// Set the previous streak value
+  /// Called when a streak break is detected to preserve the streak count
+  static Future<void> setPreviousStreak(int streak) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(_keyPreviousStreak, streak);
+  }
+
+  /// Get the best streak ever achieved
+  /// Returns 0 if no best streak exists
+  static Future<int> getBestStreak() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getInt(_keyBestStreak) ?? 0;
+  }
+
+  /// Set the best streak value
+  /// Called when a streak break is detected and the current streak exceeds the best
+  static Future<void> setBestStreak(int streak) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(_keyBestStreak, streak);
+  }
+
+  /// Get the last date when streak was checked
+  /// Used to detect if a streak break occurred between app sessions
+  static Future<DateTime?> getLastStreakCheckDate() async {
+    final prefs = await SharedPreferences.getInstance();
+    final dateString = prefs.getString(_keyLastStreakCheckDate);
+    if (dateString != null) {
+      return DateTime.parse(dateString);
+    }
+    return null;
+  }
+
+  /// Set the last date when streak was checked
+  static Future<void> setLastStreakCheckDate(DateTime date) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_keyLastStreakCheckDate, date.toIso8601String());
+  }
+
+  // ===== Migration Methods =====
+
+  /// Check if calendar courses migration from Supabase to Drift is done
+  static Future<bool> getCalendarMigrationDone() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_keyCalendarMigrationDone) ?? false;
+  }
+
+  /// Mark calendar courses migration as done
+  static Future<void> setCalendarMigrationDone(bool done) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_keyCalendarMigrationDone, done);
+  }
+
+  // ===== Vacation Mode Methods =====
+
+  /// Check if vacation mode is currently active
+  /// Returns true if vacation mode is enabled AND end date is in the future
+  static Future<bool> isVacationModeActive() async {
+    final prefs = await SharedPreferences.getInstance();
+    final enabled = prefs.getBool(_keyVacationModeEnabled) ?? false;
+
+    if (!enabled) return false;
+
+    // Check if end date is set and still in the future
+    final endDateString = prefs.getString(_keyVacationModeEndDate);
+    if (endDateString == null) return false;
+
+    final endDate = DateTime.parse(endDateString);
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final end = DateTime(endDate.year, endDate.month, endDate.day);
+
+    // If end date has passed, automatically disable vacation mode
+    if (end.isBefore(today)) {
+      await setVacationMode(false, null);
+      return false;
+    }
+
+    return true;
+  }
+
+  /// Enable vacation mode with optional end date
+  /// If endDate is null, vacation mode is manual (must be disabled manually)
+  static Future<void> setVacationMode(bool enabled, DateTime? endDate) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_keyVacationModeEnabled, enabled);
+
+    if (enabled && endDate != null) {
+      await prefs.setString(_keyVacationModeEndDate, endDate.toIso8601String());
+    } else {
+      // Clear end date when disabling or if no date provided
+      await prefs.remove(_keyVacationModeEndDate);
+    }
+  }
+
+  /// Get vacation mode end date (if set)
+  static Future<DateTime?> getVacationModeEndDate() async {
+    final prefs = await SharedPreferences.getInstance();
+    final dateString = prefs.getString(_keyVacationModeEndDate);
+    if (dateString != null) {
+      return DateTime.parse(dateString);
+    }
+    return null;
   }
 }

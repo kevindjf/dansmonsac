@@ -44,8 +44,11 @@ class ShareState {
     );
   }
 
-  bool get hasCode => code != null;
+  bool get hasCode => code != null && code!.isNotEmpty;
   bool get hasError => errorMessage != null;
+
+  /// Accès safe au code (retourne chaîne vide si null)
+  String get safeCode => code ?? '';
 
   int get courseCount => data?.courses.length ?? 0;
   int get calendarCount => data?.calendarCourses.length ?? 0;

@@ -9,8 +9,8 @@ import 'package:common/src/repository/preference_repository.dart';
 import 'package:common/src/models/network/network_failure.dart';
 import 'package:common/src/repository/repository_helper.dart';
 import 'package:common/src/services/preferences_service.dart';
+import 'package:common/src/utils.dart';
 
-import '../data/default_courses.dart';
 import '../models/command/pack_time_command.dart';
 
 class OnboardingSupabaseRepository extends OnboardingRepository {
@@ -63,10 +63,10 @@ class OnboardingSupabaseRepository extends OnboardingRepository {
 
       // Only create default courses if user has no courses
       if (existingCourses.isEmpty) {
-        for (final course in DefaultCourses.frenchSchoolSubjects) {
+        for (final subject in DefaultSupplies.getDefaultSubjects()) {
           await courseRepository.store(AddCourseCommand(
-            course['name'] as String,
-            (course['supplies'] as List).cast<String>(),
+            subject.name,
+            subject.supplies,
           ));
         }
       }

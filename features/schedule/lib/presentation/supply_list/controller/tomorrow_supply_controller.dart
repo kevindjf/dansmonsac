@@ -1,15 +1,13 @@
-import 'package:common/src/utils/week_utils.dart';
-import 'package:common/src/services.dart';
-import 'package:course/models/cours_with_supplies.dart';
+import 'package:common/src/services/log_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:schedule/di/riverpod_di.dart';
-import 'package:schedule/presentation/add/controller/add_calendar_course_controller.dart';
 import 'package:supply/models/supply.dart';
 
 part 'tomorrow_supply_controller.g.dart';
 
 /// Represents a course with its supplies for tomorrow
+/// DEPRECATED: Use CalendarCourseWithSupplies from schedule/models instead
 class CourseWithSuppliesForTomorrow {
   final String courseId;
   final String courseName;
@@ -22,6 +20,8 @@ class CourseWithSuppliesForTomorrow {
   });
 }
 
+/// Controller for tomorrow's supplies
+/// Refactored to use getTomorrowCourses() repository method (Story 2.8)
 @riverpod
 class TomorrowSupplyController extends _$TomorrowSupplyController {
   @override
@@ -30,75 +30,41 @@ class TomorrowSupplyController extends _$TomorrowSupplyController {
   }
 
   Future<List<CourseWithSuppliesForTomorrow>> _fetchTomorrowSupplies() async {
-    final calendarRepository = ref.watch(calendarCourseRepositoryProvider);
+    try {
+      LogService.d('TomorrowSupplyController: Fetching tomorrow courses via repository');
 
-    // Fetch all courses with their supplies
-    final allCourses = await ref.watch(coursesProvider.future);
-    final courseMap = {for (var c in allCourses) c.id: c};
+      // Use new repository method from Story 2.8
+      final repository = ref.watch(calendarCourseRepositoryProvider);
+      final result = await repository.getTomorrowCourses();
 
-    // Fetch all calendar courses
-    final calendarResult = await calendarRepository.fetchCalendarCourses();
+      return result.fold(
+        (failure) {
+          LogService.e('TomorrowSupplyController: Failed to fetch tomorrow courses', failure);
+          return [];
+        },
+        (courses) {
+          LogService.d('TomorrowSupplyController: Loaded ${courses.length} courses for tomorrow');
 
-    // Get pack time and school year start from preferences
-    final packTime = await PreferencesService.getPackTime();
-    final schoolYearStart = await PreferencesService.getSchoolYearStart();
-
-    return calendarResult.fold(
-      (failure) => [],
-      (calendarCourses) {
-        final now = DateTime.now();
-
-        // Determine target date: if current time is before pack time, show today's supplies
-        // Otherwise, show tomorrow's supplies
-        final targetDate = (now.hour < packTime.hour ||
-                (now.hour == packTime.hour && now.minute < packTime.minute))
-            ? DateTime.now()
-            : WeekUtils.getTomorrow();
-
-        final targetWeekday = targetDate.weekday; // 1=Monday, 7=Sunday
-
-        // Filter courses for target date
-        final targetCourses = calendarCourses.where((course) {
-          // Check if course is for target date's day of week
-          if (course.dayOfWeek != targetWeekday) {
-            return false;
-          }
-
-          // Check if course should be shown for target date's week (A/B or BOTH)
-          return WeekUtils.shouldShowCourseForDate(
-            course.weekType.value,
-            schoolYearStart,
-            targetDate,
-          );
-        }).toList();
-
-        // Build list of courses with supplies (deduplicated by course ID)
-        final coursesMap = <String, CourseWithSuppliesForTomorrow>{};
-
-        for (final calendarCourse in targetCourses) {
-          final courseData = courseMap[calendarCourse.courseId];
-          if (courseData == null) continue;
-
-          // Get supplies from CourseWithSupplies
-          final supplies = courseData.supplies;
-
-          // Only add if course has supplies and not already added
-          if (supplies.isNotEmpty && !coursesMap.containsKey(courseData.id)) {
-            coursesMap[courseData.id] = CourseWithSuppliesForTomorrow(
-              courseId: courseData.id,
-              courseName: courseData.name,
-              supplies: supplies,
+          // Map to legacy model for backwards compatibility
+          // TODO: Migrate UI to use CalendarCourseWithSupplies directly
+          return courses.map((course) {
+            return CourseWithSuppliesForTomorrow(
+              courseId: course.courseId,
+              courseName: course.courseName,
+              supplies: course.supplies,
             );
-          }
-        }
-
-        return coursesMap.values.toList();
-      },
-    );
+          }).toList();
+        },
+      );
+    } catch (e, stackTrace) {
+      LogService.e('TomorrowSupplyController: Unexpected error', e, stackTrace);
+      return [];
+    }
   }
 
   // Method to refresh supplies
   void refresh() {
+    LogService.d('TomorrowSupplyController: Invalidating and refreshing');
     ref.invalidateSelf();
   }
 }

@@ -188,19 +188,21 @@ class CalendarBodyWidget extends ConsumerWidget {
   Widget _buildCalendar(
       BuildContext context, List<Event> events, WidgetRef ref) {
     var grouped = groupOverlappingEvents(events);
-    // 2. Définir notre unité temporelle (pixels par minute)
-    final double pixelsPerMinute = 100 / 30; // 100 pixels pour 30 minutes
 
     events.sort((a, b) => a.startTime.compareTo(b.startTime));
     var startDay = events.first;
     var endDay = events.last;
-    var heightContainer =
-        getQuarterHourIntervals(startDay.startTime, endDay.endTime) + 30;
 
-    double sizeOfQuarter = 25;
+    // Pixels per minute for proportional sizing
+    final double pixelsPerMinute = 25.0 / 15.0;
+
+    // Container height based on exact minutes
+    final totalMinutes = endDay.endTime.difference(startDay.startTime).inMinutes;
+    final containerHeight = totalMinutes * pixelsPerMinute + 40;
 
     List<Widget> widgets = [];
 
+    // Build course widgets with exact minute-based positioning
     for (int i = 0; i < grouped.length; i++) {
       var column = grouped[i];
       for (int j = 0; j < column.length; j++) {
@@ -210,17 +212,17 @@ class CalendarBodyWidget extends ConsumerWidget {
         if (i != grouped.length - 1) {
           width = calculateEventWidth(event, groupOverlappingEvents(events), i);
         }
-        // POUR LA TAILLE JE DOIS REGARDER SI
+
+        final minutesFromStart = event.startTime.difference(startDay.startTime).inMinutes.toDouble();
+        final durationMinutes = event.endTime.difference(event.startTime).inMinutes.toDouble();
+
         widgets.add(Container(
           margin: EdgeInsets.only(
-              top:
-                  getQuarterHourIntervals(startDay.startTime, event.startTime) *
-                      sizeOfQuarter,
+              top: minutesFromStart * pixelsPerMinute,
               left: MediaQuery.of(context).size.width / grouped.length * i),
           width:
               MediaQuery.of(context).size.width / grouped.length * width - 10,
-          height: getQuarterHourIntervals(event.startTime, event.endTime) *
-              sizeOfQuarter,
+          height: durationMinutes * pixelsPerMinute,
           child: GestureDetector(
             onTap: () => _showCourseOptions(context, ref, event),
             child: Container(
@@ -286,15 +288,70 @@ class CalendarBodyWidget extends ConsumerWidget {
         ));
       }
     }
+
+    // Add pause blocks for gaps >= 60 minutes
+    // Track the latest end time to detect real gaps (accounting for overlapping events)
+    DateTime latestEnd = events.first.endTime;
+    for (int i = 0; i < events.length; i++) {
+      if (events[i].endTime.isAfter(latestEnd)) {
+        latestEnd = events[i].endTime;
+      }
+
+      if (i < events.length - 1) {
+        final nextStart = events[i + 1].startTime;
+        // Only consider it a gap if next event starts after the latest end so far
+        if (nextStart.isAfter(latestEnd) || nextStart.isAtSameMomentAs(latestEnd)) {
+          final gapMinutes = nextStart.difference(latestEnd).inMinutes;
+          if (gapMinutes >= 60) {
+            final gapStartFromDay = latestEnd.difference(startDay.startTime).inMinutes.toDouble();
+            final gapTop = gapStartFromDay * pixelsPerMinute;
+            final gapHeight = gapMinutes.toDouble() * pixelsPerMinute;
+
+            // Format pause duration
+            final hours = gapMinutes ~/ 60;
+            final mins = gapMinutes % 60;
+            final pauseLabel = mins > 0 ? "Pause - ${hours}h${mins.toString().padLeft(2, '0')}" : "Pause - ${hours}h";
+
+            widgets.add(Container(
+              margin: EdgeInsets.only(top: gapTop),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              width: double.infinity,
+              height: gapHeight,
+              child: CustomPaint(
+                painter: _DashedBorderPainter(
+                  color: Colors.white.withValues(alpha: 0.08),
+                  borderRadius: 8,
+                  dashWidth: 5,
+                  dashSpace: 4,
+                  strokeWidth: 1,
+                ),
+                child: Center(
+                  child: Text(
+                    pauseLabel,
+                    style: GoogleFonts.robotoCondensed(
+                      color: Colors.white38,
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
+              ),
+            ));
+          }
+        }
+      }
+    }
+
     return SingleChildScrollView(
       child: Column(
         children: [
           SizedBox(
               width: double.infinity,
-              height: heightContainer * 15,
+              height: containerHeight,
               child: Stack(
                 children: widgets,
               )),
+          // Espace pour les boutons en overlay (Ajouter + Partager)
+          const SizedBox(height: 150),
         ],
       ),
     );
@@ -453,11 +510,47 @@ class CalendarBodyWidget extends ConsumerWidget {
   }
 }
 
-int getQuarterHourIntervals(DateTime start, DateTime end) {
-  return (end.difference(start).inMinutes / 15).ceil();
+class _DashedBorderPainter extends CustomPainter {
+  final Color color;
+  final double borderRadius;
+  final double dashWidth;
+  final double dashSpace;
+  final double strokeWidth;
+
+  _DashedBorderPainter({
+    required this.color,
+    this.borderRadius = 8,
+    this.dashWidth = 5,
+    this.dashSpace = 4,
+    this.strokeWidth = 1,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = strokeWidth
+      ..style = PaintingStyle.stroke;
+
+    final rrect = RRect.fromRectAndRadius(
+      Rect.fromLTWH(0, 0, size.width, size.height),
+      Radius.circular(borderRadius),
+    );
+
+    final path = Path()..addRRect(rrect);
+    final metrics = path.computeMetrics();
+
+    for (final metric in metrics) {
+      double distance = 0;
+      while (distance < metric.length) {
+        final end = (distance + dashWidth).clamp(0, metric.length).toDouble();
+        canvas.drawPath(metric.extractPath(distance, end), paint);
+        distance += dashWidth + dashSpace;
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
-// Trier par ordre alphabetique
-// Faire un boucle pour savoir la colonne dans lequel te placer
-// taille maximum c'est le nombre de colonne
-// pour chaque event ensuite tu regardes les colonnes adjacentes si pas d'event alors ta taille fait +1 sinon stop
