@@ -1,7 +1,5 @@
 import 'package:common/src/utils/week_utils.dart';
 import 'package:common/src/services.dart';
-import 'package:common/src/services/log_service.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:schedule/di/riverpod_di.dart';
 import 'package:schedule/models/calendar_course.dart';

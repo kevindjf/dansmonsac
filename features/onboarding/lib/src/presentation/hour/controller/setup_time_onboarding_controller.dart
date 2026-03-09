@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:common/src/di/riverpod_di.dart';
+import 'package:common/src/services/log_service.dart';
 import 'package:flutter/material.dart';
 import 'package:onboarding/src/di/riverpod_di.dart';
 import 'package:onboarding/src/models/command/pack_time_command.dart';
@@ -43,7 +44,7 @@ class SetupTimeOnboardingController extends _$SetupTimeOnboardingController {
     response.fold((failure) {
       state = state.copyWith(isLoading: false);
 
-      print(failure);
+      LogService.d('$failure');
       _errorController
           .add("Une erreur est survenue, veuillez réessayer ultérieurement !");
     }, (_) => ref.read(routerDelegateProvider))?.setRoute(

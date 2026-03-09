@@ -10,7 +10,7 @@ import 'package:onboarding/src/presentation/notifications/notification_permissio
 class OnboardingSetupTimePage extends ConsumerStatefulWidget {
   static const String routeName = "/setup-onboarding";
 
-  const OnboardingSetupTimePage({Key? key}) : super(key: key);
+  const OnboardingSetupTimePage({super.key});
 
   @override
   ConsumerState<OnboardingSetupTimePage> createState() =>

@@ -12,7 +12,7 @@ import 'package:streak/di/riverpod_di.dart';
 import 'help_page.dart';
 
 class SettingsPage extends ConsumerStatefulWidget {
-  const SettingsPage({Key? key}) : super(key: key);
+  const SettingsPage({super.key});
 
   @override
   ConsumerState<SettingsPage> createState() => _SettingsPageState();
@@ -285,7 +285,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: accentColor.withOpacity(0.2),
+                  color: accentColor.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(
@@ -478,7 +478,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: accentColor.withOpacity(0.2),
+                color: accentColor.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Icon(
@@ -521,7 +521,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
             Switch(
               value: value,
               onChanged: onChanged,
-              activeColor: accentColor,
+              activeThumbColor: accentColor,
             ),
           ],
         ),
@@ -552,7 +552,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                   Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: accentColor.withOpacity(0.2),
+                      color: accentColor.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Icon(
@@ -600,7 +600,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    color: accentColor.withOpacity(0.15),
+                    color: accentColor.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
@@ -805,8 +805,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   color: _vacationModeEnabled
-                      ? const Color(0xFFFF9800).withOpacity(0.2)
-                      : Colors.white.withOpacity(0.1),
+                      ? const Color(0xFFFF9800).withValues(alpha: 0.2)
+                      : Colors.white.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
@@ -838,7 +838,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                           ? 'Actif jusqu\'au ${_formatDateShort(_vacationEndDate!)}'
                           : 'Protège ta streak pendant les congés',
                       style: TextStyle(
-                        color: Colors.white.withOpacity(0.6),
+                        color: Colors.white.withValues(alpha: 0.6),
                         fontSize: 14,
                       ),
                     ),
@@ -850,7 +850,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFFF9800).withOpacity(0.2),
+                    color: const Color(0xFFFF9800).withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: const Text(
@@ -865,7 +865,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
               const SizedBox(width: 8),
               Icon(
                 Icons.chevron_right,
-                color: Colors.white.withOpacity(0.3),
+                color: Colors.white.withValues(alpha: 0.3),
               ),
             ],
           ),
@@ -908,6 +908,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
             _vacationEndDate = endDate;
           });
 
+          if (!context.mounted) return;
           Navigator.pop(context);
 
           _showSnackBar(enabled
@@ -1000,7 +1001,7 @@ class _VacationModeBottomSheetState extends State<_VacationModeBottomSheet> {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFFF9800).withOpacity(0.2),
+                    color: const Color(0xFFFF9800).withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: const Icon(
@@ -1030,7 +1031,7 @@ class _VacationModeBottomSheetState extends State<_VacationModeBottomSheet> {
             child: Text(
               'Active ce mode pour protéger ta streak pendant les vacances. Les jours de vacances ne seront pas comptés.',
               style: TextStyle(
-                color: Colors.white.withOpacity(0.7),
+                color: Colors.white.withValues(alpha: 0.7),
                 fontSize: 14,
                 height: 1.4,
               ),
@@ -1066,7 +1067,7 @@ class _VacationModeBottomSheetState extends State<_VacationModeBottomSheet> {
                       }
                     });
                   },
-                  activeColor: const Color(0xFFFF9800),
+                  activeThumbColor: const Color(0xFFFF9800),
                 ),
               ],
             ),
@@ -1082,7 +1083,7 @@ class _VacationModeBottomSheetState extends State<_VacationModeBottomSheet> {
               child: Text(
                 'Date de fin des vacances',
                 style: TextStyle(
-                  color: Colors.white.withOpacity(0.7),
+                  color: Colors.white.withValues(alpha: 0.7),
                   fontSize: 14,
                 ),
               ),
@@ -1096,7 +1097,7 @@ class _VacationModeBottomSheetState extends State<_VacationModeBottomSheet> {
                 child: Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.05),
+                    color: Colors.white.withValues(alpha: 0.05),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(color: Colors.white12),
                   ),
@@ -1113,14 +1114,14 @@ class _VacationModeBottomSheetState extends State<_VacationModeBottomSheet> {
                           style: TextStyle(
                             color: _selectedEndDate != null
                                 ? Colors.white
-                                : Colors.white.withOpacity(0.5),
+                                : Colors.white.withValues(alpha: 0.5),
                             fontSize: 16,
                           ),
                         ),
                       ),
                       Icon(
                         Icons.chevron_right,
-                        color: Colors.white.withOpacity(0.3),
+                        color: Colors.white.withValues(alpha: 0.3),
                       ),
                     ],
                   ),
@@ -1133,7 +1134,7 @@ class _VacationModeBottomSheetState extends State<_VacationModeBottomSheet> {
               child: Text(
                 'Le mode vacances se désactivera automatiquement après cette date',
                 style: TextStyle(
-                  color: Colors.white.withOpacity(0.5),
+                  color: Colors.white.withValues(alpha: 0.5),
                   fontSize: 12,
                   fontStyle: FontStyle.italic,
                 ),

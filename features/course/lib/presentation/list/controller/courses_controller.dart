@@ -5,7 +5,9 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supply/di/riverpod_di.dart';
 import 'package:supply/models/supply.dart';
 import 'package:supply/repository/supply_repository.dart';
+// ignore: depend_on_referenced_packages
 import 'package:schedule/presentation/add/controller/add_calendar_course_controller.dart';
+// ignore: depend_on_referenced_packages
 import 'package:schedule/presentation/supply_list/controller/tomorrow_supply_controller.dart';
 
 import '../../../models/cours_with_supplies.dart';

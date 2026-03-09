@@ -6,7 +6,7 @@ import 'package:splash/presentation/controller/splash_controller.dart';
 class SplashPage extends ConsumerWidget {
   static const String routeName = "/welcome-onboarding";
 
-  const SplashPage({Key? key}) : super(key: key);
+  const SplashPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

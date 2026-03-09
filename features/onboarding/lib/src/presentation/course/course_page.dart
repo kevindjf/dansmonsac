@@ -5,7 +5,7 @@ import 'package:onboarding/src/presentation/course/controller/course_onboarding_
 class OnboardingCoursePage extends ConsumerStatefulWidget {
   static const String routeName = "/course-onboarding";
 
-  const OnboardingCoursePage({Key? key}) : super(key: key);
+  const OnboardingCoursePage({super.key});
 
   @override
   ConsumerState<OnboardingCoursePage> createState() =>
@@ -165,7 +165,7 @@ class _OnboardingCoursePageState extends ConsumerState<OnboardingCoursePage> {
                                       "Aucune fourniture ajoutée",
                                       style: textTheme.bodyMedium?.copyWith(
                                         color: colorScheme.onSurfaceVariant
-                                            .withOpacity(0.6),
+                                            .withValues(alpha: 0.6),
                                       ),
                                     ),
                                   )

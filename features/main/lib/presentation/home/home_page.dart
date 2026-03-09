@@ -10,6 +10,7 @@ import 'package:common/src/ui/ui.dart';
 import 'package:main/presentation/home/calendar_page.dart';
 import 'package:main/presentation/home/controller/home_controller.dart';
 import 'package:main/presentation/home/controller/home_state_ui.dart';
+// ignore: depend_on_referenced_packages
 import 'package:course/presentation/list/courses_page.dart';
 import 'package:main/presentation/home/list_supply_page.dart';
 import 'package:main/presentation/home/settings_page.dart';

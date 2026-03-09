@@ -22,7 +22,7 @@ StreakRepository streakRepository(Ref ref) {
 
 /// Provider for the current streak count
 ///
-/// Returns the current streak as an AsyncValue<int>.
+/// Returns the current streak as an `AsyncValue<int>`.
 /// The streak represents consecutive school days with bag preparation completed.
 ///
 /// Usage:

@@ -4,12 +4,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:common/src/ui/ui.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:onboarding/src/presentation/school_year/controller/school_year_onboarding_controller.dart';
+// ignore: depend_on_referenced_packages
 import 'package:intl/intl.dart';
 
 class OnboardingSchoolYearPage extends ConsumerStatefulWidget {
   static const String routeName = "/school-year-onboarding";
 
-  const OnboardingSchoolYearPage({Key? key}) : super(key: key);
+  const OnboardingSchoolYearPage({super.key});
 
   @override
   ConsumerState<OnboardingSchoolYearPage> createState() =>
@@ -109,10 +110,10 @@ class _OnboardingSchoolYearPageState
                 Container(
                   padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
-                    color: accentColor.withOpacity(0.1),
+                    color: accentColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
-                      color: accentColor.withOpacity(0.3),
+                      color: accentColor.withValues(alpha: 0.3),
                       width: 2,
                     ),
                   ),

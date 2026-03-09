@@ -6,7 +6,7 @@ import 'package:onboarding/src/presentation/import/import_step_page.dart';
 class OnboardingWelcomePage extends ConsumerWidget {
   static const String routeName = "/welcome-onboarding";
 
-  const OnboardingWelcomePage({Key? key}) : super(key: key);
+  const OnboardingWelcomePage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -28,7 +28,7 @@ class OnboardingWelcomePage extends ConsumerWidget {
                 Container(
                   padding: const EdgeInsets.all(32),
                   decoration: BoxDecoration(
-                    color: accentColor.withOpacity(0.1),
+                    color: accentColor.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(

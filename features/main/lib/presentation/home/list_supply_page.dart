@@ -2,22 +2,20 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:common/src/services.dart';
-import 'package:common/src/providers/database_provider.dart';
 import 'package:common/src/utils/week_utils.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:main/presentation/home/controller/daily_check_controller.dart';
 import 'package:schedule/presentation/supply_list/controller/tomorrow_supply_controller.dart';
 import 'package:streak/presentation/widgets/streak_counter_widget.dart';
 import 'package:streak/presentation/widgets/streak_break_dialog.dart';
-import 'package:streak/presentation/pages/streak_detail_page.dart';
 import 'package:streak/di/riverpod_di.dart';
 
 class ListSupplyPage extends ConsumerWidget {
-  ListSupplyPage({super.key});
+  const ListSupplyPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return ListSupply();
+    return const ListSupply();
   }
 }
 
@@ -55,6 +53,8 @@ class SupplyItem implements ListItem {
 enum _EmptyReason { noCourses, noSupplies }
 
 class ListSupply extends ConsumerStatefulWidget {
+  const ListSupply({super.key});
+
   @override
   ConsumerState<ListSupply> createState() => _ListSupplyState();
 }

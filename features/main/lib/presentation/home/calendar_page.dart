@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:common/src/services.dart';
-import 'package:common/src/utils/week_utils.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:main/presentation/home/calendar_body_widget.dart';
 import 'package:schedule/presentation/add/add_calendar_course_page.dart';
@@ -9,7 +8,7 @@ import 'package:schedule/presentation/calendar/controller/calendar_controller.da
 import 'package:sharing/sharing.dart';
 
 class CalendarPage extends ConsumerStatefulWidget {
-  CalendarPage({super.key});
+  const CalendarPage({super.key});
 
   @override
   ConsumerState<CalendarPage> createState() => _CalendarPageState();
@@ -19,23 +18,11 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
   DateTime _selectedDate = DateTime.now();
   WeekFilter _weekFilter = WeekFilter.all; // Default to show all courses
   bool _showWeekend = true;
-  String? _currentWeekType;
 
   @override
   void initState() {
     super.initState();
     _loadWeekendPreference();
-    _loadWeekType();
-  }
-
-  Future<void> _loadWeekType() async {
-    final schoolYearStart = await PreferencesService.getSchoolYearStart();
-    final weekType = WeekUtils.getCurrentWeekType(schoolYearStart);
-    if (mounted) {
-      setState(() {
-        _currentWeekType = weekType;
-      });
-    }
   }
 
   Future<void> _loadWeekendPreference() async {
@@ -216,7 +203,7 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
         onAddCalendarCourse: (calendarCourse) {
           if (calendarCourse != null) {
             // Mettre à jour votre UI ou état avec le nouveau cours
-            print("Cours ajouté au calendrier: ${calendarCourse.roomName}");
+            LogService.d("Cours ajouté au calendrier: ${calendarCourse.roomName}");
           }
         },
       ),
