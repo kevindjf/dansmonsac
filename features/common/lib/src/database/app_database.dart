@@ -60,7 +60,8 @@ class CalendarCourses extends Table {
 @DataClassName('PendingOperationEntity')
 class PendingOperations extends Table {
   TextColumn get id => text()();
-  TextColumn get entityType => text()(); // 'course', 'supply', 'calendar_course'
+  TextColumn get entityType =>
+      text()(); // 'course', 'supply', 'calendar_course'
   TextColumn get entityId => text()();
   TextColumn get operationType => text()(); // 'create', 'update', 'delete'
   TextColumn get data => text().nullable()(); // JSON data for create/update
@@ -152,8 +153,7 @@ class AppDatabase extends _$AppDatabase {
       (delete(calendarCourses)..where((c) => c.id.equals(id))).go();
 
   Future<int> deleteCalendarCoursesByCourse(String courseId) =>
-      (delete(calendarCourses)..where((c) => c.courseId.equals(courseId)))
-          .go();
+      (delete(calendarCourses)..where((c) => c.courseId.equals(courseId))).go();
 
   Future<int> markCalendarCourseAsSynced(String id) {
     return (update(calendarCourses)..where((c) => c.id.equals(id)))
@@ -164,8 +164,7 @@ class AppDatabase extends _$AppDatabase {
   Future<List<PendingOperationEntity>> getAllPendingOperations() =>
       select(pendingOperations).get();
 
-  Future<int> insertPendingOperation(
-          PendingOperationsCompanion operation) =>
+  Future<int> insertPendingOperation(PendingOperationsCompanion operation) =>
       into(pendingOperations).insert(operation);
 
   Future<int> deletePendingOperation(String id) =>

@@ -27,7 +27,8 @@ class OnboardingImportStepPage extends ConsumerStatefulWidget {
 
 class _OnboardingImportStepPageState
     extends ConsumerState<OnboardingImportStepPage> {
-  final GlobalKey<CodeInputWidgetState> _codeInputKey = GlobalKey<CodeInputWidgetState>();
+  final GlobalKey<CodeInputWidgetState> _codeInputKey =
+      GlobalKey<CodeInputWidgetState>();
   bool _isLoading = false;
   String? _errorMessage;
 
@@ -197,7 +198,7 @@ class _OnboardingImportStepPageState
                       const SizedBox(width: 12),
                       Expanded(
                         child: Text(
-                            "Demande a ton ami d'ouvrir l'app et d'aller dans Parametres > Partager pour obtenir un code",
+                          "Demande a ton ami d'ouvrir l'app et d'aller dans Parametres > Partager pour obtenir un code",
                           style: TextStyle(
                             color: colorScheme.onSurfaceVariant,
                             fontSize: 14,
@@ -275,7 +276,9 @@ class _OnboardingImportStepPageState
   }
 
   void _skipImport() {
-    ref.read(routerDelegateProvider).setRoute(OnboardingWeekExplanationPage.routeName);
+    ref
+        .read(routerDelegateProvider)
+        .setRoute(OnboardingWeekExplanationPage.routeName);
   }
 
   void _openQrScanner() {
@@ -327,7 +330,8 @@ class _OnboardingImportStepPageState
                       onDetect: (capture) {
                         final barcodes = capture.barcodes;
                         for (final barcode in barcodes) {
-                          final code = _extractCodeFromBarcode(barcode.rawValue);
+                          final code =
+                              _extractCodeFromBarcode(barcode.rawValue);
                           if (code != null) {
                             Navigator.of(scannerContext).pop();
                             _codeInputKey.currentState?.setCode(code);
@@ -373,7 +377,9 @@ class _OnboardingImportStepPageState
     if (rawValue == null) return null;
 
     // Check if it's a deep link (dansmonsac://share/CODE)
-    final deepLinkMatch = RegExp(r'dansmonsac://share/([A-Za-z0-9]{6})', caseSensitive: false).firstMatch(rawValue);
+    final deepLinkMatch =
+        RegExp(r'dansmonsac://share/([A-Za-z0-9]{6})', caseSensitive: false)
+            .firstMatch(rawValue);
     if (deepLinkMatch != null) {
       return deepLinkMatch.group(1)!.toUpperCase();
     }

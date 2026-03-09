@@ -6,6 +6,7 @@ import 'package:schedule/repository/calendar_course_repository.dart';
 part 'riverpod_di.g.dart';
 
 @riverpod
-CalendarCourseRepository calendarCourseRepository(Ref<CalendarCourseRepository> ref) =>
+CalendarCourseRepository calendarCourseRepository(
+        Ref<CalendarCourseRepository> ref) =>
     CalendarCourseSupabaseRepository(
         ref.watch(supabaseClient), ref.watch(preferenceRepositoryProvider));

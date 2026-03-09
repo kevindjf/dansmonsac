@@ -9,12 +9,10 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:common/src/di/riverpod_di.dart';
 import 'package:schedule/presentation/add/controller/add_calendar_course_controller.dart';
 
-
 part 'add_course_controller.g.dart';
 
 @riverpod
 class AddCourseController extends _$AddCourseController {
-
   late CourseRepository courseRepository;
 
   final _errorController = StreamController<String>.broadcast();
@@ -41,8 +39,8 @@ class AddCourseController extends _$AddCourseController {
       return;
     }
 
-    var response = await courseRepository
-        .store(AddCourseCommand(state.courseName, []));
+    var response =
+        await courseRepository.store(AddCourseCommand(state.courseName, []));
 
     response.fold((failure) {
       state = state.copyWith(isLoading: false);

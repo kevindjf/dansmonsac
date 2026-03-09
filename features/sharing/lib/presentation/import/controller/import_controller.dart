@@ -78,7 +78,8 @@ class ImportController extends _$ImportController {
           toCreate.add(importedCourse);
         } else {
           // Check if supplies are different
-          final existingSupplyNames = existing.supplies.map((s) => s.name).toSet();
+          final existingSupplyNames =
+              existing.supplies.map((s) => s.name).toSet();
           final importedSupplyNames = importedCourse.supplies.toSet();
 
           if (existingSupplyNames.containsAll(importedSupplyNames) &&
@@ -286,8 +287,10 @@ class ImportController extends _$ImportController {
         id: '', // Auto-generated
         courseId: courseId,
         roomName: entry.roomName,
-        startTime: TimeOfDay(hour: entry.startTimeHour, minute: entry.startTimeMinute),
-        endTime: TimeOfDay(hour: entry.endTimeHour, minute: entry.endTimeMinute),
+        startTime:
+            TimeOfDay(hour: entry.startTimeHour, minute: entry.startTimeMinute),
+        endTime:
+            TimeOfDay(hour: entry.endTimeHour, minute: entry.endTimeMinute),
         weekType: WeekType.values.firstWhere(
           (w) => w.name.toUpperCase() == entry.weekType.toUpperCase(),
           orElse: () => WeekType.BOTH,

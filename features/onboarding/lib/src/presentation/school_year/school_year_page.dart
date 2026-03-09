@@ -65,7 +65,8 @@ class _OnboardingSchoolYearPageState
                       onPressed: state.isLoading
                           ? null
                           : () => ref
-                              .read(schoolYearOnboardingControllerProvider.notifier)
+                              .read(schoolYearOnboardingControllerProvider
+                                  .notifier)
                               .skip(),
                       child: Text(
                         "Passer",
@@ -177,7 +178,8 @@ class _OnboardingSchoolYearPageState
                     onPressed: state.isLoading
                         ? null
                         : () => ref
-                            .read(schoolYearOnboardingControllerProvider.notifier)
+                            .read(
+                                schoolYearOnboardingControllerProvider.notifier)
                             .store(),
                     style: FilledButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),

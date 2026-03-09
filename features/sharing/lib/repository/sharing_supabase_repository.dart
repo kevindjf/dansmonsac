@@ -32,7 +32,8 @@ class SharingSupabaseRepository extends SharingRepository {
         attempts++;
 
         if (attempts > _maxRetries) {
-          throw Exception('Failed to generate unique code after $_maxRetries attempts');
+          throw Exception(
+              'Failed to generate unique code after $_maxRetries attempts');
         }
 
         // Check if code exists
@@ -97,19 +98,26 @@ class SharingSupabaseRepository extends SharingRepository {
       final jsonData = data.toJson();
 
       debugPrint('updateShare: Updating code $normalizedCode');
-      debugPrint('updateShare: Data has ${data.courses.length} courses and ${data.calendarCourses.length} calendar entries');
-      debugPrint('updateShare: JSON calendar_courses: ${jsonData['calendar_courses']}');
+      debugPrint(
+          'updateShare: Data has ${data.courses.length} courses and ${data.calendarCourses.length} calendar entries');
+      debugPrint(
+          'updateShare: JSON calendar_courses: ${jsonData['calendar_courses']}');
 
       // Use .select() to get the updated row back and verify the update happened
-      final response = await supabaseClient.from(_tableName).update({
-        'sharer_name': sharerName,
-        'data': jsonData,
-      }).eq('code', normalizedCode).select();
+      final response = await supabaseClient
+          .from(_tableName)
+          .update({
+            'sharer_name': sharerName,
+            'data': jsonData,
+          })
+          .eq('code', normalizedCode)
+          .select();
 
       debugPrint('updateShare: Response = $response');
 
       if (response.isEmpty) {
-        throw Exception('No rows updated. Check if RLS policies allow updates or if the code exists.');
+        throw Exception(
+            'No rows updated. Check if RLS policies allow updates or if the code exists.');
       }
     });
   }

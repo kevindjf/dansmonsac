@@ -34,9 +34,9 @@ class CalendarEvent {
 }
 
 enum WeekFilter {
-  all,    // Planning complet
-  weekA,  // Semaine A uniquement
-  weekB,  // Semaine B uniquement
+  all, // Planning complet
+  weekA, // Semaine A uniquement
+  weekB, // Semaine B uniquement
 }
 
 class WeekInfo {
@@ -48,7 +48,8 @@ class WeekInfo {
 @riverpod
 class CalendarController extends _$CalendarController {
   @override
-  Future<List<CalendarEvent>> build(DateTime selectedDate, WeekFilter weekFilter) async {
+  Future<List<CalendarEvent>> build(
+      DateTime selectedDate, WeekFilter weekFilter) async {
     return _fetchCoursesForDate(selectedDate, weekFilter);
   }
 
@@ -62,22 +63,23 @@ class CalendarController extends _$CalendarController {
       (courses) async {
         // Check if any course uses A/B system (not all BOTH)
         final hasABSystem = courses.any((course) =>
-          course.weekType == WeekType.A || course.weekType == WeekType.B
-        );
+            course.weekType == WeekType.A || course.weekType == WeekType.B);
 
         if (!hasABSystem) return null;
 
         // Calculate current week type using school year start from preferences
         final today = DateTime.now();
         final schoolYearStart = await PreferencesService.getSchoolYearStart();
-        final currentWeekType = WeekUtils.getCurrentWeekType(schoolYearStart, today);
+        final currentWeekType =
+            WeekUtils.getCurrentWeekType(schoolYearStart, today);
 
         return WeekInfo(weekType: currentWeekType);
       },
     );
   }
 
-  Future<List<CalendarEvent>> _fetchCoursesForDate(DateTime targetDate, WeekFilter weekFilter) async {
+  Future<List<CalendarEvent>> _fetchCoursesForDate(
+      DateTime targetDate, WeekFilter weekFilter) async {
     final repository = ref.watch(calendarCourseRepositoryProvider);
 
     // Fetch all courses for name lookup
@@ -109,10 +111,12 @@ class CalendarController extends _$CalendarController {
           // Apply week filter
           if (weekFilter == WeekFilter.weekA) {
             // Show only courses for week A or BOTH
-            return course.weekType == WeekType.A || course.weekType == WeekType.BOTH;
+            return course.weekType == WeekType.A ||
+                course.weekType == WeekType.BOTH;
           } else if (weekFilter == WeekFilter.weekB) {
             // Show only courses for week B or BOTH
-            return course.weekType == WeekType.B || course.weekType == WeekType.BOTH;
+            return course.weekType == WeekType.B ||
+                course.weekType == WeekType.BOTH;
           } else {
             // Show all courses (Planning complet)
             return true;
@@ -145,7 +149,8 @@ class CalendarController extends _$CalendarController {
           );
 
           // Format hour string
-          final hourString = '${course.startTime.hour}h${course.startTime.minute.toString().padLeft(2, '0')}-'
+          final hourString =
+              '${course.startTime.hour}h${course.startTime.minute.toString().padLeft(2, '0')}-'
               '${course.endTime.hour}h${course.endTime.minute.toString().padLeft(2, '0')}';
 
           events.add(CalendarEvent(

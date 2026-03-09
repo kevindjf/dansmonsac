@@ -94,14 +94,15 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
     final packTime = await PreferencesService.getPackTime();
     final now = DateTime.now();
     final targetDate = (now.hour < packTime.hour ||
-                       (now.hour == packTime.hour && now.minute < packTime.minute))
+            (now.hour == packTime.hour && now.minute < packTime.minute))
         ? DateTime(now.year, now.month, now.day)
         : DateTime(now.year, now.month, now.day + 1);
 
     _targetDate = targetDate;
 
     // Load saved state for this date
-    final savedState = await PreferencesService.loadSupplyCheckedState(targetDate);
+    final savedState =
+        await PreferencesService.loadSupplyCheckedState(targetDate);
 
     if (mounted) {
       setState(() {
@@ -125,7 +126,8 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
 
   Future<void> _saveCheckedState() async {
     if (_targetDate != null) {
-      await PreferencesService.saveSupplyCheckedState(_targetDate!, _checkedState);
+      await PreferencesService.saveSupplyCheckedState(
+          _targetDate!, _checkedState);
     }
   }
 
@@ -136,7 +138,8 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
     return FutureBuilder<TimeOfDay>(
       future: PreferencesService.getPackTime(),
       builder: (context, packTimeSnapshot) {
-        final packTime = packTimeSnapshot.data ?? const TimeOfDay(hour: 19, minute: 0);
+        final packTime =
+            packTimeSnapshot.data ?? const TimeOfDay(hour: 19, minute: 0);
 
         return tomorrowSuppliesState.when(
           data: (coursesWithSupplies) {
@@ -148,7 +151,8 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
             for (final course in coursesWithSupplies) {
               // Collect supply IDs for this course
               final supplyIds = course.supplies.map((s) => s.id).toList();
-              items.add(CourseTitleItem(title: course.courseName, supplyIds: supplyIds));
+              items.add(CourseTitleItem(
+                  title: course.courseName, supplyIds: supplyIds));
 
               for (final supply in course.supplies) {
                 totalSupplies++;
@@ -166,8 +170,11 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
             // Add standalone supplies section if there are any
             if (_standaloneSupplies.isNotEmpty) {
               // Add section title
-              final standaloneIds = _standaloneSupplies.map((name) => 'standalone_$name').toList();
-              items.add(CourseTitleItem(title: "Autres fournitures", supplyIds: standaloneIds));
+              final standaloneIds = _standaloneSupplies
+                  .map((name) => 'standalone_$name')
+                  .toList();
+              items.add(CourseTitleItem(
+                  title: "Autres fournitures", supplyIds: standaloneIds));
 
               // Add standalone supplies
               for (final supplyName in _standaloneSupplies) {
@@ -194,10 +201,12 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
               return _buildEmptyState(packTime, _EmptyReason.noSupplies);
             }
 
-            return _buildSupplyList(context, items, checkedSupplies, totalSupplies, packTime);
+            return _buildSupplyList(
+                context, items, checkedSupplies, totalSupplies, packTime);
           },
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, stack) => _buildEmptyState(packTime, _EmptyReason.noCourses),
+          error: (error, stack) =>
+              _buildEmptyState(packTime, _EmptyReason.noCourses),
         );
       },
     );
@@ -213,11 +222,13 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
     switch (reason) {
       case _EmptyReason.noCourses:
         title = 'Pas de seance prevue';
-        subtitle = 'Aucune seance n\'est programmee dans votre emploi du temps pour cette date.\nAjoutez des cours dans l\'onglet Calendrier.';
+        subtitle =
+            'Aucune seance n\'est programmee dans votre emploi du temps pour cette date.\nAjoutez des cours dans l\'onglet Calendrier.';
         icon = Icons.event_busy;
       case _EmptyReason.noSupplies:
         title = 'Aucune fourniture renseignee';
-        subtitle = 'Vos seances n\'ont pas de fournitures associees.\nAjoutez des fournitures a vos cours dans l\'onglet Cours.';
+        subtitle =
+            'Vos seances n\'ont pas de fournitures associees.\nAjoutez des fournitures a vos cours dans l\'onglet Cours.';
         icon = Icons.inventory_2_outlined;
     }
 
@@ -276,7 +287,8 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
     );
   }
 
-  Widget _buildSupplyList(BuildContext context, List<ListItem> items, int checked, int total, TimeOfDay packTime) {
+  Widget _buildSupplyList(BuildContext context, List<ListItem> items,
+      int checked, int total, TimeOfDay packTime) {
     // Check if bag is ready (all supplies checked)
     final bool isBagReady = total > 0 && checked == total;
 
@@ -286,8 +298,7 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
           children: [
             _buildHeader(checked, total, packTime),
             // Show banner when bag is ready
-            if (isBagReady)
-              _buildBagReadyBanner(context),
+            if (isBagReady) _buildBagReadyBanner(context),
             Expanded(
               child: ListView.builder(
                 controller: _scrollController,
@@ -304,7 +315,8 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
                   if (item is CourseTitleItem) {
                     // Check if all supplies for this course are checked
                     final allChecked = item.supplyIds.isNotEmpty &&
-                      item.supplyIds.every((id) => _checkedState[id] ?? false);
+                        item.supplyIds
+                            .every((id) => _checkedState[id] ?? false);
 
                     return CheckboxListTile(
                       checkboxShape: RoundedRectangleBorder(
@@ -326,15 +338,17 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
                             fontWeight: FontWeight.bold),
                       ),
                       value: allChecked,
-                      onChanged: item.supplyIds.isEmpty ? null : (value) {
-                        setState(() {
-                          // Check or uncheck all supplies for this course
-                          for (final supplyId in item.supplyIds) {
-                            _checkedState[supplyId] = value ?? false;
-                          }
-                        });
-                        _saveCheckedState();
-                      },
+                      onChanged: item.supplyIds.isEmpty
+                          ? null
+                          : (value) {
+                              setState(() {
+                                // Check or uncheck all supplies for this course
+                                for (final supplyId in item.supplyIds) {
+                                  _checkedState[supplyId] = value ?? false;
+                                }
+                              });
+                              _saveCheckedState();
+                            },
                     );
                   } else if (item is SupplyItem) {
                     // Check if this is a standalone supply
@@ -351,7 +365,8 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
                       secondary: isStandalone
                           ? IconButton(
                               icon: Icon(Icons.delete, color: accentColor),
-                              onPressed: () => _deleteStandaloneSupply(item.name),
+                              onPressed: () =>
+                                  _deleteStandaloneSupply(item.name),
                             )
                           : SizedBox(width: 10),
                       contentPadding:
@@ -435,10 +450,28 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
   String _formatTargetDate(DateTime? date) {
     if (date == null) return '';
 
-    const days = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche'];
+    const days = [
+      'lundi',
+      'mardi',
+      'mercredi',
+      'jeudi',
+      'vendredi',
+      'samedi',
+      'dimanche'
+    ];
     const months = [
-      'janvier', 'fevrier', 'mars', 'avril', 'mai', 'juin',
-      'juillet', 'aout', 'septembre', 'octobre', 'novembre', 'decembre'
+      'janvier',
+      'fevrier',
+      'mars',
+      'avril',
+      'mai',
+      'juin',
+      'juillet',
+      'aout',
+      'septembre',
+      'octobre',
+      'novembre',
+      'decembre'
     ];
 
     final now = DateTime.now();
@@ -584,7 +617,9 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
             left: 16,
             right: 16,
             top: 16,
-            bottom: MediaQuery.of(sheetContext).viewInsets.bottom + bottomSafeArea + 16,
+            bottom: MediaQuery.of(sheetContext).viewInsets.bottom +
+                bottomSafeArea +
+                16,
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -614,7 +649,8 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: Theme.of(sheetContext).colorScheme.primary),
+                    borderSide: BorderSide(
+                        color: Theme.of(sheetContext).colorScheme.primary),
                   ),
                   labelText: "Nom de la fourniture",
                   hintText: "Exemple : Règle",

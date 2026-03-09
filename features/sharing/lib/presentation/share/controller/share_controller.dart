@@ -54,7 +54,8 @@ class ShareController extends _$ShareController {
             state = state.copyWith(
               isSyncing: false,
               syncFailed: true,
-              errorMessage: 'Les donnees n\'ont pas pu etre synchronisees. Elles ne sont peut-etre pas a jour.',
+              errorMessage:
+                  'Les donnees n\'ont pas pu etre synchronisees. Elles ne sont peut-etre pas a jour.',
             );
           },
           (_) {
@@ -104,7 +105,8 @@ class ShareController extends _$ShareController {
       (entries) => entries,
     );
 
-    debugPrint('ShareController: Fetched ${courses.length} courses and ${calendarCourses.length} calendar entries');
+    debugPrint(
+        'ShareController: Fetched ${courses.length} courses and ${calendarCourses.length} calendar entries');
 
     // Build shared data structure
     final sharedCourses = courses.map((course) {
@@ -133,7 +135,8 @@ class ShareController extends _$ShareController {
       );
     }).toList();
 
-    debugPrint('ShareController: Built ${sharedCourses.length} shared courses and ${sharedCalendarCourses.length} shared calendar entries');
+    debugPrint(
+        'ShareController: Built ${sharedCourses.length} shared courses and ${sharedCalendarCourses.length} shared calendar entries');
 
     return SharedScheduleData(
       courses: sharedCourses,
@@ -195,13 +198,15 @@ class ShareController extends _$ShareController {
   Future<bool> syncData() async {
     if (state.code == null) return false;
 
-    state = state.copyWith(isSyncing: true, errorMessage: null, syncFailed: false);
+    state =
+        state.copyWith(isSyncing: true, errorMessage: null, syncFailed: false);
 
     try {
       // Fetch fresh data before syncing
       final freshData = await _fetchFreshData();
 
-      debugPrint('syncData: Syncing ${freshData.courses.length} courses, ${freshData.calendarCourses.length} calendar entries');
+      debugPrint(
+          'syncData: Syncing ${freshData.courses.length} courses, ${freshData.calendarCourses.length} calendar entries');
 
       // Update state with fresh data so UI reflects current counts
       state = state.copyWith(data: freshData);
@@ -219,7 +224,8 @@ class ShareController extends _$ShareController {
           state = state.copyWith(
             isSyncing: false,
             syncFailed: true,
-            errorMessage: 'Erreur de synchronisation. Verifiez votre connexion internet.',
+            errorMessage:
+                'Erreur de synchronisation. Verifiez votre connexion internet.',
           );
           return false;
         },

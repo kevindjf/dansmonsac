@@ -138,7 +138,9 @@ class ContentSupplyHolder extends ConsumerWidget {
             left: 16,
             right: 16,
             top: 16,
-            bottom: MediaQuery.of(sheetContext).viewInsets.bottom + bottomSafeArea + 16,
+            bottom: MediaQuery.of(sheetContext).viewInsets.bottom +
+                bottomSafeArea +
+                16,
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -168,7 +170,8 @@ class ContentSupplyHolder extends ConsumerWidget {
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: Theme.of(sheetContext).colorScheme.primary),
+                    borderSide: BorderSide(
+                        color: Theme.of(sheetContext).colorScheme.primary),
                   ),
                   labelText: "Nom du cours",
                   labelStyle: const TextStyle(color: Colors.grey),

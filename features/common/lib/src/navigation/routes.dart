@@ -16,7 +16,8 @@ class AppRoutes {
   static const String weekExplanation = OnboardingWeekExplanationPage.routeName;
   static const String schoolYear = OnboardingSchoolYearPage.routeName;
   static const String setupTime = OnboardingSetupTimePage.routeName;
-  static const String notificationPermission = OnboardingNotificationPermissionPage.routeName;
+  static const String notificationPermission =
+      OnboardingNotificationPermissionPage.routeName;
   static const String onboardingCourse = OnboardingCoursePage.routeName;
   static const String onboardingImport = OnboardingImportStepPage.routeName;
 

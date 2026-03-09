@@ -82,7 +82,8 @@ class PreferencesService {
   }
 
   /// Save supply checked state for a specific date
-  static Future<void> saveSupplyCheckedState(DateTime date, Map<String, bool> checkedState) async {
+  static Future<void> saveSupplyCheckedState(
+      DateTime date, Map<String, bool> checkedState) async {
     final prefs = await SharedPreferences.getInstance();
     final dateKey = _formatDateKey(date);
     final jsonString = json.encode(checkedState);

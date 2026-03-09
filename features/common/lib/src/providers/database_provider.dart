@@ -41,7 +41,8 @@ final currentSyncStatusProvider = Provider<SyncStatus>((ref) {
 });
 
 /// Provider to trigger a manual sync
-final manualSyncProvider = FutureProvider.family<SyncResult, bool>((ref, force) async {
+final manualSyncProvider =
+    FutureProvider.family<SyncResult, bool>((ref, force) async {
   final syncManager = ref.watch(syncManagerProvider);
   return await syncManager.sync();
 });

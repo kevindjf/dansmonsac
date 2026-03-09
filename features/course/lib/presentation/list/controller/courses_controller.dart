@@ -303,7 +303,8 @@ class CoursesController extends _$CoursesController {
     state = AsyncValue.data(DataCourseListState(optimisticCourses));
 
     try {
-      final result = await courseRepository.updateCourseName(courseToRename.id, newName);
+      final result =
+          await courseRepository.updateCourseName(courseToRename.id, newName);
 
       if (result.isLeft()) {
         // Rollback on error

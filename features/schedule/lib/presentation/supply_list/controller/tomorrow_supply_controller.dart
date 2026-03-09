@@ -51,7 +51,7 @@ class TomorrowSupplyController extends _$TomorrowSupplyController {
         // Determine target date: if current time is before pack time, show today's supplies
         // Otherwise, show tomorrow's supplies
         final targetDate = (now.hour < packTime.hour ||
-                           (now.hour == packTime.hour && now.minute < packTime.minute))
+                (now.hour == packTime.hour && now.minute < packTime.minute))
             ? DateTime.now()
             : WeekUtils.getTomorrow();
 
