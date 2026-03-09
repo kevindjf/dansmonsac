@@ -24,7 +24,8 @@ class CourseWithSupplies {
     return 'CourseWithSupplies{name: $name, supplies: $supplies}';
   }
 
-  CourseWithSupplies copyWith({String? id, String? name, List<Supply>? supplies}) {
+  CourseWithSupplies copyWith(
+      {String? id, String? name, List<Supply>? supplies}) {
     return CourseWithSupplies(
       id: id ?? this.id,
       name: name ?? this.name,

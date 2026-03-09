@@ -97,7 +97,8 @@ class ImportConflictDialog extends StatelessWidget {
               borderRadius: BorderRadius.circular(12),
             ),
           ),
-          child: Text('Fusionner (${conflict.mergedSupplies.length} fournitures)'),
+          child:
+              Text('Fusionner (${conflict.mergedSupplies.length} fournitures)'),
         ),
       ],
     );
@@ -128,7 +129,8 @@ class ImportConflictDialog extends StatelessWidget {
             runSpacing: 8,
             children: supplies.map((supply) {
               return Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 decoration: BoxDecoration(
                   color: color.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(16),

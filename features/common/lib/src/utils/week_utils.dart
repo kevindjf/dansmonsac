@@ -2,7 +2,8 @@
 class WeekUtils {
   /// Calcule si une date donnée est en semaine A ou B
   /// basée sur la date de début de l'année scolaire (première semaine A)
-  static String getCurrentWeekType(DateTime schoolYearStart, [DateTime? checkDate]) {
+  static String getCurrentWeekType(DateTime schoolYearStart,
+      [DateTime? checkDate]) {
     final date = checkDate ?? DateTime.now();
 
     // Calculer le nombre de semaines écoulées depuis le début de l'année scolaire

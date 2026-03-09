@@ -1,3 +1,3 @@
-sealed class SplashState{}
+sealed class SplashState {}
 
-class LoadingSplashState extends SplashState{}
+class LoadingSplashState extends SplashState {}

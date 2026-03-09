@@ -18,7 +18,8 @@ class NotificationService {
     tz.setLocalLocation(tz.getLocation('Europe/Paris'));
 
     // Use ic_launcher as notification icon (available in all Android projects)
-    const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
+    const androidSettings =
+        AndroidInitializationSettings('@mipmap/ic_launcher');
     const iosSettings = DarwinInitializationSettings(
       requestAlertPermission: false,
       requestBadgePermission: false,
@@ -48,7 +49,8 @@ class NotificationService {
 
       // Request exact alarm permission for Android 12+
       try {
-        final exactAlarmGranted = await androidPlugin.requestExactAlarmsPermission();
+        final exactAlarmGranted =
+            await androidPlugin.requestExactAlarmsPermission();
         print('🔔 Exact alarms permission: ${exactAlarmGranted ?? false}');
       } catch (e) {
         print('⚠️ Exact alarms permission not available or error: $e');

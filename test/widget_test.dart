@@ -5,7 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dansmonsac/main.dart';
 
 void main() {
-  testWidgets('MyApp smoke test - app builds and renders', (WidgetTester tester) async {
+  testWidgets('MyApp smoke test - app builds and renders',
+      (WidgetTester tester) async {
     // Use runAsync to allow real async operations (Supabase init, timers)
     // to run without blocking the test framework.
     await tester.runAsync(() async {

@@ -34,7 +34,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   Future<void> _loadPreferences() async {
     final packTime = await PreferencesService.getPackTime();
     final schoolYearStart = await PreferencesService.getSchoolYearStart();
-    final notificationsEnabled = await PreferencesService.getNotificationsEnabled();
+    final notificationsEnabled =
+        await PreferencesService.getNotificationsEnabled();
     final accentColor = await PreferencesService.getAccentColor();
     final showWeekend = await PreferencesService.getShowWeekend();
 
@@ -207,7 +208,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                     value: '',
                     onTap: () {
                       Navigator.of(context).push(
-                        MaterialPageRoute(builder: (context) => const HelpPage()),
+                        MaterialPageRoute(
+                            builder: (context) => const HelpPage()),
                       );
                     },
                   ),
@@ -351,8 +353,18 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
 
   String _formatDate(DateTime date) {
     const months = [
-      'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
-      'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'
+      'janvier',
+      'février',
+      'mars',
+      'avril',
+      'mai',
+      'juin',
+      'juillet',
+      'août',
+      'septembre',
+      'octobre',
+      'novembre',
+      'décembre'
     ];
     return '${date.day} ${months[date.month - 1]} ${date.year}';
   }
@@ -563,7 +575,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
               Align(
                 alignment: Alignment.centerRight,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
                     color: accentColor.withOpacity(0.15),
                     borderRadius: BorderRadius.circular(8),
@@ -617,7 +630,9 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       _showWeekend = show;
     });
     await PreferencesService.setShowWeekend(show);
-    _showSnackBar(show ? 'Weekend affiché dans le calendrier' : 'Weekend masqué du calendrier');
+    _showSnackBar(show
+        ? 'Weekend affiché dans le calendrier'
+        : 'Weekend masqué du calendrier');
   }
 
   Future<void> _selectAccentColor(BuildContext context) async {
@@ -713,9 +728,9 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   void _replayTutorial() {
     // Navigate to Courses tab with tutorial enabled
     ref.read(routerDelegateProvider).goToHome(
-      initialTabIndex: 2,
-      showTutorial: true,
-    );
+          initialTabIndex: 2,
+          showTutorial: true,
+        );
   }
 
   void _showShareModal(BuildContext context) {

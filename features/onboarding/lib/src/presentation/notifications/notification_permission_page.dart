@@ -68,9 +68,9 @@ class _OnboardingNotificationPermissionPageState
       // Navigate to Courses tab with tutorial
       if (mounted) {
         ref.read(routerDelegateProvider).goToHome(
-          initialTabIndex: 2, // Courses tab
-          showTutorial: true,
-        );
+              initialTabIndex: 2, // Courses tab
+              showTutorial: true,
+            );
       }
     } catch (e) {
       // Log error but still try to complete onboarding
@@ -83,9 +83,9 @@ class _OnboardingNotificationPermissionPageState
 
         if (mounted) {
           ref.read(routerDelegateProvider).goToHome(
-            initialTabIndex: 2,
-            showTutorial: true,
-          );
+                initialTabIndex: 2,
+                showTutorial: true,
+              );
         }
       } catch (e2) {
         debugPrint('Failed to recover from error: $e2');
@@ -109,9 +109,9 @@ class _OnboardingNotificationPermissionPageState
     // Navigate to Courses tab with tutorial
     if (mounted) {
       ref.read(routerDelegateProvider).goToHome(
-        initialTabIndex: 2, // Courses tab
-        showTutorial: true,
-      );
+            initialTabIndex: 2, // Courses tab
+            showTutorial: true,
+          );
     }
   }
 

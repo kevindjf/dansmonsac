@@ -9,7 +9,7 @@ class SplashPage extends ConsumerWidget {
   const SplashPage({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context,WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref) {
     ref.watch(splashControllerProvider);
 
     final textTheme = Theme.of(context).textTheme;
@@ -49,9 +49,8 @@ class SplashPage extends ConsumerWidget {
 
               const Spacer(flex: 1),
               // Bouton Next
-             CircularProgressIndicator(),
+              CircularProgressIndicator(),
               const Spacer(flex: 1),
-
             ],
           ),
         ),

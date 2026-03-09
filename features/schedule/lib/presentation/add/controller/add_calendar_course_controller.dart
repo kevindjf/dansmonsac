@@ -26,10 +26,8 @@ final coursesProvider = FutureProvider<List<CourseWithSupplies>>((ref) async {
 
 // État pour le contrôleur
 
-
 @riverpod
 class AddCalendarCourseController extends _$AddCalendarCourseController {
-
   final _errorStreamController = StreamController<String>.broadcast();
   final _successStreamController = StreamController<CalendarCourse>.broadcast();
 
@@ -37,8 +35,7 @@ class AddCalendarCourseController extends _$AddCalendarCourseController {
   Stream<CalendarCourse> get successStream => _successStreamController.stream;
 
   @override
-  Future<AddCalendarCourseState> build() async{
-
+  Future<AddCalendarCourseState> build() async {
     var response = await ref.read(courseRepositoryProvider).fetchCourses();
     List<CourseWithSupplies> courses = [];
 
@@ -55,8 +52,6 @@ class AddCalendarCourseController extends _$AddCalendarCourseController {
       endTime: TimeOfDay(hour: TimeOfDay.now().hour + 1, minute: 0),
     );
   }
-
-
 
   void courseChanged(String courseId) {
     state = AsyncValue.data(state.value!.copyWith(
@@ -104,19 +99,23 @@ class AddCalendarCourseController extends _$AddCalendarCourseController {
 
     // Validation du cours
     if (currentState.courseId == null || currentState.courseId!.isEmpty) {
-      state = AsyncValue.data(currentState.copyWith(errorCourseId: "Veuillez sélectionner un cours"));
+      state = AsyncValue.data(currentState.copyWith(
+          errorCourseId: "Veuillez sélectionner un cours"));
       isValid = false;
     }
 
     // Validation de la salle
     if (currentState.roomName.isEmpty) {
-      state = AsyncValue.data(currentState.copyWith(errorRoomName: "La salle est obligatoire"));
+      state = AsyncValue.data(
+          currentState.copyWith(errorRoomName: "La salle est obligatoire"));
       isValid = false;
     }
 
     // Validation de l'heure de fin (doit être après l'heure de début)
-    final startMinutes = currentState.startTime.hour * 60 + currentState.startTime.minute;
-    final endMinutes = currentState.endTime.hour * 60 + currentState.endTime.minute;
+    final startMinutes =
+        currentState.startTime.hour * 60 + currentState.startTime.minute;
+    final endMinutes =
+        currentState.endTime.hour * 60 + currentState.endTime.minute;
 
     if (endMinutes <= startMinutes) {
       state = AsyncValue.data(currentState.copyWith(
@@ -147,7 +146,8 @@ class AddCalendarCourseController extends _$AddCalendarCourseController {
     final result = await repository.addCalendarCourse(calendarCourse);
 
     result.fold(
-      (failure) => _errorStreamController.add("Erreur lors de l'enregistrement: ${failure.message}"),
+      (failure) => _errorStreamController
+          .add("Erreur lors de l'enregistrement: ${failure.message}"),
       (savedCalendarCourse) {
         _successStreamController.add(savedCalendarCourse);
         // Refresh calendar and supply list
@@ -178,7 +178,8 @@ class AddCalendarCourseController extends _$AddCalendarCourseController {
     final result = await repository.updateCalendarCourse(calendarCourse);
 
     result.fold(
-      (failure) => _errorStreamController.add("Erreur lors de la modification: ${failure.message}"),
+      (failure) => _errorStreamController
+          .add("Erreur lors de la modification: ${failure.message}"),
       (_) {
         _successStreamController.add(calendarCourse);
         ref.invalidate(calendarControllerProvider);

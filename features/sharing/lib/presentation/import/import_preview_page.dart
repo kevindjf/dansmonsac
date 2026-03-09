@@ -115,7 +115,9 @@ class ImportPreviewPage extends ConsumerWidget {
                 currentIndex: state.currentConflictIndex + 1,
                 totalConflicts: state.pendingConflicts.length,
                 onResolution: (resolution) {
-                  ref.read(importControllerProvider(code).notifier).resolveConflict(resolution);
+                  ref
+                      .read(importControllerProvider(code).notifier)
+                      .resolveConflict(resolution);
                 },
               ),
             ] else if (state.hasSchedule) ...[
@@ -156,7 +158,9 @@ class ImportPreviewPage extends ConsumerWidget {
               FilledButton(
                 onPressed: state.isImporting
                     ? null
-                    : () => ref.read(importControllerProvider(code).notifier).startImport(),
+                    : () => ref
+                        .read(importControllerProvider(code).notifier)
+                        .startImport(),
                 style: FilledButton.styleFrom(
                   backgroundColor: accentColor,
                   padding: const EdgeInsets.symmetric(vertical: 16),
@@ -175,7 +179,8 @@ class ImportPreviewPage extends ConsumerWidget {
                       )
                     : const Text(
                         'Importer',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold),
                       ),
               ),
               const SizedBox(height: 12),
@@ -210,9 +215,11 @@ class ImportPreviewPage extends ConsumerWidget {
         children: [
           _buildStatRow(Icons.book, '${state.courseCount} cours', accentColor),
           const Divider(color: Colors.white12, height: 24),
-          _buildStatRow(Icons.calendar_today, '${state.calendarCount} seances', accentColor),
+          _buildStatRow(Icons.calendar_today, '${state.calendarCount} seances',
+              accentColor),
           const Divider(color: Colors.white12, height: 24),
-          _buildStatRow(Icons.backpack, '${state.supplyCount} fournitures', accentColor),
+          _buildStatRow(
+              Icons.backpack, '${state.supplyCount} fournitures', accentColor),
         ],
       ),
     );

@@ -63,8 +63,8 @@ class SyncManager {
     _connectivitySubscription = _connectivity.onConnectivityChanged.listen(
       (List<ConnectivityResult> results) {
         // Check if we have any connectivity
-        final hasConnection = results.any((result) =>
-            result != ConnectivityResult.none);
+        final hasConnection =
+            results.any((result) => result != ConnectivityResult.none);
 
         if (hasConnection && !_isSyncing) {
           // Network is back, try to sync
@@ -78,7 +78,8 @@ class SyncManager {
   /// Check if device has network connectivity
   Future<bool> hasConnectivity() async {
     final connectivityResult = await _connectivity.checkConnectivity();
-    return connectivityResult.any((result) => result != ConnectivityResult.none);
+    return connectivityResult
+        .any((result) => result != ConnectivityResult.none);
   }
 
   /// Update sync status
@@ -106,8 +107,7 @@ class SyncManager {
     );
 
     await _database.insertPendingOperation(operation);
-    print(
-        '📝 Queued operation: $operationType $entityType $entityId');
+    print('📝 Queued operation: $operationType $entityType $entityId');
 
     // Try to sync immediately if we have connectivity
     if (await hasConnectivity()) {
@@ -160,12 +160,14 @@ class SyncManager {
             // Remove from pending operations
             await _database.deletePendingOperation(operation.id);
             successCount++;
-            print('✅ Synced ${operation.operationType} ${operation.entityType}');
+            print(
+                '✅ Synced ${operation.operationType} ${operation.entityType}');
           } else {
             // Increment retry count
             await _database.incrementRetryCount(operation.id);
             errorCount++;
-            print('❌ Failed to sync ${operation.operationType} ${operation.entityType}');
+            print(
+                '❌ Failed to sync ${operation.operationType} ${operation.entityType}');
           }
         } catch (e) {
           print('❌ Error processing operation ${operation.id}: $e');

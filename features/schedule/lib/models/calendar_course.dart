@@ -69,7 +69,8 @@ class CalendarCourse {
         hour: json['end_time_hour'] ?? json['endTimeHour'],
         minute: json['end_time_minute'] ?? json['endTimeMinute'],
       ),
-      weekType: WeekType.fromString(json['week_type'] ?? json['weekType'] ?? 'BOTH'),
+      weekType:
+          WeekType.fromString(json['week_type'] ?? json['weekType'] ?? 'BOTH'),
       dayOfWeek: json['day_of_week'] ?? json['dayOfWeek'] ?? 1,
     );
   }

@@ -241,7 +241,9 @@ class _OnboardingCoursePageState extends ConsumerState<OnboardingCoursePage> {
                       onPressed: () {
                         // Fermer le clavier d'abord
                         FocusScope.of(context).unfocus();
-                        ref.watch(courseOnboardingControllerProvider.notifier).skip();
+                        ref
+                            .watch(courseOnboardingControllerProvider.notifier)
+                            .skip();
                       },
                       style: FilledButton.styleFrom(
                         backgroundColor: Colors.transparent,

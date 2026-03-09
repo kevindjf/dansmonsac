@@ -15,7 +15,6 @@ part 'home_controller.g.dart';
 
 @riverpod
 class HomeController extends _$HomeController {
-
   @override
   HomeStateUi build() {
     // Check for initial tab from navigation (e.g., after onboarding)
@@ -36,11 +35,16 @@ class HomeController extends _$HomeController {
 
   HomeViewPage _getPageForIndex(int index) {
     switch (index) {
-      case 0: return HomeViewPage.supplies;
-      case 1: return HomeViewPage.calendar;
-      case 2: return HomeViewPage.courses;
-      case 3: return HomeViewPage.settings;
-      default: return HomeViewPage.supplies;
+      case 0:
+        return HomeViewPage.supplies;
+      case 1:
+        return HomeViewPage.calendar;
+      case 2:
+        return HomeViewPage.courses;
+      case 3:
+        return HomeViewPage.settings;
+      default:
+        return HomeViewPage.supplies;
     }
   }
 }

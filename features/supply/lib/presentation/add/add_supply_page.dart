@@ -79,7 +79,8 @@ class _AddSupplyPageState extends ConsumerState<AddSupplyPage> {
       width: double.infinity,
       child: Padding(
         padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom + bottomSafeArea + 16,
+          bottom:
+              MediaQuery.of(context).viewInsets.bottom + bottomSafeArea + 16,
           left: 16,
           right: 16,
           top: 16,
@@ -107,19 +108,19 @@ class _AddSupplyPageState extends ConsumerState<AddSupplyPage> {
             state.errorSupplyName == null
                 ? const SizedBox()
                 : Column(
-              children: [
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    Text("${state.errorSupplyName}",
-                        style: TextStyle(
-                            color: colorScheme.error,
-                            fontStyle: FontStyle.italic,
-                            fontSize: 12)),
-                  ],
-                ),
-              ],
-            ),
+                    children: [
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          Text("${state.errorSupplyName}",
+                              style: TextStyle(
+                                  color: colorScheme.error,
+                                  fontStyle: FontStyle.italic,
+                                  fontSize: 12)),
+                        ],
+                      ),
+                    ],
+                  ),
             const SizedBox(height: 32),
             Column(
               mainAxisSize: MainAxisSize.min,
