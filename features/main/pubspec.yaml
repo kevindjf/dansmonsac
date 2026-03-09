@@ -35,6 +35,9 @@ dependencies:
   onboarding:
     path: ../onboarding
 
+  course:
+    path: ../course
+
   streak:
     path: ../streak
 

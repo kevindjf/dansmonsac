@@ -11,8 +11,8 @@ String _$tomorrowSupplyControllerHash() =>
 
 /// Controller for tomorrow's supplies
 /// Uses pack time to determine target date:
-/// - Before pack time → show today's courses
-/// - After pack time → show tomorrow's courses
+/// - Before pack time -> show today's courses
+/// - After pack time -> show tomorrow's courses
 ///
 /// Copied from [TomorrowSupplyController].
 @ProviderFor(TomorrowSupplyController)

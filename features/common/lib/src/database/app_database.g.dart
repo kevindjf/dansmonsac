@@ -1795,9 +1795,7 @@ class $BagCompletionsTable extends BagCompletions
   @override
   late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
       'created_at', aliasedName, false,
-      type: DriftSqlType.dateTime,
-      requiredDuringInsert: false,
-      defaultValue: currentDateAndTime);
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
   @override
   List<GeneratedColumn> get $columns =>
       [id, date, completedAt, deviceId, createdAt];
@@ -1840,6 +1838,8 @@ class $BagCompletionsTable extends BagCompletions
     if (data.containsKey('created_at')) {
       context.handle(_createdAtMeta,
           createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
     }
     return context;
   }
@@ -1995,12 +1995,13 @@ class BagCompletionsCompanion extends UpdateCompanion<BagCompletionEntity> {
     required DateTime date,
     required DateTime completedAt,
     required String deviceId,
-    this.createdAt = const Value.absent(),
+    required DateTime createdAt,
     this.rowid = const Value.absent(),
   })  : id = Value(id),
         date = Value(date),
         completedAt = Value(completedAt),
-        deviceId = Value(deviceId);
+        deviceId = Value(deviceId),
+        createdAt = Value(createdAt);
   static Insertable<BagCompletionEntity> custom({
     Expression<String>? id,
     Expression<DateTime>? date,
@@ -3298,7 +3299,7 @@ typedef $$BagCompletionsTableCreateCompanionBuilder = BagCompletionsCompanion
   required DateTime date,
   required DateTime completedAt,
   required String deviceId,
-  Value<DateTime> createdAt,
+  required DateTime createdAt,
   Value<int> rowid,
 });
 typedef $$BagCompletionsTableUpdateCompanionBuilder = BagCompletionsCompanion
@@ -3433,7 +3434,7 @@ class $$BagCompletionsTableTableManager extends RootTableManager<
             required DateTime date,
             required DateTime completedAt,
             required String deviceId,
-            Value<DateTime> createdAt = const Value.absent(),
+            required DateTime createdAt,
             Value<int> rowid = const Value.absent(),
           }) =>
               BagCompletionsCompanion.insert(

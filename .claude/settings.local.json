@@ -37,7 +37,11 @@
       "Bash(unzip:*)",
       "Bash(md5:*)",
       "mcp__ide__getDiagnostics",
-      "Bash(git init:*)"
+      "Bash(git init:*)",
+      "Bash(git:*)",
+      "Bash(dart run:*)",
+      "Bash(do git:*)",
+      "Bash(echo:*)"
     ]
   },
   "enableAllProjectMcpServers": true,

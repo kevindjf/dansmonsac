@@ -41,4 +41,13 @@ class SupplySupabaseRepository extends SupplyRepository {
       await supabaseClient.from('supplies').delete().eq('id', id);
     });
   }
+
+  @override
+  Future<Either<Failure, void>> updateSupplyName(String id, String newName) {
+    return handleErrors(() async {
+      await supabaseClient
+          .from('supplies')
+          .update({'name': newName}).eq('id', id);
+    });
+  }
 }

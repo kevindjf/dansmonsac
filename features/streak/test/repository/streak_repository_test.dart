@@ -127,6 +127,7 @@ void main() {
             date: days[i],
             completedAt: DateTime.now(),
             deviceId: 'device-1',
+            createdAt: DateTime.now(),
           ));
         }
 
@@ -169,6 +170,7 @@ void main() {
           date: normalizedToday,
           completedAt: DateTime.now(),
           deviceId: 'device-1',
+          createdAt: DateTime.now(),
         ));
 
         await database.insertBagCompletion(BagCompletionsCompanion.insert(
@@ -176,6 +178,7 @@ void main() {
           date: normalizedYesterday,
           completedAt: DateTime.now(),
           deviceId: 'device-1',
+          createdAt: DateTime.now(),
         ));
 
         await database.insertBagCompletion(BagCompletionsCompanion.insert(
@@ -183,6 +186,7 @@ void main() {
           date: normalizedTwoDaysAgo,
           completedAt: DateTime.now(),
           deviceId: 'device-1',
+          createdAt: DateTime.now(),
         ));
 
         final result = await repository.getBagCompletionHistory();

@@ -279,6 +279,7 @@ void main() {
               date: tomorrowDate,
               completedAt: DateTime.now(),
               deviceId: 'test-device',
+              createdAt: DateTime.now(),
             ),
           );
 

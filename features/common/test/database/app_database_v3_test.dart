@@ -109,6 +109,7 @@ void main() {
           date: now,
           completedAt: now,
           deviceId: 'device-123',
+          createdAt: DateTime.now(),
         );
 
         await database.insertBagCompletion(completion);
@@ -130,6 +131,7 @@ void main() {
           date: today,
           completedAt: today,
           deviceId: 'device-123',
+          createdAt: DateTime.now(),
         ));
 
         await database.insertBagCompletion(BagCompletionsCompanion.insert(
@@ -137,6 +139,7 @@ void main() {
           date: threeDaysAgo,
           completedAt: threeDaysAgo,
           deviceId: 'device-123',
+          createdAt: DateTime.now(),
         ));
 
         await database.insertBagCompletion(BagCompletionsCompanion.insert(
@@ -144,6 +147,7 @@ void main() {
           date: fiveDaysAgo,
           completedAt: fiveDaysAgo,
           deviceId: 'device-123',
+          createdAt: DateTime.now(),
         ));
 
         final fourDaysAgo = today.subtract(const Duration(days: 4));
@@ -163,6 +167,7 @@ void main() {
           date: now,
           completedAt: now,
           deviceId: 'device-123',
+          createdAt: DateTime.now(),
         ));
 
         await database.deleteBagCompletion('completion-1');
@@ -236,6 +241,7 @@ void main() {
           date: DateTime.now(),
           completedAt: DateTime.now(),
           deviceId: 'device-123',
+          createdAt: DateTime.now(),
         ));
 
         await database.insertPremiumStatus(PremiumStatusCompanion.insert(
@@ -299,6 +305,7 @@ void main() {
           date: DateTime.now(),
           completedAt: DateTime.now(),
           deviceId: 'device-123',
+          createdAt: DateTime.now(),
         ));
 
         await database.insertPremiumStatus(PremiumStatusCompanion.insert(
@@ -345,6 +352,7 @@ void main() {
           date: now,
           completedAt: now,
           deviceId: 'device-123',
+          createdAt: DateTime.now(),
         );
 
         await database.insertBagCompletion(completion);

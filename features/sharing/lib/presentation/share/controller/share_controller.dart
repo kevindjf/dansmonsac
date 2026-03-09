@@ -1,5 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:course/models/cours_with_supplies.dart';
+import 'package:course/di/riverpod_di.dart' as course_di;
+import 'package:schedule/models/calendar_course.dart';
+import 'package:schedule/di/riverpod_di.dart' as schedule_di;
 import 'package:common/src/services/preferences_service.dart';
 import '../../../di/riverpod_di.dart';
 import '../../../models/shared_schedule_data.dart';
@@ -80,14 +84,16 @@ class ShareController extends _$ShareController {
     }
   }
 
-  /// Fetch fresh data from local Drift database using ScheduleSerializer
+  /// Fetch fresh data from local database
   /// This is called before every sync to ensure we have the latest data
   Future<SharedScheduleData> _fetchFreshData() async {
-    final serializer = ref.read(scheduleSerializerProvider);
-    final data = await serializer.serialize();
+    // Fetch all courses with supplies
+    final courseRepo = ref.read(course_di.courseRepositoryProvider);
+    final coursesResult = await courseRepo.fetchCourses();
 
-    debugPrint(
-        'ShareController: Fetched ${data.courses.length} courses and ${data.calendarCourses.length} calendar entries from Drift');
+    // Fetch all calendar entries
+    final calendarRepo = ref.read(schedule_di.calendarCourseRepositoryProvider);
+    final calendarResult = await calendarRepo.fetchCalendarCourses();
 
     final courses = coursesResult.fold(
       (failure) => <CourseWithSupplies>[],
