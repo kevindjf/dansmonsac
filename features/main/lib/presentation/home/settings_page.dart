@@ -883,36 +883,44 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
         isEnabled: _vacationModeEnabled,
         endDate: _vacationEndDate,
         onConfirm: (bool enabled, DateTime? endDate) async {
-          await PreferencesService.setVacationMode(enabled, endDate);
+          try {
+            await PreferencesService.setVacationMode(enabled, endDate);
 
-          // Update notifications based on vacation mode
-          if (enabled) {
-            await NotificationService.cancelNotification();
-          } else if (_notificationsEnabled) {
-            int currentStreak = 0;
-            try {
-              currentStreak = await ref.read(currentStreakProvider.future);
-            } catch (_) {}
-            await NotificationService.updateNotificationIfEnabled(
-              repository: ref.read(calendarCourseRepositoryProvider),
-              database: ref.read(databaseProvider),
-              currentStreak: currentStreak,
-            );
+            // Update notifications based on vacation mode
+            if (enabled) {
+              await NotificationService.cancelNotification();
+            } else if (_notificationsEnabled) {
+              int currentStreak = 0;
+              try {
+                currentStreak = await ref.read(currentStreakProvider.future);
+              } catch (_) {}
+              await NotificationService.updateNotificationIfEnabled(
+                repository: ref.read(calendarCourseRepositoryProvider),
+                database: ref.read(databaseProvider),
+                currentStreak: currentStreak,
+              );
+            }
+
+            // Refresh streak calculation
+            ref.invalidate(streakRepositoryProvider);
+
+            setState(() {
+              _vacationModeEnabled = enabled;
+              _vacationEndDate = endDate;
+            });
+
+            if (context.mounted) {
+              _showSnackBar(enabled
+                  ? '🏖️ Mode vacances activé - Ta streak est protégée !'
+                  : '🎒 Bon retour ! Les rappels sont réactivés.');
+            }
+          } catch (e, st) {
+            LogService.e('Erreur activation mode vacances', e, st);
+          } finally {
+            if (context.mounted) {
+              Navigator.pop(context);
+            }
           }
-
-          // Refresh streak calculation
-          ref.invalidate(streakRepositoryProvider);
-
-          setState(() {
-            _vacationModeEnabled = enabled;
-            _vacationEndDate = endDate;
-          });
-
-          Navigator.pop(context);
-
-          _showSnackBar(enabled
-              ? '🏖️ Mode vacances activé - Ta streak est protégée !'
-              : '🎒 Bon retour ! Les rappels sont réactivés.');
         },
       ),
     );
