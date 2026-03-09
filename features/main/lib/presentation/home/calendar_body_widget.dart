@@ -1,5 +1,7 @@
 import 'package:common/src/ui/ui.dart';
 import 'package:common/src/utils/hours_util.dart';
+import 'package:common/src/services.dart';
+import 'package:common/src/providers/database_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -7,6 +9,7 @@ import 'package:schedule/di/riverpod_di.dart';
 import 'package:schedule/models/calendar_course.dart';
 import 'package:schedule/presentation/add/add_calendar_course_page.dart';
 import 'package:schedule/presentation/calendar/controller/calendar_controller.dart';
+import 'package:streak/di/riverpod_di.dart';
 
 class EventUI {
   final Event event;
@@ -487,6 +490,28 @@ class CalendarBodyWidget extends ConsumerWidget {
     );
   }
 
+  /// Refresh notifications after calendar changes
+  /// Fire-and-forget operation with error protection
+  Future<void> _refreshNotifications(WidgetRef ref) async {
+    try {
+      final repository = ref.read(calendarCourseRepositoryProvider);
+      final database = ref.read(databaseProvider);
+      int currentStreak = 0;
+      try {
+        currentStreak = await ref.read(currentStreakProvider.future);
+      } catch (_) {
+        // Streak read failure is non-critical for notifications
+      }
+      await NotificationService.updateNotificationIfEnabled(
+        repository: repository,
+        database: database,
+        currentStreak: currentStreak,
+      );
+    } catch (e, st) {
+      LogService.e('Erreur reprogrammation notifications', e, st);
+    }
+  }
+
   Future<void> _deleteCourse(
       BuildContext context, WidgetRef ref, String courseId) async {
     final repository = ref.read(calendarCourseRepositoryProvider);
@@ -500,6 +525,8 @@ class CalendarBodyWidget extends ConsumerWidget {
       (_) {
         // Refresh calendar and supply list
         ref.invalidate(calendarControllerProvider);
+        // Refresh notifications after course deletion
+        _refreshNotifications(ref);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Cours supprimé avec succès'),

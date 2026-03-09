@@ -1,8 +1,11 @@
 import 'dart:async';
 
 import 'package:common/src/utils.dart';
+import 'package:common/src/services.dart';
+import 'package:common/src/providers/database_provider.dart';
 import 'package:course/di/riverpod_di.dart';
 import 'package:course/models/cours_with_supplies.dart';
+import 'package:streak/di/riverpod_di.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:schedule/models/calendar_course.dart';
 import 'package:flutter/material.dart';
@@ -93,6 +96,28 @@ class AddCalendarCourseController extends _$AddCalendarCourseController {
     ));
   }
 
+  /// Refresh notifications after calendar changes
+  /// Fire-and-forget operation with error protection
+  Future<void> _refreshNotifications() async {
+    try {
+      final repository = ref.read(calendarCourseRepositoryProvider);
+      final database = ref.read(databaseProvider);
+      int currentStreak = 0;
+      try {
+        currentStreak = await ref.read(currentStreakProvider.future);
+      } catch (_) {
+        // Streak read failure is non-critical for notifications
+      }
+      await NotificationService.updateNotificationIfEnabled(
+        repository: repository,
+        database: database,
+        currentStreak: currentStreak,
+      );
+    } catch (e, st) {
+      LogService.e('Erreur reprogrammation notifications', e, st);
+    }
+  }
+
   bool _validateInputs() {
     bool isValid = true;
     final currentState = state.value!;
@@ -154,6 +179,8 @@ class AddCalendarCourseController extends _$AddCalendarCourseController {
         ref.invalidate(calendarControllerProvider);
         ref.invalidate(tomorrowSupplyControllerProvider);
         ref.invalidate(coursesProvider);
+        // Refresh notifications after course addition
+        _refreshNotifications();
       },
     );
   }
@@ -185,6 +212,8 @@ class AddCalendarCourseController extends _$AddCalendarCourseController {
         ref.invalidate(calendarControllerProvider);
         ref.invalidate(tomorrowSupplyControllerProvider);
         ref.invalidate(coursesProvider);
+        // Refresh notifications after course update
+        _refreshNotifications();
       },
     );
   }
