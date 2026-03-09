@@ -11,7 +11,7 @@ import 'package:google_fonts/google_fonts.dart';
 class AddCoursePage extends ConsumerStatefulWidget {
   final ValueChanged<CourseWithSupplies?> onAddCourse;
 
-  const AddCoursePage({Key? key, required this.onAddCourse}) : super(key: key);
+  const AddCoursePage({super.key, required this.onAddCourse});
 
   @override
   ConsumerState<AddCoursePage> createState() => _AddCoursePageState();
@@ -67,7 +67,7 @@ class _AddCoursePageState extends ConsumerState<AddCoursePage> {
     var state = ref.watch(addCourseControllerProvider);
     final bottomSafeArea = MediaQuery.of(context).viewPadding.bottom;
 
-    return Container(
+    return SizedBox(
       width: double.infinity,
       child: Padding(
         padding: EdgeInsets.only(

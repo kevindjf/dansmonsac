@@ -79,7 +79,7 @@ class PreferencesService {
 
   static Future<void> setAccentColor(Color color) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt(_keyAccentColor, color.value);
+    await prefs.setInt(_keyAccentColor, color.toARGB32());
   }
 
   static Future<Color> getAccentColor() async {

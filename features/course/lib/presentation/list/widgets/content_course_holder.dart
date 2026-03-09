@@ -14,7 +14,7 @@ class ContentCourseHolder extends ConsumerWidget {
 
   final CourseItemUI course;
 
-  ContentCourseHolder(
+  const ContentCourseHolder(
       {super.key,
       required this.course,
       required this.onExpandCourse,

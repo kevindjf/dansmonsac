@@ -69,10 +69,10 @@ class CalendarBodyWidget extends ConsumerWidget {
   final WeekFilter weekFilter;
 
   const CalendarBodyWidget({
-    Key? key,
+    super.key,
     required this.selectedDate,
     required this.weekFilter,
-  }) : super(key: key);
+  });
 
   bool hasOverlappingEvent(Event event, List<Event> events) {
     for (var other in events) {

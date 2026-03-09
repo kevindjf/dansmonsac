@@ -9,6 +9,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:common/src/di/riverpod_di.dart';
 import 'package:common/src/services.dart';
 import 'package:common/src/utils.dart';
+// ignore: depend_on_referenced_packages
 import 'package:schedule/presentation/add/controller/add_calendar_course_controller.dart';
 
 part 'add_course_controller.g.dart';

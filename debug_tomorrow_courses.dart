@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'package:common/src/database/app_database.dart';
 import 'package:common/src/services/preferences_service.dart';
 import 'package:common/src/utils/week_utils.dart';

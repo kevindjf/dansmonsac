@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:common/src/ui/ui.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -13,8 +12,7 @@ class AddSupplyPage extends ConsumerStatefulWidget {
   final ValueChanged<Supply?> onAddSupply;
 
   const AddSupplyPage(
-      {Key? key, required this.courseId, required this.onAddSupply})
-      : super(key: key);
+      {super.key, required this.courseId, required this.onAddSupply});
 
   @override
   ConsumerState<AddSupplyPage> createState() => _AddSupplyPageState();
@@ -75,7 +73,7 @@ class _AddSupplyPageState extends ConsumerState<AddSupplyPage> {
     final colorScheme = Theme.of(context).colorScheme;
     final bottomSafeArea = MediaQuery.of(context).viewPadding.bottom;
 
-    return Container(
+    return SizedBox(
       width: double.infinity,
       child: Padding(
         padding: EdgeInsets.only(

@@ -1,3 +1,5 @@
+// ignore_for_file: depend_on_referenced_packages
+
 import 'package:clock/clock.dart';
 import 'package:common/src/database/app_database.dart';
 import 'package:drift/drift.dart';

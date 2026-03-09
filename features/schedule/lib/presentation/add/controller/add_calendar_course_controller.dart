@@ -7,7 +7,6 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:schedule/models/calendar_course.dart';
 import 'package:schedule/services/notification_helper.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../di/riverpod_di.dart';
 import '../../calendar/controller/calendar_controller.dart';

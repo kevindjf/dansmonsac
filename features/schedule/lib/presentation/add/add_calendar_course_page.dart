@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:common/src/ui/ui.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -15,11 +14,11 @@ class AddCalendarCoursePage extends ConsumerStatefulWidget {
   final CalendarCourse? existingCourse;
 
   const AddCalendarCoursePage({
-    Key? key,
+    super.key,
     required this.onAddCalendarCourse,
     required this.selectedDate,
     this.existingCourse,
-  }) : super(key: key);
+  });
 
   bool get isEditMode => existingCourse != null;
 
@@ -157,7 +156,7 @@ class _AddCalendarCoursePageState extends ConsumerState<AddCalendarCoursePage> {
     return asyncState.when(
       data: (state) => PopScope(
         canPop: true,
-        child: Container(
+        child: SizedBox(
           width: double.infinity,
           child: SingleChildScrollView(
             child: Padding(
@@ -203,7 +202,7 @@ class _AddCalendarCoursePageState extends ConsumerState<AddCalendarCoursePage> {
                       labelText: "Cours",
                       labelStyle: const TextStyle(color: Colors.grey),
                     ),
-                    value: state.courseId,
+                    initialValue: state.courseId,
                     items: state.courses.map((course) {
                       return DropdownMenuItem<String>(
                         value: course.id,
@@ -280,7 +279,7 @@ class _AddCalendarCoursePageState extends ConsumerState<AddCalendarCoursePage> {
                       labelText: "Jour de la semaine",
                       labelStyle: const TextStyle(color: Colors.grey),
                     ),
-                    value: state.dayOfWeek,
+                    initialValue: state.dayOfWeek,
                     items: [
                       DropdownMenuItem(value: 1, child: Text('Lundi')),
                       DropdownMenuItem(value: 2, child: Text('Mardi')),
@@ -319,7 +318,7 @@ class _AddCalendarCoursePageState extends ConsumerState<AddCalendarCoursePage> {
                       labelText: "Semaine",
                       labelStyle: const TextStyle(color: Colors.grey),
                     ),
-                    value: state.weekType,
+                    initialValue: state.weekType,
                     items: [
                       DropdownMenuItem(
                         value: WeekType.A,

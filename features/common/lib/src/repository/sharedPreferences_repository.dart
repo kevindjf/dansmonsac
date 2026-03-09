@@ -1,19 +1,21 @@
+// ignore_for_file: file_names
 import 'dart:math';
 
 import 'package:common/src/repository/preference_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SharedPreferencesRepository extends PreferenceRepository {
-  static final String PREF_KEY_DEVICE = "device_id";
-  static final String PREF_KEY_SHOWING_ONBOARDING = "showing_onboarding";
+  static final String prefKeyDevice = "device_id";
+  static final String prefKeyShowingOnboarding = "showing_onboarding";
 
+  @override
   Future<String> getUserId() async {
     final prefs = await SharedPreferences.getInstance();
-    String? deviceId = prefs.getString(PREF_KEY_DEVICE);
+    String? deviceId = prefs.getString(prefKeyDevice);
 
     if (deviceId == null) {
       deviceId = _generateRandomId(); // Génère un ID unique
-      await prefs.setString(PREF_KEY_DEVICE, deviceId);
+      await prefs.setString(prefKeyDevice, deviceId);
     }
 
     return deviceId;
@@ -29,13 +31,13 @@ class SharedPreferencesRepository extends PreferenceRepository {
   @override
   Future<bool> showingOnboarding() async {
     final prefs = await SharedPreferences.getInstance();
-    bool? showing = prefs.getBool(PREF_KEY_SHOWING_ONBOARDING);
+    bool? showing = prefs.getBool(prefKeyShowingOnboarding);
     return showing ?? true;
   }
 
   @override
   Future<void> storeFinishOnboarding() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(PREF_KEY_SHOWING_ONBOARDING, false);
+    await prefs.setBool(prefKeyShowingOnboarding, false);
   }
 }
