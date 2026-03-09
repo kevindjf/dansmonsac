@@ -904,10 +904,12 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
             // Refresh streak calculation
             ref.invalidate(streakRepositoryProvider);
 
-            setState(() {
-              _vacationModeEnabled = enabled;
-              _vacationEndDate = endDate;
-            });
+            if (mounted) {
+              setState(() {
+                _vacationModeEnabled = enabled;
+                _vacationEndDate = endDate;
+              });
+            }
 
             if (context.mounted) {
               _showSnackBar(enabled
@@ -916,6 +918,9 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
             }
           } catch (e, st) {
             LogService.e('Erreur activation mode vacances', e, st);
+            if (context.mounted) {
+              _showSnackBar('Une erreur est survenue.');
+            }
           } finally {
             if (context.mounted) {
               Navigator.pop(context);
