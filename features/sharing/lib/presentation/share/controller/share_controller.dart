@@ -89,7 +89,53 @@ class ShareController extends _$ShareController {
     debugPrint(
         'ShareController: Fetched ${data.courses.length} courses and ${data.calendarCourses.length} calendar entries from Drift');
 
-    return data;
+    final courses = coursesResult.fold(
+      (failure) => <CourseWithSupplies>[],
+      (courses) => courses,
+    );
+
+    final calendarCourses = calendarResult.fold(
+      (failure) => <CalendarCourse>[],
+      (entries) => entries,
+    );
+
+    debugPrint(
+        'ShareController: Fetched ${courses.length} courses and ${calendarCourses.length} calendar entries');
+
+    // Build shared data structure
+    final sharedCourses = courses.map((course) {
+      return SharedCourseData(
+        name: course.name,
+        supplies: course.supplies.map((s) => s.name).toList(),
+      );
+    }).toList();
+
+    final sharedCalendarCourses = calendarCourses.map((entry) {
+      // Find course name by ID
+      final course = courses.firstWhere(
+        (c) => c.id == entry.courseId,
+        orElse: () => CourseWithSupplies(id: '', name: 'Unknown', supplies: []),
+      );
+
+      return SharedCalendarCourseData(
+        courseName: course.name,
+        roomName: entry.roomName,
+        startTimeHour: entry.startTime.hour,
+        startTimeMinute: entry.startTime.minute,
+        endTimeHour: entry.endTime.hour,
+        endTimeMinute: entry.endTime.minute,
+        weekType: entry.weekType.name,
+        dayOfWeek: entry.dayOfWeek,
+      );
+    }).toList();
+
+    debugPrint(
+        'ShareController: Built ${sharedCourses.length} shared courses and ${sharedCalendarCourses.length} shared calendar entries');
+
+    return SharedScheduleData(
+      courses: sharedCourses,
+      calendarCourses: sharedCalendarCourses,
+    );
   }
 
   void updateSharerName(String name) {

@@ -21,8 +21,9 @@ class NotificationService {
     // Set local timezone to Europe/Paris for France
     tz.setLocalLocation(tz.getLocation('Europe/Paris'));
 
+    // Use ic_launcher as notification icon (available in all Android projects)
     const androidSettings =
-        AndroidInitializationSettings('@drawable/ic_notification');
+        AndroidInitializationSettings('@mipmap/ic_launcher');
     const iosSettings = DarwinInitializationSettings(
       requestAlertPermission: false,
       requestBadgePermission: false,
@@ -54,8 +55,7 @@ class NotificationService {
       try {
         final exactAlarmGranted =
             await androidPlugin.requestExactAlarmsPermission();
-        LogService.d(
-            '🔔 Exact alarms permission: ${exactAlarmGranted ?? false}');
+        print('🔔 Exact alarms permission: ${exactAlarmGranted ?? false}');
       } catch (e) {
         LogService.d('⚠️ Exact alarms permission not available or error: $e');
       }

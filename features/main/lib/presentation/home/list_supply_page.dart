@@ -144,18 +144,9 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
 
     _targetDate = targetDate;
 
-    // Load saved state from Drift database via DailyCheckController
-    final controller = ref.read(dailyCheckControllerProvider.notifier);
-    final savedState = await controller.loadChecksForDate(_targetDate!);
-
-    // Check if bag completion already exists for this date
-    final database = ref.read(databaseProvider);
-    final existingCompletion = await database.getBagCompletionByDate(
-      DateTime(targetDate.year, targetDate.month, targetDate.day),
-    );
-    if (existingCompletion != null) {
-      _bagCompletionMarked = true;
-    }
+    // Load saved state for this date
+    final savedState =
+        await PreferencesService.loadSupplyCheckedState(targetDate);
 
     if (mounted) {
       setState(() {
@@ -206,53 +197,10 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
     }
   }
 
-  // Removed: _saveCheckedState() - now handled by DailyCheckController.toggleCheck() inline
-
-  /// Check if all supplies are checked and mark bag as completed
-  Future<void> _checkAndMarkBagCompletion(int totalSupplies) async {
-    // Count currently checked supplies
-    int checkedCount = _checkedState.values.where((checked) => checked).length;
-
-    // If all supplies are checked and we haven't marked completion yet
-    if (totalSupplies > 0 &&
-        checkedCount == totalSupplies &&
-        !_bagCompletionMarked) {
-      _bagCompletionMarked = true;
-
-      // Insert into BagCompletions via StreakRepository
-      final streakRepository = ref.read(streakRepositoryProvider);
-      final result =
-          await streakRepository.markBagComplete(_targetDate ?? DateTime.now());
-
-      final isSuccess = result.isRight();
-
-      if (!isSuccess) {
-        final failure = result.fold((f) => f, (_) => null);
-        LogService.e('Failed to mark bag completion', failure);
-        return;
-      }
-
-      // Success - invalidate streak providers to refresh UI
-      ref.invalidate(currentStreakProvider);
-      ref.invalidate(weeklyStreakDataProvider);
-
-      // Cancel streak reminder notifications (bag is done, no need to remind)
-      await NotificationService.cancelStreakReminders();
-
-      // Log new streak value for debugging
-      final newStreak = await ref.read(currentStreakProvider.future);
-      LogService.d(
-          'BagCompletion: targetDate=$_targetDate, new streak=$newStreak');
-
-      // Navigate to StreakDetailPage with celebration animation
-      if (mounted) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => const StreakDetailPage(showCelebration: true),
-          ),
-        );
-      }
+  Future<void> _saveCheckedState() async {
+    if (_targetDate != null) {
+      await PreferencesService.saveSupplyCheckedState(
+          _targetDate!, _checkedState);
     }
   }
 
@@ -281,10 +229,7 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
               // Collect supply IDs for this course
               final supplyIds = course.supplies.map((s) => s.id).toList();
               items.add(CourseTitleItem(
-                title: course.courseName,
-                courseId: course.courseId,
-                supplyIds: supplyIds,
-              ));
+                  title: course.courseName, supplyIds: supplyIds));
 
               for (final supply in course.supplies) {
                 totalSupplies++;
@@ -307,10 +252,7 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
                   .map((name) => 'standalone_$name')
                   .toList();
               items.add(CourseTitleItem(
-                title: "Autres fournitures",
-                courseId: '', // Empty for standalone supplies
-                supplyIds: standaloneIds,
-              ));
+                  title: "Autres fournitures", supplyIds: standaloneIds));
 
               // Add standalone supplies
               for (final supplyName in _standaloneSupplies) {
@@ -562,13 +504,16 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
 
   Widget _buildSupplyList(BuildContext context, List<ListItem> items,
       int checked, int total, TimeOfDay packTime) {
+    // Check if bag is ready (all supplies checked)
+    final bool isBagReady = total > 0 && checked == total;
+
     return Stack(
       children: [
         Column(
           children: [
             _buildHeader(checked, total, packTime),
-            // Show banner always (with progress)
-            _buildBagReadyBanner(context, checked, total, packTime),
+            // Show banner when bag is ready
+            if (isBagReady) _buildBagReadyBanner(context),
             Expanded(
               child: ListView.builder(
                 controller: _scrollController,
@@ -583,31 +528,42 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
                   final accentColor = Theme.of(context).colorScheme.secondary;
 
                   if (item is CourseTitleItem) {
-                    return Padding(
-                      padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 8.0),
-                      child: Row(
-                        children: [
-                          // Bullet point
-                          Container(
-                            width: 6,
-                            height: 6,
-                            decoration: BoxDecoration(
-                              color: accentColor,
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Text(
-                            item.title.toUpperCase(),
-                            style: GoogleFonts.robotoCondensed(
-                              fontSize: 13,
-                              color: accentColor,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 0.5,
-                            ),
-                          ),
-                        ],
+                    // Check if all supplies for this course are checked
+                    final allChecked = item.supplyIds.isNotEmpty &&
+                        item.supplyIds
+                            .every((id) => _checkedState[id] ?? false);
+
+                    return CheckboxListTile(
+                      checkboxShape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(4.0),
+                        side: BorderSide(
+                          width: 4.5,
+                          color: accentColor,
+                        ),
                       ),
+                      contentPadding:
+                          EdgeInsets.symmetric(horizontal: 8.0, vertical: 2.0),
+                      dense: false,
+                      controlAffinity: ListTileControlAffinity.leading,
+                      title: Text(
+                        item.title.toUpperCase(),
+                        style: GoogleFonts.robotoCondensed(
+                            fontSize: 16,
+                            color: accentColor,
+                            fontWeight: FontWeight.bold),
+                      ),
+                      value: allChecked,
+                      onChanged: item.supplyIds.isEmpty
+                          ? null
+                          : (value) {
+                              setState(() {
+                                // Check or uncheck all supplies for this course
+                                for (final supplyId in item.supplyIds) {
+                                  _checkedState[supplyId] = value ?? false;
+                                }
+                              });
+                              _saveCheckedState();
+                            },
                     );
                   } else if (item is SupplyItem) {
                     return Container(
@@ -691,6 +647,28 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
                           await _checkAndMarkBagCompletion(totalSupplies);
                         },
                       ),
+                      secondary: isStandalone
+                          ? IconButton(
+                              icon: Icon(Icons.delete, color: accentColor),
+                              onPressed: () =>
+                                  _deleteStandaloneSupply(item.name),
+                            )
+                          : SizedBox(width: 10),
+                      contentPadding:
+                          EdgeInsets.symmetric(horizontal: 8.0, vertical: 2.0),
+                      dense: false,
+                      controlAffinity: ListTileControlAffinity.leading,
+                      title: Text(
+                        item.name,
+                        style: GoogleFonts.roboto(color: Colors.white70),
+                      ),
+                      value: item.isChecked,
+                      onChanged: (value) {
+                        setState(() {
+                          _checkedState[item.id] = value ?? false;
+                        });
+                        _saveCheckedState();
+                      },
                     );
                   }
                   return Container();
@@ -838,27 +816,27 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
     if (date == null) return '';
 
     const days = [
-      'Lundi',
-      'Mardi',
-      'Mercredi',
-      'Jeudi',
-      'Vendredi',
-      'Samedi',
-      'Dimanche'
+      'lundi',
+      'mardi',
+      'mercredi',
+      'jeudi',
+      'vendredi',
+      'samedi',
+      'dimanche'
     ];
     const months = [
-      'Janvier',
-      'Fevrier',
-      'Mars',
-      'Avril',
-      'Mai',
-      'Juin',
-      'Juillet',
-      'Aout',
-      'Septembre',
-      'Octobre',
-      'Novembre',
-      'Decembre'
+      'janvier',
+      'fevrier',
+      'mars',
+      'avril',
+      'mai',
+      'juin',
+      'juillet',
+      'aout',
+      'septembre',
+      'octobre',
+      'novembre',
+      'decembre'
     ];
 
     return "${days[date.weekday - 1]} ${date.day} ${months[date.month - 1]}";

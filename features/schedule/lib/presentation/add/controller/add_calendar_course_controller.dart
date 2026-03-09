@@ -100,14 +100,14 @@ class AddCalendarCourseController extends _$AddCalendarCourseController {
     // Validation du cours
     if (currentState.courseId == null || currentState.courseId!.isEmpty) {
       state = AsyncValue.data(currentState.copyWith(
-          errorCourseId: "Veuillez selectionner un cours"));
+          errorCourseId: "Veuillez sélectionner un cours"));
       isValid = false;
     }
 
     // Validation de la salle
-    final roomError = Validators.validateRoomName(currentState.roomName);
-    if (roomError != null) {
-      state = AsyncValue.data(currentState.copyWith(errorRoomName: roomError));
+    if (currentState.roomName.isEmpty) {
+      state = AsyncValue.data(
+          currentState.copyWith(errorRoomName: "La salle est obligatoire"));
       isValid = false;
     }
 

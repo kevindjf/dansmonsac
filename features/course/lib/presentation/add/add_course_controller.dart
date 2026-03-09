@@ -73,87 +73,8 @@ class AddCourseController extends _$AddCourseController {
       return;
     }
 
-    final oldSupply = state.suggestedSupplies[index];
-    LogService.d(
-        '  Before: ${oldSupply.name} - checked: ${oldSupply.isChecked}');
-
-    final updatedSupplies = List<SuggestedSupply>.from(state.suggestedSupplies);
-    updatedSupplies[index] =
-        updatedSupplies[index].copyWith(isChecked: isChecked);
-
-    LogService.d(
-        '  After: ${updatedSupplies[index].name} - checked: ${updatedSupplies[index].isChecked}');
-
-    state = state.copyWith(suggestedSupplies: updatedSupplies);
-
-    LogService.d(
-        '  State updated - total suggestions: ${state.suggestedSupplies.length}');
-  }
-
-  /// Update a suggested supply's text and mark as modified
-  void updateSuggestionText(int index, String newText) {
-    LogService.d('updateSuggestionText: index=$index, newText=$newText');
-
-    if (index < 0 || index >= state.suggestedSupplies.length) {
-      LogService.w('Invalid index for updateSuggestionText: $index');
-      return;
-    }
-
-    final updatedSupplies = List<SuggestedSupply>.from(state.suggestedSupplies);
-    updatedSupplies[index] = updatedSupplies[index].copyWith(
-      name: newText,
-      isModified: true,
-    );
-
-    state = state.copyWith(suggestedSupplies: updatedSupplies);
-  }
-
-  store() async {
-    final validationError = Validators.validateCourseName(state.courseName);
-    if (validationError != null) {
-      state = state.copyWith(errorCourseName: validationError);
-      return;
-    }
-
-    final cleanName = Validators.clean(state.courseName);
-
-    // DEBUG: Log current state
-    LogService.d('=== STORE DEBUG ===');
-    LogService.d('Course name: $cleanName');
-    LogService.d(
-        'Total suggestions in state: ${state.suggestedSupplies.length}');
-    for (var i = 0; i < state.suggestedSupplies.length; i++) {
-      final s = state.suggestedSupplies[i];
-      LogService.d(
-          '  [$i] ${s.name} - checked: ${s.isChecked}, modified: ${s.isModified}');
-    }
-
-    // Collect checked suggested supplies
-    final checkedSupplies = state.suggestedSupplies
-        .where((supply) => supply.isChecked)
-        .map((supply) => supply.name)
-        .toList();
-
-    LogService.d('Checked supplies to store: ${checkedSupplies.length}');
-    for (var supply in checkedSupplies) {
-      LogService.d('  - $supply');
-    }
-
-    // Validate all supply names
-    for (final supplyName in checkedSupplies) {
-      final supplyError = Validators.validateSupplyName(supplyName);
-      if (supplyError != null) {
-        LogService.e(
-            'Supply validation failed for: $supplyName - $supplyError');
-        _errorController.add('Fourniture invalide: $supplyError');
-        return;
-      }
-    }
-
-    LogService.d(
-        'Calling repository.store() with ${checkedSupplies.length} supplies');
-    var response = await courseRepository
-        .store(AddCourseCommand(cleanName, checkedSupplies));
+    var response =
+        await courseRepository.store(AddCourseCommand(state.courseName, []));
 
     response.fold((failure) {
       state = state.copyWith(isLoading: false);

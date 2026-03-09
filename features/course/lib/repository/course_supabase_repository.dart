@@ -61,12 +61,8 @@ class CourseSupabaseRepository extends CourseRepository {
 
         await supabaseClient.from('course_supplies').insert(supplyMappings);
       }
-
       return CourseWithSupplies(
-        id: courseId,
-        name: command.courseName,
-        supplies: createdSupplies,
-      );
+          id: courseId, name: command.courseName, supplies: []);
     });
   }
 
@@ -127,13 +123,7 @@ class CourseSupabaseRepository extends CourseRepository {
     return handleErrors(() async {
       final response = await supabaseClient
           .from('courses')
-          .update({'course_name': newName})
-          .eq('id', id)
-          .select();
-
-      if ((response as List).isEmpty) {
-        throw Exception('Cours non trouve ou mise a jour non autorisee');
-      }
+          .update({'course_name': newName}).eq('id', id);
     });
   }
 }
