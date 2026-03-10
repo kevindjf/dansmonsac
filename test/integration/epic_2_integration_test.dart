@@ -162,8 +162,8 @@ void main() {
 
       // Insert bag completions for both today and tomorrow so the streak
       // counts regardless of whether we are before or after pack time.
-      final todayDate = DateTime(DateTime.now().year, DateTime.now().month,
-          DateTime.now().day);
+      final todayDate = DateTime(
+          DateTime.now().year, DateTime.now().month, DateTime.now().day);
       for (final date in [todayDate, tomorrowDate]) {
         await database.insertBagCompletion(
           BagCompletionsCompanion(
