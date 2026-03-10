@@ -55,7 +55,8 @@ class NotificationService {
       try {
         final exactAlarmGranted =
             await androidPlugin.requestExactAlarmsPermission();
-        LogService.d('🔔 Exact alarms permission: ${exactAlarmGranted ?? false}');
+        LogService.d(
+            '🔔 Exact alarms permission: ${exactAlarmGranted ?? false}');
       } catch (e) {
         LogService.d('⚠️ Exact alarms permission not available or error: $e');
       }

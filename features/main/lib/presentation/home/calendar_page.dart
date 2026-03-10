@@ -203,7 +203,8 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
         onAddCalendarCourse: (calendarCourse) {
           if (calendarCourse != null) {
             // Mettre à jour votre UI ou état avec le nouveau cours
-            LogService.d("Cours ajouté au calendrier: ${calendarCourse.roomName}");
+            LogService.d(
+                "Cours ajouté au calendrier: ${calendarCourse.roomName}");
           }
         },
       ),

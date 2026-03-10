@@ -66,23 +66,50 @@ class AddCourseController extends _$AddCourseController {
 
   /// Toggle a suggested supply's checked state
   void toggleSupplySuggestion(int index, bool isChecked) {
-    LogService.d(
-        '🔘 toggleSupplySuggestion: index=$index, isChecked=$isChecked');
+    LogService.d('toggleSupplySuggestion: index=$index, isChecked=$isChecked');
 
     if (index < 0 || index >= state.suggestedSupplies.length) {
       LogService.w('Invalid index for toggleSupplySuggestion: $index');
       return;
     }
 
-    var response =
-        await courseRepository.store(AddCourseCommand(state.courseName, []));
+    final updatedSupplies = List<SuggestedSupply>.from(state.suggestedSupplies);
+    updatedSupplies[index] =
+        updatedSupplies[index].copyWith(isChecked: isChecked);
+    state = state.copyWith(suggestedSupplies: updatedSupplies);
+  }
+
+  /// Update the text of a suggested supply
+  void updateSuggestionText(int index, String text) {
+    if (index < 0 || index >= state.suggestedSupplies.length) {
+      return;
+    }
+
+    final updatedSupplies = List<SuggestedSupply>.from(state.suggestedSupplies);
+    updatedSupplies[index] =
+        updatedSupplies[index].copyWith(name: text, isModified: true);
+    state = state.copyWith(suggestedSupplies: updatedSupplies);
+  }
+
+  /// Store the course with selected suggested supplies
+  Future<void> store() async {
+    state = state.copyWith(isLoading: true);
+
+    // Collect checked supply names
+    final selectedSupplies = state.suggestedSupplies
+        .where((s) => s.isChecked)
+        .map((s) => s.name)
+        .toList();
+
+    var response = await courseRepository
+        .store(AddCourseCommand(state.courseName, selectedSupplies));
 
     response.fold((failure) {
       state = state.copyWith(isLoading: false);
       LogService.e('Store failed: $failure');
       _errorController.add(ErrorMessages.getMessageForFailure(failure));
     }, (course) {
-      LogService.i('✅ Course created successfully!');
+      LogService.i('Course created successfully!');
       LogService.i('  Course ID: ${course.id}');
       LogService.i('  Course name: ${course.name}');
       LogService.i('  Supplies returned: ${course.supplies.length}');

@@ -47,7 +47,7 @@ class OnboardingWeekExplanationPage extends ConsumerWidget {
                 Container(
                   padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
-                    color: accentColor.withValues(alpha:0.1),
+                    color: accentColor.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
@@ -95,7 +95,8 @@ class OnboardingWeekExplanationPage extends ConsumerWidget {
                     const SizedBox(width: 16),
                     Icon(
                       Icons.swap_horiz,
-                      color: colorScheme.onSurfaceVariant.withValues(alpha:0.5),
+                      color:
+                          colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
                       size: 32,
                     ),
                     const SizedBox(width: 16),
@@ -142,10 +143,10 @@ class OnboardingWeekExplanationPage extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       decoration: BoxDecoration(
-        color: accentColor.withValues(alpha:0.15),
+        color: accentColor.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: accentColor.withValues(alpha:0.3),
+          color: accentColor.withValues(alpha: 0.3),
           width: 2,
         ),
       ),

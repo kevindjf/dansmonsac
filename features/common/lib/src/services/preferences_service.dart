@@ -365,9 +365,8 @@ class PreferencesService {
 
     if (!enabled) return false;
 
-    // Check if end date is set and still in the future
     final endDateString = prefs.getString(_keyVacationModeEndDate);
-    if (endDateString == null) return false;
+    if (endDateString == null) return true;
 
     final endDate = DateTime.parse(endDateString);
     final now = DateTime.now();

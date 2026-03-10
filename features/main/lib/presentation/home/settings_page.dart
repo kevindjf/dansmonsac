@@ -906,8 +906,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
             } else if (_notificationsEnabled) {
               int currentStreak = 0;
               try {
-                currentStreak =
-                    await ref.read(currentStreakProvider.future);
+                currentStreak = await ref.read(currentStreakProvider.future);
               } catch (_) {}
               await NotificationService.updateNotificationIfEnabled(
                 repository: ref.read(calendarCourseRepositoryProvider),

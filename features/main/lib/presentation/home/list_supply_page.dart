@@ -530,7 +530,8 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
           children: [
             _buildHeader(checked, total, packTime),
             // Show banner when bag is ready
-            if (isBagReady) _buildBagReadyBanner(context, checked, total, packTime),
+            if (isBagReady)
+              _buildBagReadyBanner(context, checked, total, packTime),
             Expanded(
               child: ListView.builder(
                 controller: _scrollController,
@@ -695,7 +696,8 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
     if (_targetDate == null) return;
 
     final checkedSupplies = _getCheckedSuppliesCount();
-    final isBagReady = checkedSupplies == totalSupplies; // 0 == 0 → true when courses have no supplies
+    final isBagReady = checkedSupplies ==
+        totalSupplies; // 0 == 0 → true when courses have no supplies
 
     if (!isBagReady) {
       _bagCompletionMarked = false;
