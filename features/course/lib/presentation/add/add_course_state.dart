@@ -18,9 +18,15 @@ class AddCourseState {
   }
 
   AddCourseState copyWith(
-      {String? courseName, bool? isLoading, String? errorCourseName}) {
-    var state = AddCourseState(courseName ?? this.courseName,
-        isLoading ?? this.isLoading, errorCourseName);
+      {String? courseName,
+      bool? isLoading,
+      String? errorCourseName,
+      List<SuggestedSupply>? suggestedSupplies}) {
+    var state = AddCourseState(
+        courseName ?? this.courseName,
+        isLoading ?? this.isLoading,
+        errorCourseName,
+        suggestedSupplies ?? this.suggestedSupplies);
     return state;
   }
 }

@@ -30,6 +30,9 @@ dependencies:
 
   supply:
     path: ../supply
+
+  streak:
+    path: ../streak
 dev_dependencies:
   flutter_test:
     sdk: flutter

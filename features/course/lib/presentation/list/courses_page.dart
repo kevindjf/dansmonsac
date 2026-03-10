@@ -10,7 +10,7 @@ import 'package:supply/presentation/add/add_supply_page.dart';
 import 'controller/course_list_state.dart';
 
 class CoursesPage extends ConsumerWidget {
-  CoursesPage({super.key});
+  const CoursesPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -164,6 +164,11 @@ class CoursesPage extends ConsumerWidget {
                             .read(coursesControllerProvider.notifier)
                             .onRenameCourse(realIndex, newName);
                       },
+                      onRenameSupply: (SupplyItemUI supply, String newName) {
+                        ref
+                            .read(coursesControllerProvider.notifier)
+                            .onRenameSupply(realIndex, supply, newName);
+                      },
                     );
                   } else {
                     return const SizedBox(height: 80);
@@ -188,7 +193,7 @@ class CoursesPage extends ConsumerWidget {
                 Icon(
                   Icons.book_outlined,
                   size: 50,
-                  color: Colors.white.withOpacity(0.4),
+                  color: Colors.white.withValues(alpha: 0.4),
                 ),
                 const SizedBox(height: 16),
                 Text(
@@ -204,7 +209,7 @@ class CoursesPage extends ConsumerWidget {
                   "Tirez vers le bas pour actualiser ou\najoutez un nouveau cours",
                   textAlign: TextAlign.center,
                   style: GoogleFonts.robotoCondensed(
-                    color: Colors.white.withOpacity(0.7),
+                    color: Colors.white.withValues(alpha: 0.7),
                     fontSize: 14,
                   ),
                 ),

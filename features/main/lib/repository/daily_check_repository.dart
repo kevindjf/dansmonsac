@@ -29,7 +29,7 @@ class DailyCheckRepository {
   /// - [date]: Target date for the checklist
   /// - [isChecked]: New check state (true = checked, false = unchecked)
   ///
-  /// Returns: Either<Failure, void>
+  /// Returns: `Either<Failure, void>`
   Future<Either<Failure, void>> toggleSupplyCheck(
     String supplyId,
     String courseId,
@@ -108,7 +108,7 @@ class DailyCheckRepository {
   /// Parameters:
   /// - [date]: Target date to load checks for
   ///
-  /// Returns: Either<Failure, List<DailyCheckEntity>>
+  /// Returns: `Either<Failure, List<DailyCheckEntity>>`
   Future<Either<Failure, List<DailyCheckEntity>>> getDailyChecksForDate(
     DateTime date,
   ) {

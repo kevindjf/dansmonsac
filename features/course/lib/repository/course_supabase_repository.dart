@@ -1,8 +1,8 @@
 import 'package:common/src/models/network/network_failure.dart';
+import 'package:common/src/services/log_service.dart';
 import 'package:course/models/add_course_command.dart';
 import 'package:course/models/cours_with_supplies.dart';
 import 'package:course/repository/course_repository.dart';
-import 'package:supply/models/supply.dart';
 import 'package:dartz/dartz.dart';
 import 'package:common/src/repository/preference_repository.dart';
 import 'package:common/src/repository/repository_helper.dart';
@@ -28,14 +28,12 @@ class CourseSupabaseRepository extends CourseRepository {
           .single();
 
       final String courseId = courseInsertResponse['id'];
-      print("course id $courseId");
+      LogService.d("course id $courseId");
 
       await supabaseClient.from('courses_user').insert({
         'device_id': deviceId,
         'course_id': courseId,
       });
-
-      List<Supply> createdSupplies = [];
 
       if (command.supplies.isNotEmpty) {
         List<Map<String, dynamic>> newSupplies =
@@ -45,11 +43,6 @@ class CourseSupabaseRepository extends CourseRepository {
             .from('supplies')
             .insert(newSupplies)
             .select('id, name');
-
-        // Convert response to Supply objects
-        createdSupplies = (suppliesResponse as List)
-            .map((s) => Supply(id: s['id'], name: s['name']))
-            .toList();
 
         List<Map<String, dynamic>> supplyMappings = [];
         for (var supply in suppliesResponse) {
@@ -66,6 +59,7 @@ class CourseSupabaseRepository extends CourseRepository {
     });
   }
 
+  @override
   Future<Either<Failure, List<CourseWithSupplies>>> fetchCourses() async {
     String deviceId = await preferenceRepository.getUserId();
 
@@ -121,7 +115,7 @@ class CourseSupabaseRepository extends CourseRepository {
   @override
   Future<Either<Failure, void>> updateCourseName(String id, String newName) {
     return handleErrors(() async {
-      final response = await supabaseClient
+      await supabaseClient
           .from('courses')
           .update({'course_name': newName}).eq('id', id);
     });

@@ -310,53 +310,6 @@ class _OnboardingImportStepPageState
     );
   }
 
-  Widget _buildInfoCard(Color accentColor) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: accentColor.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: accentColor.withValues(alpha: 0.3)),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(
-            Icons.info_outline,
-            color: accentColor,
-            size: 20,
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: RichText(
-              text: TextSpan(
-                style: const TextStyle(
-                  color: Colors.white70,
-                  fontSize: 13,
-                  height: 1.4,
-                ),
-                children: [
-                  const TextSpan(
-                      text:
-                          "DEMANDE A TON AMI D'OUVRIR L'APP ET D'ALLER DANS "),
-                  TextSpan(
-                    text: "PARAMETRES > PARTAGER",
-                    style: TextStyle(
-                      color: accentColor,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const TextSpan(text: " POUR OBTENIR UN CODE."),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   void _onVerifyPressed() {
     final code = _codeInputKey.currentState?.getCode() ?? '';
     if (code.length != 6) {

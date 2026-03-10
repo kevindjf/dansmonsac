@@ -1,5 +1,4 @@
-/// Sharing feature module - allows users to share schedules via code
-library sharing;
+// Sharing feature module - allows users to share schedules via code
 
 // Models
 export 'models/shared_schedule.dart';

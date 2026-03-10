@@ -390,79 +390,20 @@ class _SharePageState extends ConsumerState<SharePage> {
                     children: [
                       const CircularProgressIndicator(),
                       const SizedBox(height: 16),
+                      Text(
+                        'Synchronisation en cours...',
+                        style: GoogleFonts.roboto(
+                          color: Colors.white,
+                          fontSize: 16,
+                        ),
+                      ),
                     ],
-
-                    // Share button
-                    FilledButton.icon(
-                      onPressed: state.isSyncing
-                          ? null
-                          : () => _shareLink(state.code!),
-                      icon: const Icon(Icons.share),
-                      label: const Text(
-                        'Partager le lien',
-                        style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.bold),
-                      ),
-                      style: FilledButton.styleFrom(
-                        backgroundColor: accentColor,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                    ),
-                  ],
-
-                  if (state.hasError && !state.syncFailed) ...[
-                    const SizedBox(height: 16),
-                    Text(
-                      state.errorMessage!,
-                      style: const TextStyle(color: Colors.redAccent),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-
-                  const SizedBox(height: 16),
-                ],
-              ),
-            ),
-          ),
-          // Syncing overlay
-          if (state.isSyncing)
-            Positioned.fill(
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.black54,
-                  borderRadius:
-                      const BorderRadius.vertical(top: Radius.circular(16)),
-                ),
-                child: Center(
-                  child: Container(
-                    padding: const EdgeInsets.all(24),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF303030),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const CircularProgressIndicator(),
-                        const SizedBox(height: 16),
-                        Text(
-                          'Synchronisation en cours...',
-                          style: GoogleFonts.roboto(
-                            color: Colors.white,
-                            fontSize: 16,
-                          ),
-                        ),
-                      ],
-                    ),
                   ),
                 ),
               ),
             ),
-        ],
-      ),
+          ),
+      ],
     );
   }
 

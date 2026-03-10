@@ -15,6 +15,7 @@ class AppTheme {
   /// Thème clair de l'application
   static ThemeData get lightTheme {
     return ThemeData(
+        // ignore: deprecated_member_use
         useMaterial3: true,
         brightness: Brightness.light,
         primaryColor: AppColors.primary,
@@ -22,13 +23,11 @@ class AppTheme {
             primary: AppColors.primary,
             secondary: AppColors.accent,
             error: AppColors.error,
-            background: AppColors.background,
             surface: AppColors.surface,
             onPrimary: Colors.white,
             onSecondary: Colors.white,
             onTertiary: AppColors.textSecondary,
             onError: Colors.white,
-            onBackground: AppColors.textPrimary,
             onSurface: AppColors.textPrimary,
             onSurfaceVariant: AppColors.textSecondary),
         scaffoldBackgroundColor: AppColors.background,
@@ -147,20 +146,17 @@ class AppTheme {
   /// Build dark theme with a specific accent color
   static ThemeData _buildDarkTheme(Color accentColor) {
     return ThemeData.dark().copyWith(
+      // ignore: deprecated_member_use
       useMaterial3: true,
       primaryColor: accentColor,
       colorScheme: ColorScheme.dark(
         primary: accentColor,
         secondary: accentColor,
         error: AppColors.error,
-        background: AppColors.grey900,
-        // Fond sombre
         surface: AppColors.grey800,
-        // Surface sombre
         onPrimary: Colors.white,
         onSecondary: Colors.white,
         onError: Colors.white,
-        onBackground: AppColors.textPrimary,
         onSurface: Colors.white,
         onSurfaceVariant: Colors.white70,
       ),

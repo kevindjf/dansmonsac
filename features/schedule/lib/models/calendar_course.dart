@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 enum WeekType {
   A('A'),
   B('B'),
+  // ignore: constant_identifier_names
   BOTH('BOTH');
 
   final String value;

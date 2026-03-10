@@ -62,9 +62,9 @@ class AppRouterDelegate extends RouterDelegate<String>
           child: AppRoutes.routes[_currentRoute]?.call() ?? SplashPage(),
         ),
       ],
-      onPopPage: (route, result) {
-        if (!route.didPop(result)) return false;
-        return true;
+      onDidRemovePage: (page) {
+        // No-op: single-page navigator, back button handled by PopNavigatorRouterDelegateMixin.
+        // Migrated from deprecated onPopPage (Flutter 3.22+).
       },
     );
   }
@@ -106,11 +106,11 @@ class AppRouteInformationParser extends RouteInformationParser<String> {
   @override
   Future<String> parseRouteInformation(
       RouteInformation routeInformation) async {
-    return routeInformation.location;
+    return routeInformation.uri.toString();
   }
 
   @override
   RouteInformation restoreRouteInformation(String configuration) {
-    return RouteInformation(location: configuration);
+    return RouteInformation(uri: Uri.parse(configuration));
   }
 }

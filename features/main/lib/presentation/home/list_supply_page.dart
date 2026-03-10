@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:common/src/services.dart';
-import 'package:common/src/providers/database_provider.dart';
 import 'package:common/src/utils/week_utils.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:main/presentation/home/controller/daily_check_controller.dart';
@@ -13,11 +12,11 @@ import 'package:streak/presentation/pages/streak_detail_page.dart';
 import 'package:streak/di/riverpod_di.dart';
 
 class ListSupplyPage extends ConsumerWidget {
-  ListSupplyPage({super.key});
+  const ListSupplyPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return ListSupply();
+    return const ListSupply();
   }
 }
 
@@ -55,6 +54,8 @@ class SupplyItem implements ListItem {
 enum _EmptyReason { noCourses, noSupplies }
 
 class ListSupply extends ConsumerStatefulWidget {
+  const ListSupply({super.key});
+
   @override
   ConsumerState<ListSupply> createState() => _ListSupplyState();
 }
@@ -72,6 +73,7 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
       false; // Track if bag completion was already marked for today
   bool _isVacationMode = false;
   DateTime? _vacationEndDate;
+  int _totalSuppliesCount = 0;
 
   @override
   void initState() {
@@ -229,7 +231,10 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
               // Collect supply IDs for this course
               final supplyIds = course.supplies.map((s) => s.id).toList();
               items.add(CourseTitleItem(
-                  title: course.courseName, supplyIds: supplyIds));
+                title: course.courseName,
+                courseId: course.courseId,
+                supplyIds: supplyIds,
+              ));
 
               for (final supply in course.supplies) {
                 totalSupplies++;
@@ -252,7 +257,10 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
                   .map((name) => 'standalone_$name')
                   .toList();
               items.add(CourseTitleItem(
-                  title: "Autres fournitures", supplyIds: standaloneIds));
+                title: "Autres fournitures",
+                courseId: '',
+                supplyIds: standaloneIds,
+              ));
 
               // Add standalone supplies
               for (final supplyName in _standaloneSupplies) {
@@ -276,10 +284,17 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
             }
 
             // If courses exist but 0 supplies total (no standalone either)
+            // Auto-validate bag completion (0/0 = ready) so streak counts
             if (totalSupplies == 0) {
+              _totalSuppliesCount = 0;
+              // Defer async call to avoid setState during build
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                _checkAndMarkBagCompletion(0);
+              });
               return _buildEmptyState(packTime, _EmptyReason.noSupplies);
             }
 
+            _totalSuppliesCount = totalSupplies;
             return _buildSupplyList(
                 context, items, checkedSupplies, totalSupplies, packTime);
           },
@@ -502,10 +517,15 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
     );
   }
 
-  Widget _buildSupplyList(BuildContext context, List<ListItem> items,
-      int checked, int total, TimeOfDay packTime) {
-    // Check if bag is ready (all supplies checked)
-    final bool isBagReady = total > 0 && checked == total;
+  Widget _buildSupplyList(
+    BuildContext context,
+    List<ListItem> items,
+    int checked,
+    int total,
+    TimeOfDay packTime,
+  ) {
+    // Check if bag is ready (all supplies checked, including 0/0 case)
+    final bool isBagReady = checked == total;
 
     return Stack(
       children: [
@@ -513,7 +533,8 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
           children: [
             _buildHeader(checked, total, packTime),
             // Show banner when bag is ready
-            if (isBagReady) _buildBagReadyBanner(context),
+            if (isBagReady)
+              _buildBagReadyBanner(context, checked, total, packTime),
             Expanded(
               child: ListView.builder(
                 controller: _scrollController,
@@ -555,17 +576,13 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
                       value: allChecked,
                       onChanged: item.supplyIds.isEmpty
                           ? null
-                          : (value) {
-                              setState(() {
-                                // Check or uncheck all supplies for this course
-                                for (final supplyId in item.supplyIds) {
-                                  _checkedState[supplyId] = value ?? false;
-                                }
-                              });
-                              _saveCheckedState();
-                            },
+                          : (value) => _toggleCourseSupplies(
+                                item,
+                                value ?? false,
+                              ),
                     );
                   } else if (item is SupplyItem) {
+                    final isStandalone = item.courseId.isEmpty;
                     return Container(
                       margin: const EdgeInsets.symmetric(
                           horizontal: 16, vertical: 2),
@@ -588,87 +605,32 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
                                 : null,
                           ),
                         ),
-                        trailing: Checkbox(
-                          value: item.isChecked,
-                          onChanged: (value) async {
-                            final controller =
-                                ref.read(dailyCheckControllerProvider.notifier);
-                            setState(() {
-                              _checkedState[item.id] = value ?? false;
-                            });
-                            // Save to Drift via controller
-                            await controller.toggleCheck(
-                              item.id,
-                              item.courseId,
-                              _targetDate!,
-                              value ?? false,
-                            );
-
-                            // Check if bag is now complete
-                            final tomorrowSupplies = await ref
-                                .read(tomorrowSupplyControllerProvider.future);
-                            int totalSupplies = 0;
-                            for (final course in tomorrowSupplies) {
-                              totalSupplies += course.supplies.length;
-                            }
-                            totalSupplies += _standaloneSupplies.length;
-                            await _checkAndMarkBagCompletion(totalSupplies);
-                          },
-                          activeColor: accentColor,
-                          checkColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(4),
-                          ),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (isStandalone)
+                              IconButton(
+                                icon: Icon(Icons.delete, color: accentColor),
+                                onPressed: () =>
+                                    _deleteStandaloneSupply(item.name),
+                              ),
+                            Checkbox(
+                              value: item.isChecked,
+                              onChanged: (value) =>
+                                  _toggleSupplyItem(item, value ?? false),
+                              activeColor: accentColor,
+                              checkColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                            ),
+                          ],
                         ),
                         onTap: () async {
                           // Toggle checkbox when tapping anywhere on the card
-                          final newValue = !item.isChecked;
-                          final controller =
-                              ref.read(dailyCheckControllerProvider.notifier);
-                          setState(() {
-                            _checkedState[item.id] = newValue;
-                          });
-                          // Save to Drift via controller
-                          await controller.toggleCheck(
-                            item.id,
-                            item.courseId,
-                            _targetDate!,
-                            newValue,
-                          );
-
-                          // Check if bag is now complete
-                          final tomorrowSupplies = await ref
-                              .read(tomorrowSupplyControllerProvider.future);
-                          int totalSupplies = 0;
-                          for (final course in tomorrowSupplies) {
-                            totalSupplies += course.supplies.length;
-                          }
-                          totalSupplies += _standaloneSupplies.length;
-                          await _checkAndMarkBagCompletion(totalSupplies);
+                          await _toggleSupplyItem(item, !item.isChecked);
                         },
                       ),
-                      secondary: isStandalone
-                          ? IconButton(
-                              icon: Icon(Icons.delete, color: accentColor),
-                              onPressed: () =>
-                                  _deleteStandaloneSupply(item.name),
-                            )
-                          : SizedBox(width: 10),
-                      contentPadding:
-                          EdgeInsets.symmetric(horizontal: 8.0, vertical: 2.0),
-                      dense: false,
-                      controlAffinity: ListTileControlAffinity.leading,
-                      title: Text(
-                        item.name,
-                        style: GoogleFonts.roboto(color: Colors.white70),
-                      ),
-                      value: item.isChecked,
-                      onChanged: (value) {
-                        setState(() {
-                          _checkedState[item.id] = value ?? false;
-                        });
-                        _saveCheckedState();
-                      },
                     );
                   }
                   return Container();
@@ -680,6 +642,128 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
         _buildAddButton(),
       ],
     );
+  }
+
+  Future<void> _toggleCourseSupplies(
+    CourseTitleItem item,
+    bool value,
+  ) async {
+    final controller = ref.read(dailyCheckControllerProvider.notifier);
+
+    setState(() {
+      for (final supplyId in item.supplyIds) {
+        _checkedState[supplyId] = value;
+      }
+    });
+    await _saveCheckedState();
+
+    if (_targetDate == null) return;
+
+    for (final supplyId in item.supplyIds) {
+      await controller.toggleCheck(
+        supplyId,
+        item.courseId,
+        _targetDate!,
+        value,
+      );
+    }
+
+    await _checkAndMarkBagCompletion(_totalSuppliesCount);
+  }
+
+  Future<void> _toggleSupplyItem(SupplyItem item, bool value) async {
+    final controller = ref.read(dailyCheckControllerProvider.notifier);
+
+    setState(() {
+      _checkedState[item.id] = value;
+    });
+    await _saveCheckedState();
+
+    if (_targetDate == null) return;
+
+    await controller.toggleCheck(
+      item.id,
+      item.courseId,
+      _targetDate!,
+      value,
+    );
+
+    await _checkAndMarkBagCompletion(_totalSuppliesCount);
+  }
+
+  int _getCheckedSuppliesCount() {
+    return _checkedState.values.where((isChecked) => isChecked).length;
+  }
+
+  Future<void> _checkAndMarkBagCompletion(int totalSupplies) async {
+    if (_targetDate == null) return;
+
+    final checkedSupplies = _getCheckedSuppliesCount();
+    final isBagReady = checkedSupplies ==
+        totalSupplies; // 0 == 0 → true when courses have no supplies
+
+    if (!isBagReady) {
+      _bagCompletionMarked = false;
+      return;
+    }
+
+    if (_bagCompletionMarked) return;
+
+    final streakRepository = ref.read(streakRepositoryProvider);
+    final result = await streakRepository.markBagComplete(_targetDate!);
+
+    result.fold(
+      (failure) => LogService.e('Failed to mark bag complete', failure),
+      (_) async {
+        _bagCompletionMarked = true;
+
+        await NotificationService.cancelStreakReminders();
+
+        ref.invalidate(currentStreakProvider);
+        ref.invalidate(weeklyStreakDataProvider);
+
+        if (!mounted) return;
+
+        final accentColor = Theme.of(context).colorScheme.secondary;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 3),
+            backgroundColor: accentColor,
+            content: const Row(
+              children: [
+                Icon(Icons.celebration, color: Colors.white),
+                SizedBox(width: 12),
+                Expanded(
+                  child: Text('Ton sac est pret ! Ton streak a ete mis a jour'),
+                ),
+              ],
+            ),
+          ),
+        );
+
+        await Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => const StreakDetailPage(
+              showCelebration: true,
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _deleteStandaloneSupply(String supplyName) async {
+    final supplyId = 'standalone_$supplyName';
+
+    await PreferencesService.removeStandaloneSupply(supplyName);
+
+    setState(() {
+      _standaloneSupplies.remove(supplyName);
+      _checkedState.remove(supplyId);
+    });
+
+    await _saveCheckedState();
   }
 
   Widget _buildBagReadyBanner(

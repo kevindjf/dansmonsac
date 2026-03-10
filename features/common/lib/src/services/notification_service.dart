@@ -55,7 +55,8 @@ class NotificationService {
       try {
         final exactAlarmGranted =
             await androidPlugin.requestExactAlarmsPermission();
-        print('🔔 Exact alarms permission: ${exactAlarmGranted ?? false}');
+        LogService.d(
+            '🔔 Exact alarms permission: ${exactAlarmGranted ?? false}');
       } catch (e) {
         LogService.d('⚠️ Exact alarms permission not available or error: $e');
       }
@@ -286,8 +287,9 @@ class NotificationService {
     DateTime? vacationEndDate,
   ) {
     if (!vacationActive) return false;
-    if (vacationEndDate == null)
+    if (vacationEndDate == null) {
       return true; // Manual vacation, all days blocked
+    }
 
     final dayOnly = DateTime(day.year, day.month, day.day);
     final endOnly = DateTime(

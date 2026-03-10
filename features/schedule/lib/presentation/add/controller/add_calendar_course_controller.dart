@@ -1,12 +1,15 @@
 import 'dart:async';
 
+import 'package:common/src/providers/database_provider.dart';
+import 'package:common/src/services/log_service.dart';
+import 'package:common/src/services/notification_service.dart';
 import 'package:common/src/utils.dart';
 import 'package:course/di/riverpod_di.dart';
 import 'package:course/models/cours_with_supplies.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:schedule/models/calendar_course.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:streak/di/riverpod_di.dart';
 
 import '../../../di/riverpod_di.dart';
 import '../../calendar/controller/calendar_controller.dart';
@@ -154,6 +157,8 @@ class AddCalendarCourseController extends _$AddCalendarCourseController {
         ref.invalidate(calendarControllerProvider);
         ref.invalidate(tomorrowSupplyControllerProvider);
         ref.invalidate(coursesProvider);
+        // Fire-and-forget: reschedule notifications with updated courses
+        _refreshNotifications();
       },
     );
   }
@@ -185,7 +190,30 @@ class AddCalendarCourseController extends _$AddCalendarCourseController {
         ref.invalidate(calendarControllerProvider);
         ref.invalidate(tomorrowSupplyControllerProvider);
         ref.invalidate(coursesProvider);
+        // Fire-and-forget: reschedule notifications with updated courses
+        _refreshNotifications();
       },
     );
+  }
+
+  /// Reschedule notifications in fire-and-forget mode after calendar CRUD.
+  void _refreshNotifications() {
+    Future(() async {
+      try {
+        final repository = ref.read(calendarCourseRepositoryProvider);
+        final database = ref.read(databaseProvider);
+        int currentStreak = 0;
+        try {
+          currentStreak = await ref.read(currentStreakProvider.future);
+        } catch (_) {}
+        await NotificationService.updateNotificationIfEnabled(
+          repository: repository,
+          database: database,
+          currentStreak: currentStreak,
+        );
+      } catch (e) {
+        LogService.e('Failed to refresh notifications after calendar CRUD', e);
+      }
+    });
   }
 }
