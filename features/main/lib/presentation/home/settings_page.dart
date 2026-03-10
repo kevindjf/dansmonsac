@@ -883,26 +883,10 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
         isEnabled: _vacationModeEnabled,
         endDate: _vacationEndDate,
         onConfirm: (bool enabled, DateTime? endDate) async {
+          // 1. Sauvegarde préférences (critique)
           await PreferencesService.setVacationMode(enabled, endDate);
 
-          // Update notifications based on vacation mode
-          if (enabled) {
-            await NotificationService.cancelNotification();
-          } else if (_notificationsEnabled) {
-            int currentStreak = 0;
-            try {
-              currentStreak = await ref.read(currentStreakProvider.future);
-            } catch (_) {}
-            await NotificationService.updateNotificationIfEnabled(
-              repository: ref.read(calendarCourseRepositoryProvider),
-              database: ref.read(databaseProvider),
-              currentStreak: currentStreak,
-            );
-          }
-
-          // Refresh streak calculation
-          ref.invalidate(streakRepositoryProvider);
-
+          // 2. UI feedback immédiat (avant les opérations risquées)
           setState(() {
             _vacationModeEnabled = enabled;
             _vacationEndDate = endDate;
@@ -914,6 +898,31 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
           _showSnackBar(enabled
               ? '🏖️ Mode vacances activé - Ta streak est protégée !'
               : '🎒 Bon retour ! Les rappels sont réactivés.');
+
+          // 3. Notifications + streak refresh (secondaire, isolé)
+          try {
+            if (enabled) {
+              await NotificationService.cancelNotification();
+            } else if (_notificationsEnabled) {
+              int currentStreak = 0;
+              try {
+                currentStreak =
+                    await ref.read(currentStreakProvider.future);
+              } catch (_) {}
+              await NotificationService.updateNotificationIfEnabled(
+                repository: ref.read(calendarCourseRepositoryProvider),
+                database: ref.read(databaseProvider),
+                currentStreak: currentStreak,
+              );
+            }
+            ref.invalidate(streakRepositoryProvider);
+          } catch (e, st) {
+            LogService.e(
+              'Erreur mise à jour notifications/streak après vacation mode',
+              e,
+              st,
+            );
+          }
         },
       ),
     );
