@@ -473,36 +473,30 @@ void main() {
     });
 
     test('no data loss in offline mode', () async {
-      final now = DateTime.now();
-      final today = DateTime(now.year, now.month, now.day);
-      final tomorrow = today.add(const Duration(days: 1));
-
-      // Insert completions for both today and tomorrow so the streak
-      // counts regardless of whether we are before or after pack time.
-      // Before pack time: currentNotificationDay = yesterday, target = today
-      // After pack time: currentNotificationDay = today, target = tomorrow
-      for (final date in [today, tomorrow]) {
-        await database.insertBagCompletion(
-          BagCompletionsCompanion(
-            id: drift.Value(uuid.v4()),
-            date: drift.Value(date),
-            completedAt: drift.Value(DateTime.now()),
-            deviceId: drift.Value('test-device'),
-            createdAt: drift.Value(DateTime.now()),
-          ),
-        );
-      }
+      final tomorrow = DateTime.now().add(const Duration(days: 1));
+      final tomorrowDate =
+          DateTime(tomorrow.year, tomorrow.month, tomorrow.day);
 
       // All writes go to local Drift database (offline-first)
       await dailyCheckRepository.toggleSupplyCheck(
         'supply-1',
         'course-1',
-        tomorrow,
+        tomorrowDate,
         true,
       );
 
+      await database.insertBagCompletion(
+        BagCompletionsCompanion(
+          id: drift.Value(uuid.v4()),
+          date: drift.Value(tomorrowDate),
+          completedAt: drift.Value(DateTime.now()),
+          deviceId: drift.Value('test-device'),
+          createdAt: drift.Value(DateTime.now()),
+        ),
+      );
+
       // Verify data exists locally
-      final checks = await database.getDailyChecksByDate(tomorrow);
+      final checks = await database.getDailyChecksByDate(tomorrowDate);
       final streakResult = await streakRepository.getCurrentStreak();
 
       expect(checks, isNotEmpty);
