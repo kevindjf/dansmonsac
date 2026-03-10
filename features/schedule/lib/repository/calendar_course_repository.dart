@@ -36,8 +36,7 @@ abstract class CalendarCourseRepository {
 class CalendarCourseSupabaseRepository extends CalendarCourseRepository {
   final AppDatabase database;
 
-  CalendarCourseSupabaseRepository(
-      this.supabaseClient, this.preferenceRepository);
+  CalendarCourseSupabaseRepository(this.database);
 
   @override
   Future<Either<Failure, CalendarCourse>> addCalendarCourse(
@@ -122,23 +121,183 @@ class CalendarCourseSupabaseRepository extends CalendarCourseRepository {
   Future<Either<Failure, void>> updateCalendarCourse(
       CalendarCourse calendarCourse) {
     return handleErrors(() async {
-      await supabaseClient.from('calendar_courses').update({
-        'course_id': calendarCourse.courseId,
-        'room_name': calendarCourse.roomName,
-        'start_time_hour': calendarCourse.startTime.hour,
-        'start_time_minute': calendarCourse.startTime.minute,
-        'end_time_hour': calendarCourse.endTime.hour,
-        'end_time_minute': calendarCourse.endTime.minute,
-        'week_type': calendarCourse.weekType.value,
-        'day_of_week': calendarCourse.dayOfWeek,
-      }).eq('id', calendarCourse.id);
+      LogService.d(
+          'CalendarCourseRepository.updateCalendarCourse: Updating calendar course');
+
+      // UPDATE IN DRIFT (local DB only)
+      final companion = CalendarCoursesCompanion(
+        id: Value(calendarCourse.id),
+        courseId: Value(calendarCourse.courseId),
+        roomName: Value(calendarCourse.roomName),
+        startHour: Value(calendarCourse.startTime.hour),
+        startMinute: Value(calendarCourse.startTime.minute),
+        endHour: Value(calendarCourse.endTime.hour),
+        endMinute: Value(calendarCourse.endTime.minute),
+        weekType: Value(calendarCourse.weekType.value),
+        dayOfWeek: Value(calendarCourse.dayOfWeek),
+        updatedAt: Value(DateTime.now()),
+      );
+
+      await database.update(database.calendarCourses).replace(companion);
+
+      LogService.d(
+          'CalendarCourseRepository.updateCalendarCourse: Updated in Drift');
     });
   }
 
   @override
   Future<Either<Failure, void>> deleteCalendarCourse(String id) {
     return handleErrors(() async {
-      await supabaseClient.from('calendar_courses').delete().eq('id', id);
+      LogService.d(
+          'CalendarCourseRepository.deleteCalendarCourse: Deleting calendar course');
+
+      // DELETE FROM DRIFT (local DB only)
+      await (database.delete(database.calendarCourses)
+            ..where((tbl) => tbl.id.equals(id)))
+          .go();
+
+      LogService.d(
+          'CalendarCourseRepository.deleteCalendarCourse: Deleted from Drift');
+    });
+  }
+
+  @override
+  Future<Either<Failure, List<CalendarCourseWithSupplies>>>
+      getTomorrowCourses() {
+    final tomorrow = clock.now().add(const Duration(days: 1));
+    return getCoursesForDate(tomorrow);
+  }
+
+  @override
+  Future<Either<Failure, List<CalendarCourseWithSupplies>>> getCoursesForDate(
+      DateTime date) {
+    return handleErrors(() async {
+      final targetDayOfWeek = date.weekday; // 1=Mon, 7=Sun
+
+      LogService.d(
+          'CalendarCourseRepository.getCoursesForDate: date=${date.toIso8601String()}, dayOfWeek=$targetDayOfWeek');
+
+      // Determine week type (A/B) using WeekUtils
+      final schoolYearStart = await PreferencesService.getSchoolYearStart();
+      final weekType = WeekUtils.getCurrentWeekType(schoolYearStart, date);
+
+      LogService.d(
+          'CalendarCourseRepository.getCoursesForDate: weekType=$weekType');
+
+      final stopwatch = Stopwatch()..start();
+
+      // Query 1: Get calendar courses for target date (filtered by day + week type)
+      final calendarQuery = database.select(database.calendarCourses)
+        ..where((c) =>
+            c.dayOfWeek.equals(targetDayOfWeek) &
+            (c.weekType.equals('BOTH') |
+                c.weekType.equals('AB') |
+                c.weekType.equals(weekType)))
+        ..orderBy([
+          (c) => OrderingTerm.asc(c.startHour),
+          (c) => OrderingTerm.asc(c.startMinute)
+        ]);
+
+      final calendarCourses = await calendarQuery.get();
+
+      LogService.d(
+          'CalendarCourseRepository.getCoursesForDate: Found ${calendarCourses.length} calendar courses');
+
+      if (calendarCourses.isEmpty) {
+        LogService.d(
+            'CalendarCourseRepository.getCoursesForDate: No courses scheduled, returning empty list');
+        return <CalendarCourseWithSupplies>[];
+      }
+
+      // Query 2: Batch load all courses
+      // IMPORTANT: courseId can be either a local Drift ID OR a Supabase remoteId
+      final courseIds = calendarCourses.map((c) => c.courseId).toSet().toList();
+      final coursesQuery = database.select(database.courses)
+        ..where((c) => c.id.isIn(courseIds) | c.remoteId.isIn(courseIds));
+
+      final coursesById = <String, CourseEntity>{};
+      final coursesByRemoteId = <String, CourseEntity>{};
+      for (var c in await coursesQuery.get()) {
+        coursesById[c.id] = c;
+        if (c.remoteId != null) {
+          coursesByRemoteId[c.remoteId!] = c;
+        }
+      }
+
+      CourseEntity? findCourse(String courseId) {
+        return coursesById[courseId] ?? coursesByRemoteId[courseId];
+      }
+
+      if (coursesById.isEmpty && coursesByRemoteId.isEmpty) {
+        LogService.w(
+            'CalendarCourseRepository.getCoursesForDate: No courses found in Drift');
+      }
+
+      // Query 3: Batch load all supplies
+      final allCourseIds = <String>[];
+      allCourseIds.addAll(coursesById.keys);
+      allCourseIds.addAll(coursesByRemoteId.keys);
+
+      final suppliesQuery = database.select(database.supplies)
+        ..where((s) => s.courseId.isIn(allCourseIds));
+      final allSupplies = await suppliesQuery.get();
+
+      final suppliesByCourse = <String, List<SupplyEntity>>{};
+      for (final supply in allSupplies) {
+        final course = findCourse(supply.courseId);
+        if (course != null) {
+          suppliesByCourse.putIfAbsent(course.id, () => []).add(supply);
+        }
+      }
+
+      LogService.d(
+          'CalendarCourseRepository.getCoursesForDate: Batch loaded ${coursesById.length} courses and ${allSupplies.length} supplies');
+
+      // Build final result with in-memory join
+      final result = <CalendarCourseWithSupplies>[];
+
+      for (final calendarCourse in calendarCourses) {
+        final course = findCourse(calendarCourse.courseId);
+
+        if (course == null) {
+          LogService.w(
+              'CalendarCourseRepository.getCoursesForDate: Course ${calendarCourse.courseId} not found, skipping');
+          continue;
+        }
+
+        final courseName = course.name;
+        final driftSupplies = suppliesByCourse[course.id] ?? [];
+        final supplies =
+            driftSupplies.map((s) => Supply(id: s.id, name: s.name)).toList();
+
+        result.add(
+          CalendarCourseWithSupplies(
+            courseId: calendarCourse.courseId,
+            courseName: courseName,
+            startHour: calendarCourse.startHour,
+            startMinute: calendarCourse.startMinute,
+            endHour: calendarCourse.endHour,
+            endMinute: calendarCourse.endMinute,
+            room: calendarCourse.roomName.isEmpty
+                ? null
+                : calendarCourse.roomName,
+            supplies: supplies,
+          ),
+        );
+      }
+
+      stopwatch.stop();
+      final elapsedMs = stopwatch.elapsedMilliseconds;
+
+      LogService.d(
+          'CalendarCourseRepository.getCoursesForDate: Completed in ${elapsedMs}ms, returning ${result.length} courses');
+
+      if (elapsedMs >= 500) {
+        LogService.w(
+            'CalendarCourseRepository.getCoursesForDate: Performance warning! ${elapsedMs}ms (should be < 500ms)');
+      }
+
+      return result;
     });
   }
 }

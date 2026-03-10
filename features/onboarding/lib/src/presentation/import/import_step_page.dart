@@ -154,32 +154,9 @@ class _OnboardingImportStepPageState
                 const SizedBox(height: 32),
 
                 // Info card
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: accentColor.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.info_outline,
-                        color: accentColor,
-                        size: 24,
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          "Demande a ton ami d'ouvrir l'app et d'aller dans Parametres > Partager pour obtenir un code",
-                          style: TextStyle(
-                            color: colorScheme.onSurfaceVariant,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+                _buildInfoCard(accentColor),
+
+                const SizedBox(height: 24),
               ],
             ),
           ),
@@ -429,84 +406,13 @@ class _OnboardingImportStepPageState
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       builder: (scannerContext) {
-        final bottomPadding = MediaQuery.of(scannerContext).viewPadding.bottom;
-        return SizedBox(
-          height: MediaQuery.of(scannerContext).size.height * 0.7,
-          child: Column(
-            children: [
-              // Handle bar
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  children: [
-                    Container(
-                      width: 40,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: Colors.white24,
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    const Text(
-                      'Scanner le QR code',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              // Scanner
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(16),
-                    child: MobileScanner(
-                      onDetect: (capture) {
-                        final barcodes = capture.barcodes;
-                        for (final barcode in barcodes) {
-                          final code =
-                              _extractCodeFromBarcode(barcode.rawValue);
-                          if (code != null) {
-                            Navigator.of(scannerContext).pop();
-                            _codeInputKey.currentState?.setCode(code);
-                            _handleImport(code);
-                            return;
-                          }
-                        }
-                      },
-                    ),
-                  ),
-                ),
-              ),
-              // Cancel button
-              Padding(
-                padding: EdgeInsets.only(
-                  left: 16,
-                  right: 16,
-                  top: 16,
-                  bottom: 16 + bottomPadding,
-                ),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: OutlinedButton(
-                    onPressed: () => Navigator.of(scannerContext).pop(),
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: const Text('Annuler'),
-                  ),
-                ),
-              ),
-            ],
-          ),
+        return _QrScannerSheet(
+          onCodeDetected: (code) {
+            Navigator.of(scannerContext).pop();
+            _codeInputKey.currentState?.setCode(code);
+            _handleImport(code);
+          },
+          extractCode: _extractCodeFromBarcode,
         );
       },
     );

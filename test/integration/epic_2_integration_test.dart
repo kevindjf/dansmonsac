@@ -68,6 +68,10 @@ void main() {
       'school_year_start': DateTime(2025, 9, 1).toIso8601String(),
       'previous_streak': 0,
       'best_streak': 0,
+      // Set pack time to 00:00 so currentNotificationDay = today
+      // and target = tomorrow, matching what the tests insert.
+      'pack_time_hour': 0,
+      'pack_time_minute': 0,
     });
 
     // Create in-memory database for testing

@@ -90,28 +90,47 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
             Padding(
               padding:
                   const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    "Vos cours de la journée",
-                    style: GoogleFonts.robotoCondensed(
-                        color: Colors.white38, fontSize: 14),
-                  ),
-                  // Week filter buttons
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.black26,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        _buildWeekFilterButton("Complet", WeekFilter.all),
-                        _buildWeekFilterButton("Sem. A", WeekFilter.weekA),
-                        _buildWeekFilterButton("Sem. B", WeekFilter.weekB),
-                      ],
-                    ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "Vos cours de la journée",
+                            style: GoogleFonts.robotoCondensed(
+                                color: Colors.white38, fontSize: 14),
+                          ),
+                          if (_currentWeekType != null)
+                            Text(
+                              "Semaine $_currentWeekType",
+                              style: GoogleFonts.robotoCondensed(
+                                color: Theme.of(context).colorScheme.secondary,
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                        ],
+                      ),
+                      // Week filter buttons
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.black26,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            _buildWeekFilterButton("Complet", WeekFilter.all),
+                            _buildWeekFilterButton("Sem. A", WeekFilter.weekA),
+                            _buildWeekFilterButton("Sem. B", WeekFilter.weekB),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),

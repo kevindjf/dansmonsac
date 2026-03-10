@@ -236,10 +236,10 @@ class _AddCalendarCoursePageState extends ConsumerState<AddCalendarCoursePage> {
                           ],
                         ),
 
-                  // Champ pour la salle
+                  // Champ pour la salle (optionnel)
                   _buildTextField(
                     controller: _roomController,
-                    labelText: "Salle",
+                    labelText: "Salle (optionnel)",
                     hintText: "Exemple : A102",
                     context: context,
                   ),

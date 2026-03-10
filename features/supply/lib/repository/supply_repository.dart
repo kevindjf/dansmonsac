@@ -8,4 +8,6 @@ abstract class SupplyRepository {
   Future<Either<Failure, Supply>> store(AddSupplyCommand command);
 
   Future<Either<Failure, void>> deleteSupply(String id);
+
+  Future<Either<Failure, void>> updateSupplyName(String id, String newName);
 }
