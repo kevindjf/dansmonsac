@@ -63,7 +63,8 @@ class AppRouterDelegate extends RouterDelegate<String>
         ),
       ],
       onDidRemovePage: (page) {
-        // Page was removed from the navigator
+        // No-op: single-page navigator, back button handled by PopNavigatorRouterDelegateMixin.
+        // Migrated from deprecated onPopPage (Flutter 3.22+).
       },
     );
   }

@@ -287,7 +287,10 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
             // Auto-validate bag completion (0/0 = ready) so streak counts
             if (totalSupplies == 0) {
               _totalSuppliesCount = 0;
-              _checkAndMarkBagCompletion(0);
+              // Defer async call to avoid setState during build
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                _checkAndMarkBagCompletion(0);
+              });
               return _buildEmptyState(packTime, _EmptyReason.noSupplies);
             }
 
