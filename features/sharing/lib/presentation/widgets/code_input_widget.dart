@@ -185,7 +185,7 @@ class CodeInputWidgetState extends State<CodeInputWidget> {
                 onPressed: widget.enabled ? widget.onScanQrCode : null,
                 icon: Icon(
                   Icons.qr_code_scanner,
-                  color: widget.enabled ? accentColor : Colors.white24,
+                  color: widget.enabled ? accentColor : Theme.of(context).dividerColor,
                   size: 28,
                 ),
                 tooltip: 'Scanner un QR code',
@@ -218,7 +218,7 @@ class CodeInputWidgetState extends State<CodeInputWidget> {
           textCapitalization: TextCapitalization.characters,
           maxLength: 1,
           style: GoogleFonts.robotoMono(
-            color: Colors.white,
+            color: Theme.of(context).colorScheme.onSurface,
             fontSize: 24,
             fontWeight: FontWeight.bold,
           ),
@@ -240,7 +240,7 @@ class CodeInputWidgetState extends State<CodeInputWidget> {
               borderSide: BorderSide(
                 color: _controllers[index].text.isNotEmpty
                     ? accentColor.withValues(alpha: 0.5)
-                    : Colors.white24,
+                    : Theme.of(context).dividerColor,
                 width: 2,
               ),
             ),
@@ -254,7 +254,7 @@ class CodeInputWidgetState extends State<CodeInputWidget> {
             disabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(
-                color: Colors.white12,
+                color: Theme.of(context).dividerColor,
                 width: 2,
               ),
             ),

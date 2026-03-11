@@ -81,10 +81,10 @@ class StreakCounterWidget extends ConsumerWidget {
           const SizedBox(width: 6),
           Text(
             '$streak ${_getDaysText(streak)}',
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
         ],

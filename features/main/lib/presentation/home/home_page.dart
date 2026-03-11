@@ -259,9 +259,9 @@ class _HomePageState extends ConsumerState<HomePage> {
     _checkAndShowTutorial();
 
     return Scaffold(
-      backgroundColor: const Color(0xFF212121),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: const Color(0xFF161616),
+        backgroundColor: Theme.of(context).colorScheme.surfaceContainerHigh,
         currentIndex: state.currentIndex,
         onTap: (index) {
           HomeViewPage page = HomeViewPage.supplies;
@@ -280,7 +280,7 @@ class _HomePageState extends ConsumerState<HomePage> {
           ref.read(homeControllerProvider.notifier).changePage(index, page);
         },
         selectedItemColor: accentColor,
-        unselectedItemColor: const Color(0xFF616161),
+        unselectedItemColor: Theme.of(context).colorScheme.onSurfaceVariant,
         showSelectedLabels: true,
         showUnselectedLabels: true,
         items: <BottomNavigationBarItem>[

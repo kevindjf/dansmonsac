@@ -30,7 +30,7 @@ class ImportPreviewPage extends ConsumerWidget {
         bottom: 24 + bottomPadding,
       ),
       decoration: BoxDecoration(
-        color: const Color(0xFF303030),
+        color: Theme.of(context).colorScheme.surfaceContainerHigh,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
       ),
       child: SingleChildScrollView(
@@ -44,7 +44,7 @@ class ImportPreviewPage extends ConsumerWidget {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: Colors.white24,
+                  color: Theme.of(context).dividerColor,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -57,7 +57,7 @@ class ImportPreviewPage extends ConsumerWidget {
               const SizedBox(height: 16),
               Text(
                 'Chargement...',
-                style: GoogleFonts.roboto(color: Colors.white54),
+                style: GoogleFonts.roboto(color: Theme.of(context).colorScheme.onSurfaceVariant),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 40),
@@ -69,7 +69,7 @@ class ImportPreviewPage extends ConsumerWidget {
                 state.errorMessage!,
                 style: GoogleFonts.roboto(
                   fontSize: 16,
-                  color: Colors.white70,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -87,12 +87,12 @@ class ImportPreviewPage extends ConsumerWidget {
                 style: GoogleFonts.robotoCondensed(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 16),
-              _buildResultStats(state.result!, accentColor),
+              _buildResultStats(context, state.result!, accentColor),
               const SizedBox(height: 24),
               FilledButton(
                 onPressed: () {
@@ -133,7 +133,7 @@ class ImportPreviewPage extends ConsumerWidget {
                 style: GoogleFonts.robotoCondensed(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -151,7 +151,7 @@ class ImportPreviewPage extends ConsumerWidget {
               const SizedBox(height: 24),
 
               // Stats
-              _buildPreviewStats(state, accentColor),
+              _buildPreviewStats(context, state, accentColor),
               const SizedBox(height: 24),
 
               // Buttons
@@ -204,7 +204,7 @@ class ImportPreviewPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildPreviewStats(dynamic state, Color accentColor) {
+  Widget _buildPreviewStats(BuildContext context, dynamic state, Color accentColor) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -213,19 +213,19 @@ class ImportPreviewPage extends ConsumerWidget {
       ),
       child: Column(
         children: [
-          _buildStatRow(Icons.book, '${state.courseCount} cours', accentColor),
-          const Divider(color: Colors.white12, height: 24),
-          _buildStatRow(Icons.calendar_today, '${state.calendarCount} seances',
+          _buildStatRow(context, Icons.book, '${state.courseCount} cours', accentColor),
+          Divider(color: Theme.of(context).dividerColor, height: 24),
+          _buildStatRow(context, Icons.calendar_today, '${state.calendarCount} seances',
               accentColor),
-          const Divider(color: Colors.white12, height: 24),
-          _buildStatRow(
+          Divider(color: Theme.of(context).dividerColor, height: 24),
+          _buildStatRow(context,
               Icons.backpack, '${state.supplyCount} fournitures', accentColor),
         ],
       ),
     );
   }
 
-  Widget _buildResultStats(dynamic result, Color accentColor) {
+  Widget _buildResultStats(BuildContext context, dynamic result, Color accentColor) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -237,6 +237,7 @@ class ImportPreviewPage extends ConsumerWidget {
         children: [
           if (result.createdCourses.isNotEmpty)
             _buildStatRow(
+              context,
               Icons.add_circle,
               '${result.createdCourses.length} cours crees',
               Colors.green,
@@ -244,6 +245,7 @@ class ImportPreviewPage extends ConsumerWidget {
           if (result.skippedCourses.isNotEmpty) ...[
             const SizedBox(height: 8),
             _buildStatRow(
+              context,
               Icons.skip_next,
               '${result.skippedCourses.length} cours ignores (deja existants)',
               Colors.orange,
@@ -252,6 +254,7 @@ class ImportPreviewPage extends ConsumerWidget {
           if (result.calendarEntriesImported > 0) ...[
             const SizedBox(height: 8),
             _buildStatRow(
+              context,
               Icons.calendar_today,
               '${result.calendarEntriesImported} seances importees',
               accentColor,
@@ -262,7 +265,7 @@ class ImportPreviewPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildStatRow(IconData icon, String label, Color color) {
+  Widget _buildStatRow(BuildContext context, IconData icon, String label, Color color) {
     return Row(
       children: [
         Icon(icon, size: 24, color: color),
@@ -272,7 +275,7 @@ class ImportPreviewPage extends ConsumerWidget {
             label,
             style: GoogleFonts.roboto(
               fontSize: 16,
-              color: Colors.white70,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
           ),
         ),

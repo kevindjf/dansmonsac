@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:common/src/ui/theme/colors.dart';
 
 class PreferencesService {
   static const String _keyPackTimeHour = 'pack_time_hour';
@@ -26,6 +27,8 @@ class PreferencesService {
   static const String _keyVacationModeEnabled = 'vacation_mode_enabled';
   static const String _keyVacationModeEndDate = 'vacation_mode_end_date';
   static const String _keyMigrationV3Completed = 'migration_v3_completed';
+  static const String _keyThemeMode = 'theme_mode';
+  static const _validThemeModes = {'system', 'light', 'dark'};
 
   static Future<void> setPackTime(TimeOfDay time) async {
     final prefs = await SharedPreferences.getInstance();
@@ -88,8 +91,8 @@ class PreferencesService {
     if (colorValue != null) {
       return Color(colorValue);
     }
-    // Default color (purple)
-    return const Color(0xFF9C27B0);
+    // Default color (violet clair)
+    return AppColors.accent;
   }
 
   /// Save supply checked state for a specific date
@@ -418,5 +421,23 @@ class PreferencesService {
   static Future<void> setMigrationV3Completed(bool completed) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_keyMigrationV3Completed, completed);
+  }
+
+  // ===== Theme Mode Methods =====
+
+  /// Get the saved theme mode preference
+  /// Returns 'system' (default), 'light', or 'dark'
+  static Future<String> getThemeMode() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_keyThemeMode) ?? 'system';
+  }
+
+  /// Set the theme mode preference
+  /// Accepts 'system', 'light', or 'dark'
+  static Future<void> setThemeMode(String mode) async {
+    assert(_validThemeModes.contains(mode), 'Invalid theme mode: $mode');
+    final safeMode = _validThemeModes.contains(mode) ? mode : 'system';
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_keyThemeMode, safeMode);
   }
 }

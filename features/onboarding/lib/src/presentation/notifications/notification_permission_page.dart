@@ -150,7 +150,7 @@ class _OnboardingNotificationPermissionPageState
                 'Reçois tes rappels',
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                 textAlign: TextAlign.center,
               ),
@@ -161,7 +161,7 @@ class _OnboardingNotificationPermissionPageState
               Text(
                 'Pour ne jamais oublier de préparer ton sac, active les notifications.',
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      color: Colors.white70,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
                 textAlign: TextAlign.center,
               ),
@@ -267,10 +267,10 @@ class _OnboardingNotificationPermissionPageState
             children: [
               Text(
                 title,
-                style: const TextStyle(
+                style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 16,
-                  color: Colors.white,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),
               const SizedBox(height: 4),
@@ -278,7 +278,7 @@ class _OnboardingNotificationPermissionPageState
                 description,
                 style: TextStyle(
                   fontSize: 14,
-                  color: Colors.white70,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
               ),
             ],

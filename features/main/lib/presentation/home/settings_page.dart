@@ -9,6 +9,7 @@ import 'package:sharing/sharing.dart';
 import 'package:onboarding/onboarding.dart';
 import 'package:schedule/di/riverpod_di.dart';
 import 'package:streak/di/riverpod_di.dart';
+import 'package:common/src/ui/theme/colors.dart';
 import 'help_page.dart';
 
 class SettingsPage extends ConsumerStatefulWidget {
@@ -60,20 +61,20 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   Widget build(BuildContext context) {
     if (_isLoading) {
       return Scaffold(
-        backgroundColor: Color(0xFF212121),
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         body: Center(child: CircularProgressIndicator()),
       );
     }
 
     return Scaffold(
-      backgroundColor: Color(0xFF212121),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           children: [
             // Header
             Container(
               width: double.infinity,
-              color: Color(0xFF303030),
+              color: Theme.of(context).colorScheme.surfaceContainerHigh,
               child: Padding(
                 padding: const EdgeInsets.all(24.0),
                 child: Column(
@@ -83,7 +84,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                     Text(
                       "Paramètres",
                       style: GoogleFonts.robotoCondensed(
-                        color: Colors.white,
+                        color: Theme.of(context).colorScheme.onSurface,
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
                       ),
@@ -92,7 +93,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                     Text(
                       "Personnalisez votre expérience",
                       style: GoogleFonts.roboto(
-                        color: Colors.white38,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                         fontSize: 14,
                         fontWeight: FontWeight.w300,
                       ),
@@ -149,10 +150,12 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                       decoration: BoxDecoration(
                         color: _accentColor,
                         shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white24, width: 2),
+                        border: Border.all(color: Theme.of(context).dividerColor, width: 2),
                       ),
                     ),
                   ),
+
+                  _buildThemeModeCard(context),
 
                   _buildSwitchCard(
                     icon: Icons.weekend_outlined,
@@ -269,7 +272,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     final accentColor = Theme.of(context).colorScheme.secondary;
 
     return Card(
-      color: Color(0xFF303030),
+      color: Theme.of(context).colorScheme.surfaceContainerHigh,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
       ),
@@ -304,7 +307,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                     Text(
                       title,
                       style: GoogleFonts.roboto(
-                        color: Colors.white,
+                        color: Theme.of(context).colorScheme.onSurface,
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
                       ),
@@ -314,7 +317,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                       Text(
                         subtitle,
                         style: GoogleFonts.roboto(
-                          color: Colors.white38,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                           fontSize: 14,
                           fontWeight: FontWeight.w300,
                         ),
@@ -344,7 +347,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                   const SizedBox(width: 8),
                   Icon(
                     Icons.chevron_right,
-                    color: Colors.white38,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                     size: 24,
                   ),
                 ],
@@ -390,7 +393,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
             colorScheme: ColorScheme.dark(
               primary: accentColor,
               onPrimary: Colors.white,
-              surface: Color(0xFF303030),
+              surface: Theme.of(context).colorScheme.surfaceContainerHigh,
               onSurface: Colors.white,
             ),
           ),
@@ -437,7 +440,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
             colorScheme: ColorScheme.dark(
               primary: accentColor,
               onPrimary: Colors.white,
-              surface: Color(0xFF303030),
+              surface: Theme.of(context).colorScheme.surfaceContainerHigh,
               onSurface: Colors.white,
             ),
           ),
@@ -465,7 +468,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     final accentColor = Theme.of(context).colorScheme.secondary;
 
     return Card(
-      color: Color(0xFF303030),
+      color: Theme.of(context).colorScheme.surfaceContainerHigh,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
       ),
@@ -497,7 +500,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                   Text(
                     title,
                     style: GoogleFonts.roboto(
-                      color: Colors.white,
+                      color: Theme.of(context).colorScheme.onSurface,
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
                     ),
@@ -507,7 +510,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                     Text(
                       subtitle,
                       style: GoogleFonts.roboto(
-                        color: Colors.white38,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                         fontSize: 14,
                         fontWeight: FontWeight.w300,
                       ),
@@ -533,7 +536,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     final accentColor = Theme.of(context).colorScheme.secondary;
 
     return Card(
-      color: Color(0xFF303030),
+      color: Theme.of(context).colorScheme.surfaceContainerHigh,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
       ),
@@ -566,7 +569,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                     child: Text(
                       'Debut d\'annee scolaire',
                       style: GoogleFonts.roboto(
-                        color: Colors.white,
+                        color: Theme.of(context).colorScheme.onSurface,
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
                       ),
@@ -574,7 +577,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                   ),
                   Icon(
                     Icons.chevron_right,
-                    color: Colors.white38,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                     size: 24,
                   ),
                 ],
@@ -586,7 +589,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                 child: Text(
                   'Date de la premiere semaine A',
                   style: GoogleFonts.roboto(
-                    color: Colors.white38,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                     fontSize: 14,
                     fontWeight: FontWeight.w300,
                   ),
@@ -668,6 +671,182 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
         : 'Weekend masqué du calendrier');
   }
 
+  Widget _buildThemeModeCard(BuildContext context) {
+    final accentColor = Theme.of(context).colorScheme.secondary;
+    final currentMode = ref.watch(themeModeControllerProvider);
+    final modeLabel = switch (currentMode) {
+      ThemeMode.system => 'Systeme',
+      ThemeMode.light => 'Clair',
+      ThemeMode.dark => 'Sombre',
+    };
+
+    return _buildSettingCard(
+      context: context,
+      icon: Icons.brightness_6_outlined,
+      title: 'Theme',
+      subtitle: 'Apparence de l\'application',
+      value: modeLabel,
+      onTap: () => _showThemeModeBottomSheet(context),
+    );
+  }
+
+  void _showThemeModeBottomSheet(BuildContext context) {
+    final accentColor = Theme.of(context).colorScheme.secondary;
+    final currentMode = ref.read(themeModeControllerProvider);
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return Container(
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surfaceContainerHigh,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewPadding.bottom + 16,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Handle bar
+              Center(
+                child: Container(
+                  margin: const EdgeInsets.symmetric(vertical: 12),
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).dividerColor,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: accentColor.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Icon(
+                        Icons.brightness_6_outlined,
+                        color: accentColor,
+                        size: 24,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Text(
+                      'Choisir le theme',
+                      style: GoogleFonts.robotoCondensed(
+                        color: Theme.of(context).colorScheme.onSurface,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              _buildThemeModeOption(
+                context: context,
+                icon: Icons.settings_suggest_outlined,
+                label: 'Systeme',
+                subtitle: 'Suit le reglage de votre appareil',
+                mode: ThemeMode.system,
+                currentMode: currentMode,
+                accentColor: accentColor,
+              ),
+              _buildThemeModeOption(
+                context: context,
+                icon: Icons.light_mode_outlined,
+                label: 'Clair',
+                subtitle: 'Theme lumineux',
+                mode: ThemeMode.light,
+                currentMode: currentMode,
+                accentColor: accentColor,
+              ),
+              _buildThemeModeOption(
+                context: context,
+                icon: Icons.dark_mode_outlined,
+                label: 'Sombre',
+                subtitle: 'Theme sombre',
+                mode: ThemeMode.dark,
+                currentMode: currentMode,
+                accentColor: accentColor,
+              ),
+              const SizedBox(height: 8),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildThemeModeOption({
+    required BuildContext context,
+    required IconData icon,
+    required String label,
+    required String subtitle,
+    required ThemeMode mode,
+    required ThemeMode currentMode,
+    required Color accentColor,
+  }) {
+    final isSelected = mode == currentMode;
+
+    return InkWell(
+      onTap: () {
+        ref.read(themeModeControllerProvider.notifier).updateThemeMode(mode);
+        Navigator.pop(context);
+      },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+        child: Row(
+          children: [
+            Icon(
+              icon,
+              color: isSelected ? accentColor : Theme.of(context).colorScheme.onSurfaceVariant,
+              size: 24,
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label,
+                    style: GoogleFonts.roboto(
+                      color: isSelected ? Theme.of(context).colorScheme.onSurface : Theme.of(context).colorScheme.onSurfaceVariant,
+                      fontSize: 16,
+                      fontWeight:
+                          isSelected ? FontWeight.w600 : FontWeight.w400,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: GoogleFonts.roboto(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w300,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (isSelected)
+              Icon(
+                Icons.check_circle,
+                color: accentColor,
+                size: 24,
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Future<void> _selectAccentColor(BuildContext context) async {
     final accentColor = Theme.of(context).colorScheme.secondary;
     Color? pickedColor;
@@ -676,14 +855,14 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          backgroundColor: Color(0xFF303030),
+          backgroundColor: Theme.of(context).colorScheme.surfaceContainerHigh,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
           title: Text(
             'Choisir une couleur',
             style: GoogleFonts.robotoCondensed(
-              color: Colors.white,
+              color: Theme.of(context).colorScheme.onSurface,
               fontSize: 20,
               fontWeight: FontWeight.bold,
             ),
@@ -706,7 +885,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
               child: Text(
                 'Annuler',
                 style: GoogleFonts.roboto(
-                  color: Colors.white54,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                   fontSize: 16,
                 ),
               ),
@@ -749,7 +928,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: Color(0xFF303030),
+        backgroundColor: Theme.of(context).colorScheme.surfaceContainerHigh,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8),
@@ -791,7 +970,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
 
   Widget _buildVacationModeCard(BuildContext context) {
     return Card(
-      color: const Color(0xFF303030),
+      color: Theme.of(context).colorScheme.surfaceContainerHigh,
       margin: const EdgeInsets.symmetric(vertical: 4.0),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: InkWell(
@@ -805,8 +984,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   color: _vacationModeEnabled
-                      ? const Color(0xFFFF9800).withValues(alpha: 0.2)
-                      : Colors.white.withValues(alpha: 0.1),
+                      ? AppColors.vacation.withValues(alpha: 0.2)
+                      : Theme.of(context).dividerColor,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
@@ -814,8 +993,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                       ? Icons.beach_access
                       : Icons.school_outlined,
                   color: _vacationModeEnabled
-                      ? const Color(0xFFFF9800)
-                      : Colors.white70,
+                      ? AppColors.vacation
+                      : Theme.of(context).colorScheme.onSurfaceVariant,
                   size: 24,
                 ),
               ),
@@ -826,8 +1005,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                   children: [
                     Text(
                       'Mode vacances',
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurface,
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
                       ),
@@ -838,7 +1017,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                           ? 'Actif jusqu\'au ${_formatDateShort(_vacationEndDate!)}'
                           : 'Protège ta streak pendant les congés',
                       style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.6),
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                         fontSize: 14,
                       ),
                     ),
@@ -850,13 +1029,13 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFFF9800).withValues(alpha: 0.2),
+                    color: AppColors.vacation.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: const Text(
                     '🏖️ ACTIF',
                     style: TextStyle(
-                      color: Color(0xFFFF9800),
+                      color: AppColors.vacation,
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
                     ),
@@ -865,7 +1044,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
               const SizedBox(width: 8),
               Icon(
                 Icons.chevron_right,
-                color: Colors.white.withValues(alpha: 0.3),
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
             ],
           ),
@@ -977,8 +1156,8 @@ class _VacationModeBottomSheetState extends State<_VacationModeBottomSheet> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
-        color: Color(0xFF303030),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surfaceContainerHigh,
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       padding: EdgeInsets.only(
@@ -995,7 +1174,7 @@ class _VacationModeBottomSheetState extends State<_VacationModeBottomSheet> {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: Colors.white24,
+                color: Theme.of(context).dividerColor,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -1009,21 +1188,21 @@ class _VacationModeBottomSheetState extends State<_VacationModeBottomSheet> {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFFF9800).withValues(alpha: 0.2),
+                    color: AppColors.vacation.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: const Icon(
                     Icons.beach_access,
-                    color: Color(0xFFFF9800),
+                    color: AppColors.vacation,
                     size: 28,
                   ),
                 ),
                 const SizedBox(width: 16),
-                const Expanded(
+                Expanded(
                   child: Text(
                     'Mode vacances',
                     style: TextStyle(
-                      color: Colors.white,
+                      color: Theme.of(context).colorScheme.onSurface,
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                     ),
@@ -1039,7 +1218,7 @@ class _VacationModeBottomSheetState extends State<_VacationModeBottomSheet> {
             child: Text(
               'Active ce mode pour protéger ta streak pendant les vacances. Les jours de vacances ne seront pas comptés.',
               style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.7),
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
                 fontSize: 14,
                 height: 1.4,
               ),
@@ -1058,8 +1237,8 @@ class _VacationModeBottomSheetState extends State<_VacationModeBottomSheet> {
                     _enabled
                         ? 'Mode vacances activé'
                         : 'Mode vacances désactivé',
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurface,
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
                     ),
@@ -1075,7 +1254,7 @@ class _VacationModeBottomSheetState extends State<_VacationModeBottomSheet> {
                       }
                     });
                   },
-                  activeThumbColor: const Color(0xFFFF9800),
+                  activeThumbColor: AppColors.vacation,
                 ),
               ],
             ),
@@ -1084,14 +1263,14 @@ class _VacationModeBottomSheetState extends State<_VacationModeBottomSheet> {
           // Date picker (only shown when enabled)
           if (_enabled) ...[
             const SizedBox(height: 16),
-            const Divider(color: Colors.white12),
+            Divider(color: Theme.of(context).dividerColor),
             const SizedBox(height: 16),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Text(
                 'Date de fin des vacances',
                 style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.7),
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                   fontSize: 14,
                 ),
               ),
@@ -1105,14 +1284,14 @@ class _VacationModeBottomSheetState extends State<_VacationModeBottomSheet> {
                 child: Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.05),
+                    color: Theme.of(context).colorScheme.surfaceContainerHighest,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.white12),
+                    border: Border.all(color: Theme.of(context).dividerColor),
                   ),
                   child: Row(
                     children: [
                       const Icon(Icons.calendar_today,
-                          color: Color(0xFFFF9800)),
+                          color: AppColors.vacation),
                       const SizedBox(width: 16),
                       Expanded(
                         child: Text(
@@ -1121,15 +1300,15 @@ class _VacationModeBottomSheetState extends State<_VacationModeBottomSheet> {
                               : 'Choisir une date',
                           style: TextStyle(
                             color: _selectedEndDate != null
-                                ? Colors.white
-                                : Colors.white.withValues(alpha: 0.5),
+                                ? Theme.of(context).colorScheme.onSurface
+                                : Theme.of(context).colorScheme.onSurfaceVariant,
                             fontSize: 16,
                           ),
                         ),
                       ),
                       Icon(
                         Icons.chevron_right,
-                        color: Colors.white.withValues(alpha: 0.3),
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
                     ],
                   ),
@@ -1142,7 +1321,7 @@ class _VacationModeBottomSheetState extends State<_VacationModeBottomSheet> {
               child: Text(
                 'Le mode vacances se désactivera automatiquement après cette date',
                 style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.5),
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                   fontSize: 12,
                   fontStyle: FontStyle.italic,
                 ),
@@ -1166,10 +1345,10 @@ class _VacationModeBottomSheetState extends State<_VacationModeBottomSheet> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    child: const Text(
+                    child: Text(
                       'Annuler',
                       style: TextStyle(
-                        color: Colors.white70,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
                       ),
@@ -1184,12 +1363,12 @@ class _VacationModeBottomSheetState extends State<_VacationModeBottomSheet> {
                         ? null
                         : () => widget.onConfirm(_enabled, _selectedEndDate),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFFF9800),
+                      backgroundColor: AppColors.vacation,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      disabledBackgroundColor: Colors.white12,
+                      disabledBackgroundColor: Theme.of(context).dividerColor,
                     ),
                     child: const Text(
                       'Confirmer',
@@ -1222,10 +1401,10 @@ class _VacationModeBottomSheetState extends State<_VacationModeBottomSheet> {
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.dark(
-              primary: Color(0xFFFF9800),
+            colorScheme: ColorScheme.dark(
+              primary: AppColors.vacation,
               onPrimary: Colors.white,
-              surface: Color(0xFF303030),
+              surface: Theme.of(context).colorScheme.surfaceContainerHigh,
               onSurface: Colors.white,
             ),
           ),

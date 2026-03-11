@@ -41,13 +41,13 @@ class _OnboardingImportStepPageState
     final accentColor = colorScheme.secondary;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF212121),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: _isFromSettings
           ? AppBar(
               backgroundColor: Colors.transparent,
               elevation: 0,
               leading: IconButton(
-                icon: const Icon(Icons.arrow_back, color: Colors.white),
+                icon: Icon(Icons.arrow_back, color: Theme.of(context).colorScheme.onSurface),
                 onPressed: () => Navigator.of(context).pop(),
               ),
             )
@@ -68,7 +68,7 @@ class _OnboardingImportStepPageState
                   style: GoogleFonts.poppins(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: Theme.of(context).colorScheme.onSurface,
                     letterSpacing: 1,
                   ),
                   textAlign: TextAlign.center,
@@ -82,7 +82,7 @@ class _OnboardingImportStepPageState
                   style: GoogleFonts.poppins(
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
-                    color: Colors.white60,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                     letterSpacing: 0.5,
                   ),
                   textAlign: TextAlign.center,
@@ -106,7 +106,7 @@ class _OnboardingImportStepPageState
                   style: GoogleFonts.poppins(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
-                    color: Colors.white60,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                     letterSpacing: 1,
                   ),
                 ),
@@ -141,10 +141,10 @@ class _OnboardingImportStepPageState
                   const SizedBox(height: 12),
                   TextButton(
                     onPressed: _isLoading ? null : _skipImport,
-                    child: const Text(
+                    child: Text(
                       "Je n'ai pas de code",
                       style: TextStyle(
-                        color: Colors.white54,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                         fontSize: 14,
                       ),
                     ),
@@ -196,9 +196,9 @@ class _OnboardingImportStepPageState
         width: double.infinity,
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: const Color(0xFF2A2A2A),
+          color: Theme.of(context).colorScheme.surfaceContainerHigh,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.white12),
+          border: Border.all(color: Theme.of(context).dividerColor),
         ),
         child: Row(
           children: [
@@ -210,9 +210,9 @@ class _OnboardingImportStepPageState
                 color: accentColor,
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.qr_code_2,
-                color: Colors.white,
+                color: Theme.of(context).colorScheme.onSurface,
                 size: 32,
               ),
             ),
@@ -227,7 +227,7 @@ class _OnboardingImportStepPageState
                     style: GoogleFonts.poppins(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: Theme.of(context).colorScheme.onSurface,
                       letterSpacing: 0.5,
                     ),
                   ),
@@ -237,7 +237,7 @@ class _OnboardingImportStepPageState
                     style: GoogleFonts.poppins(
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
-                      color: Colors.white54,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
                   ),
                 ],
@@ -258,7 +258,7 @@ class _OnboardingImportStepPageState
   Widget _buildSeparator() {
     return Row(
       children: [
-        const Expanded(child: Divider(color: Colors.white24, thickness: 1)),
+        Expanded(child: Divider(color: Theme.of(context).dividerColor, thickness: 1)),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Text(
@@ -266,11 +266,11 @@ class _OnboardingImportStepPageState
             style: GoogleFonts.poppins(
               fontSize: 14,
               fontWeight: FontWeight.w600,
-              color: Colors.white38,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
           ),
         ),
-        const Expanded(child: Divider(color: Colors.white24, thickness: 1)),
+        Expanded(child: Divider(color: Theme.of(context).dividerColor, thickness: 1)),
       ],
     );
   }
@@ -281,8 +281,8 @@ class _OnboardingImportStepPageState
       child: ElevatedButton(
         onPressed: _isLoading ? null : _onVerifyPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF3A3A3A),
-          foregroundColor: Colors.white54,
+          backgroundColor: Theme.of(context).colorScheme.surfaceContainerHigh,
+          foregroundColor: Theme.of(context).colorScheme.onSurfaceVariant,
           padding: const EdgeInsets.symmetric(vertical: 18),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
@@ -290,12 +290,12 @@ class _OnboardingImportStepPageState
           elevation: 0,
         ),
         child: _isLoading
-            ? const SizedBox(
+            ? SizedBox(
                 width: 24,
                 height: 24,
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
-                  color: Colors.white54,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
               )
             : Text(
@@ -339,7 +339,7 @@ class _OnboardingImportStepPageState
       Navigator.of(context).push(
         MaterialPageRoute(
           builder: (context) => Scaffold(
-            backgroundColor: const Color(0xFF212121),
+            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
             body: SafeArea(
               child: ImportPreviewPage(
                 code: code,
@@ -377,7 +377,7 @@ class _OnboardingImportStepPageState
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: const Color(0xFF303030),
+      backgroundColor: Theme.of(context).colorScheme.surfaceContainerHigh,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
@@ -396,15 +396,15 @@ class _OnboardingImportStepPageState
                       width: 40,
                       height: 4,
                       decoration: BoxDecoration(
-                        color: Colors.white24,
+                        color: Theme.of(scannerContext).dividerColor,
                         borderRadius: BorderRadius.circular(2),
                       ),
                     ),
                     const SizedBox(height: 16),
-                    const Text(
+                    Text(
                       'Scanner le QR code',
                       style: TextStyle(
-                        color: Colors.white,
+                        color: Theme.of(scannerContext).colorScheme.onSurface,
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                       ),
@@ -549,15 +549,15 @@ class _QrScannerSheetState extends State<_QrScannerSheet> {
                   width: 40,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: Colors.white24,
+                    color: Theme.of(context).dividerColor,
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
                 const SizedBox(height: 16),
-                const Text(
+                Text(
                   'Scanner le QR code',
                   style: TextStyle(
-                    color: Colors.white,
+                    color: Theme.of(context).colorScheme.onSurface,
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
