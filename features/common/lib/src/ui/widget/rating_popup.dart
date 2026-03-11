@@ -10,7 +10,7 @@ class RatingPopup extends StatelessWidget {
     if (shouldShow && context.mounted) {
       showModalBottomSheet(
         context: context,
-        backgroundColor: const Color(0xFF303030),
+        backgroundColor: Theme.of(context).colorScheme.surfaceContainerHigh,
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
         ),

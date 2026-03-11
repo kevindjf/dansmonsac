@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:common/src/services.dart';
+import 'package:common/src/ui/theme/colors.dart';
 
 /// Provider for managing the app's accent color
 final accentColorProvider =
@@ -9,7 +10,7 @@ final accentColorProvider =
 });
 
 class AccentColorNotifier extends StateNotifier<Color> {
-  AccentColorNotifier() : super(const Color(0xFF9C27B0)) {
+  AccentColorNotifier() : super(AppColors.accent) {
     _loadColor();
   }
 

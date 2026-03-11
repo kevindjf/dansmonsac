@@ -10,9 +10,9 @@ class HelpPage extends StatelessWidget {
     final accentColor = Theme.of(context).colorScheme.secondary;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF212121),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF303030),
+        backgroundColor: Theme.of(context).colorScheme.surfaceContainerHigh,
         title: Text(
           'Aide',
           style: GoogleFonts.robotoCondensed(
@@ -31,7 +31,7 @@ class HelpPage extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: const Color(0xFF303030),
+              color: Theme.of(context).colorScheme.surfaceContainerHigh,
               borderRadius: BorderRadius.circular(16),
             ),
             child: Column(
@@ -212,7 +212,7 @@ class HelpPage extends StatelessWidget {
     required Color accentColor,
   }) {
     return Card(
-      color: const Color(0xFF303030),
+      color: Theme.of(context).colorScheme.surfaceContainerHigh,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
       ),

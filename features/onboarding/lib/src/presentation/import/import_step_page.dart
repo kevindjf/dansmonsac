@@ -41,7 +41,7 @@ class _OnboardingImportStepPageState
     final accentColor = colorScheme.secondary;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF212121),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: _isFromSettings
           ? AppBar(
               backgroundColor: Colors.transparent,
@@ -196,7 +196,7 @@ class _OnboardingImportStepPageState
         width: double.infinity,
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: const Color(0xFF2A2A2A),
+          color: Theme.of(context).colorScheme.surfaceContainerHigh,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: Colors.white12),
         ),
@@ -281,7 +281,7 @@ class _OnboardingImportStepPageState
       child: ElevatedButton(
         onPressed: _isLoading ? null : _onVerifyPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF3A3A3A),
+          backgroundColor: Theme.of(context).colorScheme.surfaceContainerHigh,
           foregroundColor: Colors.white54,
           padding: const EdgeInsets.symmetric(vertical: 18),
           shape: RoundedRectangleBorder(
@@ -339,7 +339,7 @@ class _OnboardingImportStepPageState
       Navigator.of(context).push(
         MaterialPageRoute(
           builder: (context) => Scaffold(
-            backgroundColor: const Color(0xFF212121),
+            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
             body: SafeArea(
               child: ImportPreviewPage(
                 code: code,
@@ -377,7 +377,7 @@ class _OnboardingImportStepPageState
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: const Color(0xFF303030),
+      backgroundColor: Theme.of(context).colorScheme.surfaceContainerHigh,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),

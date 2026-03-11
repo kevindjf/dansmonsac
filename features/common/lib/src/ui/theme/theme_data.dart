@@ -45,6 +45,7 @@ class AppTheme {
           secondary: accentColor,
           error: AppColors.error,
           surface: AppColors.lightSurface,
+          surfaceContainerHigh: AppColors.lightCard,
           onPrimary: onAccent,
           onSecondary: onAccent,
           onTertiary: AppColors.lightTextSecondary,
@@ -190,6 +191,7 @@ class AppTheme {
         secondary: accentColor,
         error: AppColors.error,
         surface: AppColors.grey800,
+        surfaceContainerHigh: AppColors.darkSurfaceContainer,
         onPrimary: Colors.white,
         onSecondary: Colors.white,
         onError: Colors.white,
@@ -295,7 +297,7 @@ class AppTheme {
         ),
       ),
       snackBarTheme: SnackBarThemeData(
-        backgroundColor: const Color(0xFF303030),
+        backgroundColor: AppColors.darkSurfaceContainer,
         contentTextStyle: const TextStyle(color: Colors.white),
         behavior: SnackBarBehavior.floating,
         shape: const RoundedRectangleBorder(

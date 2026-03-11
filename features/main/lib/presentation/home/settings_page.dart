@@ -9,6 +9,7 @@ import 'package:sharing/sharing.dart';
 import 'package:onboarding/onboarding.dart';
 import 'package:schedule/di/riverpod_di.dart';
 import 'package:streak/di/riverpod_di.dart';
+import 'package:common/src/ui/theme/colors.dart';
 import 'help_page.dart';
 
 class SettingsPage extends ConsumerStatefulWidget {
@@ -60,20 +61,20 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   Widget build(BuildContext context) {
     if (_isLoading) {
       return Scaffold(
-        backgroundColor: Color(0xFF212121),
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         body: Center(child: CircularProgressIndicator()),
       );
     }
 
     return Scaffold(
-      backgroundColor: Color(0xFF212121),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           children: [
             // Header
             Container(
               width: double.infinity,
-              color: Color(0xFF303030),
+              color: Theme.of(context).colorScheme.surfaceContainerHigh,
               child: Padding(
                 padding: const EdgeInsets.all(24.0),
                 child: Column(
@@ -271,7 +272,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     final accentColor = Theme.of(context).colorScheme.secondary;
 
     return Card(
-      color: Color(0xFF303030),
+      color: Theme.of(context).colorScheme.surfaceContainerHigh,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
       ),
@@ -392,7 +393,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
             colorScheme: ColorScheme.dark(
               primary: accentColor,
               onPrimary: Colors.white,
-              surface: Color(0xFF303030),
+              surface: Theme.of(context).colorScheme.surfaceContainerHigh,
               onSurface: Colors.white,
             ),
           ),
@@ -439,7 +440,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
             colorScheme: ColorScheme.dark(
               primary: accentColor,
               onPrimary: Colors.white,
-              surface: Color(0xFF303030),
+              surface: Theme.of(context).colorScheme.surfaceContainerHigh,
               onSurface: Colors.white,
             ),
           ),
@@ -467,7 +468,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     final accentColor = Theme.of(context).colorScheme.secondary;
 
     return Card(
-      color: Color(0xFF303030),
+      color: Theme.of(context).colorScheme.surfaceContainerHigh,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
       ),
@@ -535,7 +536,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     final accentColor = Theme.of(context).colorScheme.secondary;
 
     return Card(
-      color: Color(0xFF303030),
+      color: Theme.of(context).colorScheme.surfaceContainerHigh,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
       ),
@@ -698,8 +699,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       backgroundColor: Colors.transparent,
       builder: (context) {
         return Container(
-          decoration: const BoxDecoration(
-            color: Color(0xFF303030),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surfaceContainerHigh,
             borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
           ),
           padding: EdgeInsets.only(
@@ -854,7 +855,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          backgroundColor: Color(0xFF303030),
+          backgroundColor: Theme.of(context).colorScheme.surfaceContainerHigh,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
@@ -927,7 +928,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: Color(0xFF303030),
+        backgroundColor: Theme.of(context).colorScheme.surfaceContainerHigh,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8),
@@ -969,7 +970,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
 
   Widget _buildVacationModeCard(BuildContext context) {
     return Card(
-      color: const Color(0xFF303030),
+      color: Theme.of(context).colorScheme.surfaceContainerHigh,
       margin: const EdgeInsets.symmetric(vertical: 4.0),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: InkWell(
@@ -983,7 +984,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   color: _vacationModeEnabled
-                      ? const Color(0xFFFF9800).withValues(alpha: 0.2)
+                      ? AppColors.vacation.withValues(alpha: 0.2)
                       : Colors.white.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -992,7 +993,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                       ? Icons.beach_access
                       : Icons.school_outlined,
                   color: _vacationModeEnabled
-                      ? const Color(0xFFFF9800)
+                      ? AppColors.vacation
                       : Colors.white70,
                   size: 24,
                 ),
@@ -1028,13 +1029,13 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFFF9800).withValues(alpha: 0.2),
+                    color: AppColors.vacation.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: const Text(
                     '🏖️ ACTIF',
                     style: TextStyle(
-                      color: Color(0xFFFF9800),
+                      color: AppColors.vacation,
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
                     ),
@@ -1155,8 +1156,8 @@ class _VacationModeBottomSheetState extends State<_VacationModeBottomSheet> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
-        color: Color(0xFF303030),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surfaceContainerHigh,
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       padding: EdgeInsets.only(
@@ -1187,12 +1188,12 @@ class _VacationModeBottomSheetState extends State<_VacationModeBottomSheet> {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFFF9800).withValues(alpha: 0.2),
+                    color: AppColors.vacation.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: const Icon(
                     Icons.beach_access,
-                    color: Color(0xFFFF9800),
+                    color: AppColors.vacation,
                     size: 28,
                   ),
                 ),
@@ -1253,7 +1254,7 @@ class _VacationModeBottomSheetState extends State<_VacationModeBottomSheet> {
                       }
                     });
                   },
-                  activeThumbColor: const Color(0xFFFF9800),
+                  activeThumbColor: AppColors.vacation,
                 ),
               ],
             ),
@@ -1290,7 +1291,7 @@ class _VacationModeBottomSheetState extends State<_VacationModeBottomSheet> {
                   child: Row(
                     children: [
                       const Icon(Icons.calendar_today,
-                          color: Color(0xFFFF9800)),
+                          color: AppColors.vacation),
                       const SizedBox(width: 16),
                       Expanded(
                         child: Text(
@@ -1362,7 +1363,7 @@ class _VacationModeBottomSheetState extends State<_VacationModeBottomSheet> {
                         ? null
                         : () => widget.onConfirm(_enabled, _selectedEndDate),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFFF9800),
+                      backgroundColor: AppColors.vacation,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -1400,10 +1401,10 @@ class _VacationModeBottomSheetState extends State<_VacationModeBottomSheet> {
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.dark(
-              primary: Color(0xFFFF9800),
+            colorScheme: ColorScheme.dark(
+              primary: AppColors.vacation,
               onPrimary: Colors.white,
-              surface: Color(0xFF303030),
+              surface: Theme.of(context).colorScheme.surfaceContainerHigh,
               onSurface: Colors.white,
             ),
           ),

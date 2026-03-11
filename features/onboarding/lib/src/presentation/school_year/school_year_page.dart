@@ -226,7 +226,7 @@ class _OnboardingSchoolYearPageState
             colorScheme: ColorScheme.dark(
               primary: accentColor,
               onPrimary: Colors.white,
-              surface: const Color(0xFF303030),
+              surface: Theme.of(context).colorScheme.surfaceContainerHigh,
               onSurface: Colors.white,
             ),
           ),

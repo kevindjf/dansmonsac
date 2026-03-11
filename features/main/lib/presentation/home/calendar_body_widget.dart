@@ -366,7 +366,7 @@ class CalendarBodyWidget extends ConsumerWidget {
   void _showCourseOptions(BuildContext context, WidgetRef ref, Event event) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: Color(0xFF303030),
+      backgroundColor: Theme.of(context).colorScheme.surfaceContainerHigh,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
@@ -475,7 +475,7 @@ class CalendarBodyWidget extends ConsumerWidget {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: const Color(0xFF303030),
+      backgroundColor: Theme.of(context).colorScheme.surfaceContainerHigh,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
@@ -507,7 +507,7 @@ class CalendarBodyWidget extends ConsumerWidget {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Cours supprimé avec succès'),
-            backgroundColor: Color(0xFF303030),
+            backgroundColor: Theme.of(context).colorScheme.surfaceContainerHigh,
             behavior: SnackBarBehavior.floating,
           ),
         );

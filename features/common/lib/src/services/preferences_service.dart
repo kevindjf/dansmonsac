@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:common/src/ui/theme/colors.dart';
 
 class PreferencesService {
   static const String _keyPackTimeHour = 'pack_time_hour';
@@ -90,8 +91,8 @@ class PreferencesService {
     if (colorValue != null) {
       return Color(colorValue);
     }
-    // Default color (purple)
-    return const Color(0xFF9C27B0);
+    // Default color (violet clair)
+    return AppColors.accent;
   }
 
   /// Save supply checked state for a specific date

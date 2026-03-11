@@ -1,3 +1,4 @@
+import 'package:common/src/ui/theme/colors.dart';
 import 'package:common/src/services/log_service.dart';
 import 'package:common/src/services/preferences_service.dart';
 import 'package:flutter/material.dart';
@@ -224,10 +225,10 @@ class _StreakDetailPageState extends ConsumerState<StreakDetailPage>
         return Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: const Color(0xFFFF9800).withValues(alpha: 0.1),
+            color: AppColors.vacation.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: const Color(0xFFFF9800).withValues(alpha: 0.3),
+              color: AppColors.vacation.withValues(alpha: 0.3),
               width: 1,
             ),
           ),
@@ -235,7 +236,7 @@ class _StreakDetailPageState extends ConsumerState<StreakDetailPage>
             children: [
               const Icon(
                 Icons.beach_access,
-                color: Color(0xFFFF9800),
+                color: AppColors.vacation,
                 size: 20,
               ),
               const SizedBox(width: 12),

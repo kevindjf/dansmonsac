@@ -46,7 +46,7 @@ class _SharePageState extends ConsumerState<SharePage> {
             bottom: 24 + bottomPadding,
           ),
           decoration: BoxDecoration(
-            color: const Color(0xFF303030),
+            color: Theme.of(context).colorScheme.surfaceContainerHigh,
             borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
           ),
           child: SingleChildScrollView(
@@ -382,7 +382,7 @@ class _SharePageState extends ConsumerState<SharePage> {
                 child: Container(
                   padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF303030),
+                    color: Theme.of(context).colorScheme.surfaceContainerHigh,
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: Column(
@@ -469,7 +469,7 @@ class _SharePageState extends ConsumerState<SharePage> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('Code copie: $code'),
-        backgroundColor: const Color(0xFF303030),
+        backgroundColor: Theme.of(context).colorScheme.surfaceContainerHigh,
         behavior: SnackBarBehavior.floating,
       ),
     );

@@ -30,7 +30,7 @@ class ImportPreviewPage extends ConsumerWidget {
         bottom: 24 + bottomPadding,
       ),
       decoration: BoxDecoration(
-        color: const Color(0xFF303030),
+        color: Theme.of(context).colorScheme.surfaceContainerHigh,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
       ),
       child: SingleChildScrollView(
