@@ -69,28 +69,28 @@ class AppTheme {
           ),
         ),
         textTheme: TextTheme(
-          displayLarge:
-              AppTextStyles.headline1.copyWith(color: AppColors.lightTextPrimary),
-          displayMedium:
-              AppTextStyles.headline2.copyWith(color: AppColors.lightTextPrimary),
-          displaySmall:
-              AppTextStyles.headline3.copyWith(color: AppColors.lightTextPrimary),
-          headlineMedium:
-              AppTextStyles.headline4.copyWith(color: AppColors.lightTextPrimary),
-          headlineSmall:
-              AppTextStyles.headline5.copyWith(color: AppColors.lightTextPrimary),
-          titleLarge:
-              AppTextStyles.headline6.copyWith(color: AppColors.lightTextPrimary),
-          bodyLarge:
-              AppTextStyles.bodyText1.copyWith(color: AppColors.lightTextPrimary),
-          bodyMedium:
-              AppTextStyles.bodyText2.copyWith(color: AppColors.lightTextPrimary),
+          displayLarge: AppTextStyles.headline1
+              .copyWith(color: AppColors.lightTextPrimary),
+          displayMedium: AppTextStyles.headline2
+              .copyWith(color: AppColors.lightTextPrimary),
+          displaySmall: AppTextStyles.headline3
+              .copyWith(color: AppColors.lightTextPrimary),
+          headlineMedium: AppTextStyles.headline4
+              .copyWith(color: AppColors.lightTextPrimary),
+          headlineSmall: AppTextStyles.headline5
+              .copyWith(color: AppColors.lightTextPrimary),
+          titleLarge: AppTextStyles.headline6
+              .copyWith(color: AppColors.lightTextPrimary),
+          bodyLarge: AppTextStyles.bodyText1
+              .copyWith(color: AppColors.lightTextPrimary),
+          bodyMedium: AppTextStyles.bodyText2
+              .copyWith(color: AppColors.lightTextPrimary),
           labelLarge:
               AppTextStyles.button.copyWith(color: AppColors.lightTextPrimary),
-          bodySmall:
-              AppTextStyles.caption.copyWith(color: AppColors.lightTextSecondary),
-          labelSmall:
-              AppTextStyles.overline.copyWith(color: AppColors.lightTextSecondary),
+          bodySmall: AppTextStyles.caption
+              .copyWith(color: AppColors.lightTextSecondary),
+          labelSmall: AppTextStyles.overline
+              .copyWith(color: AppColors.lightTextSecondary),
         ),
         inputDecorationTheme: InputDecorationTheme(
           fillColor: AppColors.lightSurface,
