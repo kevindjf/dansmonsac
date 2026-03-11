@@ -49,4 +49,18 @@ class AppColors {
   // Divider
   static const Color divider =
       Color(0xFFBDBDBD); // Lignes de séparation discrètes
+
+  // Light mode — palette blanc cassé
+  static const Color lightScaffold =
+      Color(0xFFF5F3F0); // Fond principal blanc cassé chaud
+  static const Color lightSurface =
+      Color(0xFFFFFFFF); // Surface blanche pure (inputs, pop-ups)
+  static const Color lightCard =
+      Color(0xFFF0EDE8); // Fond des cards légèrement teinté
+  static const Color lightTextPrimary =
+      Color(0xFF1A1A1A); // Texte principal quasi-noir
+  static const Color lightTextSecondary =
+      Color(0xFF6B6B6B); // Texte secondaire gris moyen
+  static const Color lightDivider =
+      Color(0xFFE0DDD8); // Séparateurs discrets ton chaud
 }
