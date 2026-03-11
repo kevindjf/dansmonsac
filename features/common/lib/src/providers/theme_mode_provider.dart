@@ -4,7 +4,7 @@ import 'package:common/src/services.dart';
 
 part 'theme_mode_provider.g.dart';
 
-@riverpod
+@Riverpod(keepAlive: true)
 class ThemeModeController extends _$ThemeModeController {
   @override
   ThemeMode build() {

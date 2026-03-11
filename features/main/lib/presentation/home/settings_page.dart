@@ -672,7 +672,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
 
   Widget _buildThemeModeCard(BuildContext context) {
     final accentColor = Theme.of(context).colorScheme.secondary;
-    final currentMode = ref.watch(themeModeProvider);
+    final currentMode = ref.watch(themeModeControllerProvider);
     final modeLabel = switch (currentMode) {
       ThemeMode.system => 'Systeme',
       ThemeMode.light => 'Clair',
@@ -691,7 +691,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
 
   void _showThemeModeBottomSheet(BuildContext context) {
     final accentColor = Theme.of(context).colorScheme.secondary;
-    final currentMode = ref.read(themeModeProvider);
+    final currentMode = ref.read(themeModeControllerProvider);
 
     showModalBottomSheet(
       context: context,
@@ -796,7 +796,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
 
     return InkWell(
       onTap: () {
-        ref.read(themeModeProvider.notifier).updateThemeMode(mode);
+        ref.read(themeModeControllerProvider.notifier).updateThemeMode(mode);
         Navigator.pop(context);
       },
       child: Padding(
