@@ -246,6 +246,7 @@ class _OnboardingCoursePageState extends ConsumerState<OnboardingCoursePage> {
                       },
                       style: FilledButton.styleFrom(
                         backgroundColor: Colors.transparent,
+                        foregroundColor: Theme.of(context).colorScheme.onSurface,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),

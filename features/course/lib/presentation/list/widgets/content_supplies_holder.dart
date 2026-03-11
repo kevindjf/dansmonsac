@@ -216,6 +216,7 @@ class ContentSupplyHolder extends ConsumerWidget {
                   onPressed: () => Navigator.of(sheetContext).pop(),
                   style: FilledButton.styleFrom(
                     backgroundColor: Colors.transparent,
+                    foregroundColor: Theme.of(sheetContext).colorScheme.onSurface,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -386,6 +387,7 @@ class ContentSupplyHolder extends ConsumerWidget {
                       onPressed: () => Navigator.of(sheetContext).pop(),
                       style: FilledButton.styleFrom(
                         backgroundColor: Colors.transparent,
+                        foregroundColor: Theme.of(sheetContext).colorScheme.onSurface,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -418,10 +420,14 @@ class ContentSupplyHolder extends ConsumerWidget {
     required VoidCallback onPressed,
     Color? backgroundColor,
   }) {
+    final isTransparent = backgroundColor == Colors.transparent;
     return FilledButton(
       onPressed: onPressed,
       style: FilledButton.styleFrom(
         backgroundColor: backgroundColor,
+        foregroundColor: isTransparent
+            ? Theme.of(context).colorScheme.onSurface
+            : null,
         padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
@@ -430,7 +436,7 @@ class ContentSupplyHolder extends ConsumerWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, color: Theme.of(context).colorScheme.onSurface, size: 14),
+          Icon(icon, size: 14),
           const SizedBox(width: 16),
           Text(label, style: const TextStyle(fontSize: 12)),
         ],

@@ -54,9 +54,8 @@ class CoursesPage extends ConsumerWidget {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(
+                      const Icon(
                         Icons.add,
-                        color: Theme.of(context).colorScheme.onSurface,
                       ),
                       const SizedBox(width: 16),
                       const Text(

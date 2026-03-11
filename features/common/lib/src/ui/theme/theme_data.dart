@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'colors.dart';
 import 'text_styles.dart';
@@ -60,6 +61,11 @@ class AppTheme {
           elevation: 0,
           centerTitle: true,
           titleTextStyle: AppTextStyles.headline6.copyWith(color: onAccent),
+          systemOverlayStyle: const SystemUiOverlayStyle(
+            statusBarColor: Colors.transparent,
+            statusBarIconBrightness: Brightness.dark,
+            statusBarBrightness: Brightness.light,
+          ),
         ),
         cardTheme: const CardThemeData(
           color: AppColors.lightCard,

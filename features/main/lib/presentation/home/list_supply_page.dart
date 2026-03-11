@@ -1144,6 +1144,7 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
                   },
                   style: FilledButton.styleFrom(
                     backgroundColor: Colors.transparent,
+                    foregroundColor: Theme.of(sheetContext).colorScheme.onSurface,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),

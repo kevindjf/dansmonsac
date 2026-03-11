@@ -229,7 +229,7 @@ class CalendarBodyWidget extends ConsumerWidget {
             onTap: () => _showCourseOptions(context, ref, event),
             child: Container(
               decoration: BoxDecoration(
-                  color: Colors.black12,
+                  color: Theme.of(context).colorScheme.surfaceContainerHigh,
                   borderRadius: BorderRadius.circular(8)),
               margin: EdgeInsets.symmetric(vertical: 4, horizontal: 4),
               child: Padding(
