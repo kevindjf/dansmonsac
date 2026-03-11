@@ -49,4 +49,20 @@ class AppColors {
   // Divider
   static const Color divider =
       Color(0xFFBDBDBD); // Lignes de séparation discrètes
+
+  // Dark mode — surfaces élevées (bottom sheets, dialogs, cards)
+  static const Color darkSurfaceContainer = Color(0xFF303030);
+  static const Color darkSurfaceContainerLow = Color(0xFF2A2A2A);
+  static const Color darkSurfaceContainerHigh = Color(0xFF3A3A3A);
+
+  // Couleur sémantique — mode vacances
+  static const Color vacation = Color(0xFFFF9800);
+
+  // Light mode — palette blanc cassé
+  static const Color lightScaffold = Color(0xFFF5F3F0);
+  static const Color lightSurface = Color(0xFFFFFFFF);
+  static const Color lightCard = Color(0xFFF0EDE8);
+  static const Color lightTextPrimary = Color(0xFF1A1A1A);
+  static const Color lightTextSecondary = Color(0xFF6B6B6B);
+  static const Color lightDivider = Color(0xFFE0DDD8);
 }
