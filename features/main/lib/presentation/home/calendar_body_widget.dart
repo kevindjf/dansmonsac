@@ -242,7 +242,7 @@ class CalendarBodyWidget extends ConsumerWidget {
                         FormatterDate.formatHours(
                             event.startTime, event.endTime),
                         style: GoogleFonts.robotoCondensed(
-                            color: Colors.white38, fontSize: 12)),
+                            color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 12)),
                     // Title with badge inline
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -251,7 +251,7 @@ class CalendarBodyWidget extends ConsumerWidget {
                           child: Text(
                             event.title,
                             style: GoogleFonts.roboto(
-                                color: Colors.white, fontSize: 14),
+                                color: Theme.of(context).colorScheme.onSurface, fontSize: 14),
                             textAlign: TextAlign.center,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -279,7 +279,7 @@ class CalendarBodyWidget extends ConsumerWidget {
                     ),
                     Text(event.room,
                         style: GoogleFonts.roboto(
-                            color: Colors.white38,
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
                             fontSize: 12,
                             fontWeight: FontWeight.w300)),
                   ],
@@ -325,7 +325,7 @@ class CalendarBodyWidget extends ConsumerWidget {
               height: gapHeight,
               child: CustomPaint(
                 painter: _DashedBorderPainter(
-                  color: Colors.white.withValues(alpha: 0.08),
+                  color: Theme.of(context).dividerColor,
                   borderRadius: 8,
                   dashWidth: 5,
                   dashSpace: 4,
@@ -335,7 +335,7 @@ class CalendarBodyWidget extends ConsumerWidget {
                   child: Text(
                     pauseLabel,
                     style: GoogleFonts.robotoCondensed(
-                      color: Colors.white38,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                       fontSize: 12,
                     ),
                   ),
@@ -387,7 +387,7 @@ class CalendarBodyWidget extends ConsumerWidget {
               Text(
                 event.title,
                 style: GoogleFonts.roboto(
-                  color: Colors.white,
+                  color: Theme.of(context).colorScheme.onSurface,
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                 ),
@@ -396,7 +396,7 @@ class CalendarBodyWidget extends ConsumerWidget {
               Text(
                 "${event.room} • ${event.hour}",
                 style: GoogleFonts.roboto(
-                  color: Colors.white38,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                   fontSize: 14,
                 ),
               ),

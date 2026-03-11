@@ -91,8 +91,8 @@ class WeeklyStreakRow extends StatelessWidget {
               fontSize: 12,
               fontWeight: isToday ? FontWeight.bold : FontWeight.w500,
               color: status == WeekDayStatus.inactive
-                  ? Colors.white.withValues(alpha: 0.4)
-                  : (isToday ? colorScheme.secondary : Colors.white),
+                  ? Theme.of(context).colorScheme.onSurfaceVariant
+                  : (isToday ? colorScheme.secondary : Theme.of(context).colorScheme.onSurface),
             ),
           ),
         ],

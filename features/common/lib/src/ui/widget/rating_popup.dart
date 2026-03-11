@@ -56,7 +56,7 @@ class RatingPopup extends StatelessWidget {
           Text(
             'Vous aimez DansMonSac ?',
             style: GoogleFonts.roboto(
-              color: Colors.white,
+              color: Theme.of(context).colorScheme.onSurface,
               fontSize: 20,
               fontWeight: FontWeight.bold,
             ),
@@ -68,7 +68,7 @@ class RatingPopup extends StatelessWidget {
           Text(
             'Votre avis nous aide a ameliorer l\'application et a la faire connaitre !',
             style: GoogleFonts.roboto(
-              color: Colors.white70,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
               fontSize: 14,
             ),
             textAlign: TextAlign.center,
@@ -92,7 +92,7 @@ class RatingPopup extends StatelessWidget {
                 style: GoogleFonts.roboto(
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
-                  color: Colors.white,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),
             ),
@@ -111,7 +111,7 @@ class RatingPopup extends StatelessWidget {
                 'Plus tard',
                 style: GoogleFonts.roboto(
                   fontSize: 14,
-                  color: Colors.white54,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
               ),
             ),

@@ -56,7 +56,7 @@ class CoursesPage extends ConsumerWidget {
                     children: [
                       Icon(
                         Icons.add,
-                        color: Colors.white,
+                        color: Theme.of(context).colorScheme.onSurface,
                       ),
                       const SizedBox(width: 16),
                       const Text(
@@ -129,7 +129,7 @@ class CoursesPage extends ConsumerWidget {
                       child: Text(
                         "Cours & Fourniture(s)",
                         style: GoogleFonts.robotoCondensed(
-                            color: Colors.white,
+                            color: Theme.of(context).colorScheme.onSurface,
                             fontSize: 18,
                             fontWeight: FontWeight.bold),
                       ),
@@ -193,13 +193,13 @@ class CoursesPage extends ConsumerWidget {
                 Icon(
                   Icons.book_outlined,
                   size: 50,
-                  color: Colors.white.withValues(alpha: 0.4),
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
                 const SizedBox(height: 16),
                 Text(
                   "Aucun cours trouvé",
                   style: GoogleFonts.robotoCondensed(
-                    color: Colors.white,
+                    color: Theme.of(context).colorScheme.onSurface,
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
@@ -209,7 +209,7 @@ class CoursesPage extends ConsumerWidget {
                   "Tirez vers le bas pour actualiser ou\najoutez un nouveau cours",
                   textAlign: TextAlign.center,
                   style: GoogleFonts.robotoCondensed(
-                    color: Colors.white.withValues(alpha: 0.7),
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                     fontSize: 14,
                   ),
                 ),

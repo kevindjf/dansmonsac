@@ -60,7 +60,7 @@ class _SharePageState extends ConsumerState<SharePage> {
                     width: 40,
                     height: 4,
                     decoration: BoxDecoration(
-                      color: Colors.white24,
+                      color: Theme.of(context).dividerColor,
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
@@ -73,7 +73,7 @@ class _SharePageState extends ConsumerState<SharePage> {
                   style: GoogleFonts.robotoCondensed(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -82,7 +82,7 @@ class _SharePageState extends ConsumerState<SharePage> {
                   'Genere un code pour partager ton emploi du temps avec un ami',
                   style: GoogleFonts.roboto(
                     fontSize: 14,
-                    color: Colors.white54,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -111,7 +111,7 @@ class _SharePageState extends ConsumerState<SharePage> {
                           style: GoogleFonts.robotoCondensed(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                            color: Theme.of(context).colorScheme.onSurface,
                           ),
                           textAlign: TextAlign.center,
                         ),
@@ -120,7 +120,7 @@ class _SharePageState extends ConsumerState<SharePage> {
                           'Ajoute d\'abord des matieres dans l\'onglet "Cours", puis renseigne ton emploi du temps dans l\'onglet "Calendrier".',
                           style: GoogleFonts.roboto(
                             fontSize: 14,
-                            color: Colors.white54,
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
                           ),
                           textAlign: TextAlign.center,
                         ),
@@ -145,20 +145,20 @@ class _SharePageState extends ConsumerState<SharePage> {
                   // Name input
                   TextField(
                     controller: _nameController,
-                    style: const TextStyle(color: Colors.white),
+                    style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
                     decoration: InputDecoration(
                       labelText: 'Ton prenom (optionnel)',
-                      labelStyle: const TextStyle(color: Colors.white54),
+                      labelStyle: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
                       hintText: 'Ex: Marie',
-                      hintStyle: const TextStyle(color: Colors.white24),
+                      hintStyle: TextStyle(color: Theme.of(context).dividerColor),
                       filled: true,
                       fillColor: Colors.black26,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide.none,
                       ),
-                      prefixIcon: const Icon(Icons.person_outline,
-                          color: Colors.white54),
+                      prefixIcon: Icon(Icons.person_outline,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant),
                     ),
                     onChanged: (value) {
                       ref
@@ -205,20 +205,20 @@ class _SharePageState extends ConsumerState<SharePage> {
                   // Name input (editable even after code is generated)
                   TextField(
                     controller: _nameController,
-                    style: const TextStyle(color: Colors.white),
+                    style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
                     decoration: InputDecoration(
                       labelText: 'Ton prenom (optionnel)',
-                      labelStyle: const TextStyle(color: Colors.white54),
+                      labelStyle: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
                       hintText: 'Ex: Marie',
-                      hintStyle: const TextStyle(color: Colors.white24),
+                      hintStyle: TextStyle(color: Theme.of(context).dividerColor),
                       filled: true,
                       fillColor: Colors.black26,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide.none,
                       ),
-                      prefixIcon: const Icon(Icons.person_outline,
-                          color: Colors.white54),
+                      prefixIcon: Icon(Icons.person_outline,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant),
                     ),
                     onChanged: (value) {
                       ref
@@ -273,7 +273,7 @@ class _SharePageState extends ConsumerState<SharePage> {
                             'Appuie pour copier',
                             style: GoogleFonts.roboto(
                               fontSize: 12,
-                              color: Colors.white38,
+                              color: Theme.of(context).colorScheme.onSurfaceVariant,
                             ),
                           ),
                         ],
@@ -393,7 +393,7 @@ class _SharePageState extends ConsumerState<SharePage> {
                       Text(
                         'Synchronisation en cours...',
                         style: GoogleFonts.roboto(
-                          color: Colors.white,
+                          color: Theme.of(context).colorScheme.onSurface,
                           fontSize: 16,
                         ),
                       ),
@@ -422,7 +422,7 @@ class _SharePageState extends ConsumerState<SharePage> {
             style: GoogleFonts.roboto(
               fontSize: 14,
               fontWeight: FontWeight.bold,
-              color: Colors.white70,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
           ),
           const SizedBox(height: 12),
@@ -454,7 +454,7 @@ class _SharePageState extends ConsumerState<SharePage> {
               label,
               style: GoogleFonts.roboto(
                 fontSize: 12,
-                color: Colors.white54,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
               overflow: TextOverflow.ellipsis,
             ),

@@ -244,7 +244,7 @@ class _StreakDetailPageState extends ConsumerState<StreakDetailPage>
                 child: Text(
                   'Tu es en vacances ? N\'oublie pas de l\'activer dans les paramètres pour ne pas perdre ta streak',
                   style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.8),
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                     fontSize: 12,
                     height: 1.4,
                   ),
@@ -287,7 +287,7 @@ class _StreakDetailPageState extends ConsumerState<StreakDetailPage>
           children: [
             TextSpan(
               text: 'Tu as une streak de ',
-              style: TextStyle(color: Colors.white),
+              style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
             ),
             TextSpan(
               text: '$currentStreak jours',
@@ -336,7 +336,7 @@ class _StreakDetailPageState extends ConsumerState<StreakDetailPage>
         // Subtitle
         Text(
           subtitle,
-          style: textTheme.bodyLarge?.copyWith(color: Colors.white70),
+          style: textTheme.bodyLarge?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
           textAlign: TextAlign.center,
         ),
       ],

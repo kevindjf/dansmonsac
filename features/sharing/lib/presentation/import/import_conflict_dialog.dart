@@ -29,7 +29,7 @@ class ImportConflictDialog extends StatelessWidget {
           'Conflit $currentIndex/$totalConflicts',
           style: GoogleFonts.roboto(
             fontSize: 14,
-            color: Colors.white54,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
           textAlign: TextAlign.center,
         ),
@@ -41,7 +41,7 @@ class ImportConflictDialog extends StatelessWidget {
           style: GoogleFonts.robotoCondensed(
             fontSize: 20,
             fontWeight: FontWeight.bold,
-            color: Colors.white,
+            color: Theme.of(context).colorScheme.onSurface,
           ),
           textAlign: TextAlign.center,
         ),
@@ -49,6 +49,7 @@ class ImportConflictDialog extends StatelessWidget {
 
         // Existing supplies
         _buildSuppliesList(
+          context,
           'Fournitures actuelles',
           conflict.existingSupplies,
           Colors.blue,
@@ -57,6 +58,7 @@ class ImportConflictDialog extends StatelessWidget {
 
         // Imported supplies
         _buildSuppliesList(
+          context,
           'Fournitures importees',
           conflict.importedSupplies,
           accentColor,
@@ -104,7 +106,7 @@ class ImportConflictDialog extends StatelessWidget {
     );
   }
 
-  Widget _buildSuppliesList(String title, List<String> supplies, Color color) {
+  Widget _buildSuppliesList(BuildContext context, String title, List<String> supplies, Color color) {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -139,7 +141,7 @@ class ImportConflictDialog extends StatelessWidget {
                   supply,
                   style: GoogleFonts.roboto(
                     fontSize: 13,
-                    color: Colors.white70,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                 ),
               );

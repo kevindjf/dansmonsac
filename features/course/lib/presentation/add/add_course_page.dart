@@ -85,7 +85,7 @@ class _AddCoursePageState extends ConsumerState<AddCoursePage> {
             Text(
               "Nouveau cours",
               style: GoogleFonts.robotoCondensed(
-                  color: Colors.white,
+                  color: Theme.of(context).colorScheme.onSurface,
                   fontSize: 18,
                   fontWeight: FontWeight.bold),
             ),
@@ -213,7 +213,7 @@ class _AddCoursePageState extends ConsumerState<AddCoursePage> {
         Text(
           "Fournitures suggérées",
           style: GoogleFonts.robotoCondensed(
-            color: Colors.white,
+            color: Theme.of(context).colorScheme.onSurface,
             fontSize: 16,
             fontWeight: FontWeight.w600,
           ),
@@ -325,7 +325,7 @@ class _SuggestedSupplyTextFieldState
     return TextField(
       controller: _controller,
       style: TextStyle(
-        color: widget.supply.isChecked ? Colors.white : Colors.grey[500],
+        color: widget.supply.isChecked ? Theme.of(context).colorScheme.onSurface : Colors.grey[500],
         fontSize: 14,
       ),
       decoration: InputDecoration(

@@ -84,7 +84,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                     Text(
                       "Paramètres",
                       style: GoogleFonts.robotoCondensed(
-                        color: Colors.white,
+                        color: Theme.of(context).colorScheme.onSurface,
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
                       ),
@@ -93,7 +93,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                     Text(
                       "Personnalisez votre expérience",
                       style: GoogleFonts.roboto(
-                        color: Colors.white38,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                         fontSize: 14,
                         fontWeight: FontWeight.w300,
                       ),
@@ -150,7 +150,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                       decoration: BoxDecoration(
                         color: _accentColor,
                         shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white24, width: 2),
+                        border: Border.all(color: Theme.of(context).dividerColor, width: 2),
                       ),
                     ),
                   ),
@@ -307,7 +307,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                     Text(
                       title,
                       style: GoogleFonts.roboto(
-                        color: Colors.white,
+                        color: Theme.of(context).colorScheme.onSurface,
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
                       ),
@@ -317,7 +317,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                       Text(
                         subtitle,
                         style: GoogleFonts.roboto(
-                          color: Colors.white38,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                           fontSize: 14,
                           fontWeight: FontWeight.w300,
                         ),
@@ -347,7 +347,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                   const SizedBox(width: 8),
                   Icon(
                     Icons.chevron_right,
-                    color: Colors.white38,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                     size: 24,
                   ),
                 ],
@@ -500,7 +500,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                   Text(
                     title,
                     style: GoogleFonts.roboto(
-                      color: Colors.white,
+                      color: Theme.of(context).colorScheme.onSurface,
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
                     ),
@@ -510,7 +510,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                     Text(
                       subtitle,
                       style: GoogleFonts.roboto(
-                        color: Colors.white38,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                         fontSize: 14,
                         fontWeight: FontWeight.w300,
                       ),
@@ -569,7 +569,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                     child: Text(
                       'Debut d\'annee scolaire',
                       style: GoogleFonts.roboto(
-                        color: Colors.white,
+                        color: Theme.of(context).colorScheme.onSurface,
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
                       ),
@@ -577,7 +577,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                   ),
                   Icon(
                     Icons.chevron_right,
-                    color: Colors.white38,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                     size: 24,
                   ),
                 ],
@@ -589,7 +589,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                 child: Text(
                   'Date de la premiere semaine A',
                   style: GoogleFonts.roboto(
-                    color: Colors.white38,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                     fontSize: 14,
                     fontWeight: FontWeight.w300,
                   ),
@@ -716,7 +716,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                   width: 40,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: Colors.white24,
+                    color: Theme.of(context).dividerColor,
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -741,7 +741,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                     Text(
                       'Choisir le theme',
                       style: GoogleFonts.robotoCondensed(
-                        color: Colors.white,
+                        color: Theme.of(context).colorScheme.onSurface,
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
                       ),
@@ -806,7 +806,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
           children: [
             Icon(
               icon,
-              color: isSelected ? accentColor : Colors.white54,
+              color: isSelected ? accentColor : Theme.of(context).colorScheme.onSurfaceVariant,
               size: 24,
             ),
             const SizedBox(width: 16),
@@ -817,7 +817,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                   Text(
                     label,
                     style: GoogleFonts.roboto(
-                      color: isSelected ? Colors.white : Colors.white70,
+                      color: isSelected ? Theme.of(context).colorScheme.onSurface : Theme.of(context).colorScheme.onSurfaceVariant,
                       fontSize: 16,
                       fontWeight:
                           isSelected ? FontWeight.w600 : FontWeight.w400,
@@ -827,7 +827,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                   Text(
                     subtitle,
                     style: GoogleFonts.roboto(
-                      color: Colors.white38,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                       fontSize: 13,
                       fontWeight: FontWeight.w300,
                     ),
@@ -862,7 +862,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
           title: Text(
             'Choisir une couleur',
             style: GoogleFonts.robotoCondensed(
-              color: Colors.white,
+              color: Theme.of(context).colorScheme.onSurface,
               fontSize: 20,
               fontWeight: FontWeight.bold,
             ),
@@ -885,7 +885,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
               child: Text(
                 'Annuler',
                 style: GoogleFonts.roboto(
-                  color: Colors.white54,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                   fontSize: 16,
                 ),
               ),
@@ -985,7 +985,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                 decoration: BoxDecoration(
                   color: _vacationModeEnabled
                       ? AppColors.vacation.withValues(alpha: 0.2)
-                      : Colors.white.withValues(alpha: 0.1),
+                      : Theme.of(context).dividerColor,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
@@ -994,7 +994,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                       : Icons.school_outlined,
                   color: _vacationModeEnabled
                       ? AppColors.vacation
-                      : Colors.white70,
+                      : Theme.of(context).colorScheme.onSurfaceVariant,
                   size: 24,
                 ),
               ),
@@ -1005,8 +1005,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                   children: [
                     Text(
                       'Mode vacances',
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurface,
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
                       ),
@@ -1017,7 +1017,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                           ? 'Actif jusqu\'au ${_formatDateShort(_vacationEndDate!)}'
                           : 'Protège ta streak pendant les congés',
                       style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.6),
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                         fontSize: 14,
                       ),
                     ),
@@ -1044,7 +1044,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
               const SizedBox(width: 8),
               Icon(
                 Icons.chevron_right,
-                color: Colors.white.withValues(alpha: 0.3),
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
             ],
           ),
@@ -1174,7 +1174,7 @@ class _VacationModeBottomSheetState extends State<_VacationModeBottomSheet> {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: Colors.white24,
+                color: Theme.of(context).dividerColor,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -1198,11 +1198,11 @@ class _VacationModeBottomSheetState extends State<_VacationModeBottomSheet> {
                   ),
                 ),
                 const SizedBox(width: 16),
-                const Expanded(
+                Expanded(
                   child: Text(
                     'Mode vacances',
                     style: TextStyle(
-                      color: Colors.white,
+                      color: Theme.of(context).colorScheme.onSurface,
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                     ),
@@ -1218,7 +1218,7 @@ class _VacationModeBottomSheetState extends State<_VacationModeBottomSheet> {
             child: Text(
               'Active ce mode pour protéger ta streak pendant les vacances. Les jours de vacances ne seront pas comptés.',
               style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.7),
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
                 fontSize: 14,
                 height: 1.4,
               ),
@@ -1237,8 +1237,8 @@ class _VacationModeBottomSheetState extends State<_VacationModeBottomSheet> {
                     _enabled
                         ? 'Mode vacances activé'
                         : 'Mode vacances désactivé',
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurface,
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
                     ),
@@ -1263,14 +1263,14 @@ class _VacationModeBottomSheetState extends State<_VacationModeBottomSheet> {
           // Date picker (only shown when enabled)
           if (_enabled) ...[
             const SizedBox(height: 16),
-            const Divider(color: Colors.white12),
+            Divider(color: Theme.of(context).dividerColor),
             const SizedBox(height: 16),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Text(
                 'Date de fin des vacances',
                 style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.7),
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                   fontSize: 14,
                 ),
               ),
@@ -1284,9 +1284,9 @@ class _VacationModeBottomSheetState extends State<_VacationModeBottomSheet> {
                 child: Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.05),
+                    color: Theme.of(context).colorScheme.surfaceContainerHighest,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.white12),
+                    border: Border.all(color: Theme.of(context).dividerColor),
                   ),
                   child: Row(
                     children: [
@@ -1300,15 +1300,15 @@ class _VacationModeBottomSheetState extends State<_VacationModeBottomSheet> {
                               : 'Choisir une date',
                           style: TextStyle(
                             color: _selectedEndDate != null
-                                ? Colors.white
-                                : Colors.white.withValues(alpha: 0.5),
+                                ? Theme.of(context).colorScheme.onSurface
+                                : Theme.of(context).colorScheme.onSurfaceVariant,
                             fontSize: 16,
                           ),
                         ),
                       ),
                       Icon(
                         Icons.chevron_right,
-                        color: Colors.white.withValues(alpha: 0.3),
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
                     ],
                   ),
@@ -1321,7 +1321,7 @@ class _VacationModeBottomSheetState extends State<_VacationModeBottomSheet> {
               child: Text(
                 'Le mode vacances se désactivera automatiquement après cette date',
                 style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.5),
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                   fontSize: 12,
                   fontStyle: FontStyle.italic,
                 ),
@@ -1345,10 +1345,10 @@ class _VacationModeBottomSheetState extends State<_VacationModeBottomSheet> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    child: const Text(
+                    child: Text(
                       'Annuler',
                       style: TextStyle(
-                        color: Colors.white70,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
                       ),
@@ -1368,7 +1368,7 @@ class _VacationModeBottomSheetState extends State<_VacationModeBottomSheet> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      disabledBackgroundColor: Colors.white12,
+                      disabledBackgroundColor: Theme.of(context).dividerColor,
                     ),
                     child: const Text(
                       'Confirmer',

@@ -365,7 +365,7 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
             child: Text(
               "Mon Sac",
               style: GoogleFonts.robotoCondensed(
-                color: Colors.white,
+                color: Theme.of(context).colorScheme.onSurface,
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
               ),
@@ -398,7 +398,7 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
                     style: GoogleFonts.robotoCondensed(
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -419,7 +419,7 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
                         daysRemainingText,
                         style: GoogleFonts.roboto(
                           fontSize: 14,
-                          color: Colors.white54,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
                         textAlign: TextAlign.center,
                       ),
@@ -430,7 +430,7 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
                     "Profite bien de tes vacances !",
                     style: GoogleFonts.roboto(
                       fontSize: 15,
-                      color: Colors.white54,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -493,7 +493,7 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
                         style: GoogleFonts.robotoCondensed(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                          color: Theme.of(context).colorScheme.onSurface,
                         ),
                         textAlign: TextAlign.center,
                       ),
@@ -502,7 +502,7 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
                         subtitle,
                         style: GoogleFonts.roboto(
                           fontSize: 14,
-                          color: Colors.white54,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
                         textAlign: TextAlign.center,
                       ),
@@ -599,8 +599,8 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
                           item.name,
                           style: GoogleFonts.roboto(
                             color: item.isChecked
-                                ? Colors.white38
-                                : Colors.white70,
+                                ? Theme.of(context).colorScheme.onSurfaceVariant
+                                : Theme.of(context).colorScheme.onSurface,
                             fontSize: 15,
                             decoration: item.isChecked
                                 ? TextDecoration.lineThrough
@@ -817,7 +817,7 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
                           : "Prepare ton sac",
                       style: GoogleFonts.robotoCondensed(
                         fontSize: 18,
-                        color: Colors.white,
+                        color: Theme.of(context).colorScheme.onSurface,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -828,7 +828,7 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
                           : "Prevu a ${packTime.hour.toString().padLeft(2, '0')}:${packTime.minute.toString().padLeft(2, '0')}",
                       style: GoogleFonts.roboto(
                         fontSize: 12,
-                        color: Colors.white54,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
                     ),
                   ],
@@ -838,7 +838,7 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
                 "$checked/$total",
                 style: GoogleFonts.robotoCondensed(
                   fontSize: 24,
-                  color: Colors.white,
+                  color: Theme.of(context).colorScheme.onSurface,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -849,7 +849,7 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
             "FOURNITURES",
             style: GoogleFonts.robotoCondensed(
               fontSize: 11,
-              color: Colors.white54,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
               fontWeight: FontWeight.w500,
               letterSpacing: 1.2,
             ),
@@ -867,7 +867,7 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
                     width: double.infinity,
                     height: 8,
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.1),
+                      color: Theme.of(context).dividerColor,
                       borderRadius: BorderRadius.circular(4),
                     ),
                   ),
@@ -945,7 +945,7 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
                 Text(
                   "Mon Sac",
                   style: GoogleFonts.robotoCondensed(
-                    color: Colors.white,
+                    color: Theme.of(context).colorScheme.onSurface,
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
                   ),
@@ -967,7 +967,7 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
                       Text(
                         " • Semaine $_currentWeekType",
                         style: GoogleFonts.roboto(
-                          color: Colors.white70,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
                         ),
@@ -1079,7 +1079,7 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
               Text(
                 'Ajouter une fourniture',
                 style: GoogleFonts.robotoCondensed(
-                  color: Colors.white,
+                  color: Theme.of(context).colorScheme.onSurface,
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                 ),

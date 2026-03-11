@@ -177,7 +177,7 @@ class _AddCalendarCoursePageState extends ConsumerState<AddCalendarCoursePage> {
                         ? "Modifier le cours"
                         : "Ajouter au calendrier",
                     style: GoogleFonts.robotoCondensed(
-                        color: Colors.white,
+                        color: Theme.of(context).colorScheme.onSurface,
                         fontSize: 18,
                         fontWeight: FontWeight.bold),
                   ),

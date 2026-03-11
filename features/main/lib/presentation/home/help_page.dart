@@ -47,7 +47,7 @@ class HelpPage extends StatelessWidget {
                   style: GoogleFonts.robotoCondensed(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -55,7 +55,7 @@ class HelpPage extends StatelessWidget {
                   'Trouve les reponses a tes questions',
                   style: GoogleFonts.roboto(
                     fontSize: 14,
-                    color: Colors.white54,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                 ),
               ],
@@ -157,7 +157,7 @@ class HelpPage extends StatelessWidget {
                   style: GoogleFonts.roboto(
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
-                    color: Colors.white,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -224,13 +224,13 @@ class HelpPage extends StatelessWidget {
           childrenPadding:
               const EdgeInsets.only(left: 16, right: 16, bottom: 16),
           iconColor: accentColor,
-          collapsedIconColor: Colors.white54,
+          collapsedIconColor: Theme.of(context).colorScheme.onSurfaceVariant,
           title: Text(
             question,
             style: GoogleFonts.roboto(
               fontSize: 15,
               fontWeight: FontWeight.w500,
-              color: Colors.white,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
           children: [
@@ -240,7 +240,7 @@ class HelpPage extends StatelessWidget {
                 answer,
                 style: GoogleFonts.roboto(
                   fontSize: 14,
-                  color: Colors.white70,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                   height: 1.5,
                 ),
               ),

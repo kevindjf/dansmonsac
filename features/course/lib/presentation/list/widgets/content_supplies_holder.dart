@@ -34,6 +34,7 @@ class ContentSupplyHolder extends ConsumerWidget {
 
         // Bouton pour ajouter une fourniture
         _buildActionButton(
+          context: context,
           icon: Icons.add,
           label: "Ajouter une fourniture",
           onPressed: onAddSupply,
@@ -43,6 +44,7 @@ class ContentSupplyHolder extends ConsumerWidget {
 
         // Bouton pour modifier le nom du cours
         _buildActionButton(
+          context: context,
           icon: Icons.edit,
           label: "Modifier le nom",
           onPressed: () => _showRenameBottomSheet(context),
@@ -53,6 +55,7 @@ class ContentSupplyHolder extends ConsumerWidget {
 
         // Bouton pour supprimer le cours
         _buildActionButton(
+          context: context,
           icon: Icons.delete,
           label: "Supprimer cours",
           onPressed: () => _showDeleteConfirmation(context),
@@ -74,7 +77,7 @@ class ContentSupplyHolder extends ConsumerWidget {
           title: Text(
             'Supprimer le cours',
             style: GoogleFonts.robotoCondensed(
-              color: Colors.white,
+              color: Theme.of(context).colorScheme.onSurface,
               fontSize: 20,
               fontWeight: FontWeight.bold,
             ),
@@ -82,7 +85,7 @@ class ContentSupplyHolder extends ConsumerWidget {
           content: Text(
             'Êtes-vous sûr de vouloir supprimer ce cours ?\n\nCela supprimera également :\n• Le cours de votre planning\n• Toutes les fournitures associées',
             style: GoogleFonts.roboto(
-              color: Colors.white70,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
               fontSize: 14,
             ),
           ),
@@ -92,7 +95,7 @@ class ContentSupplyHolder extends ConsumerWidget {
               child: Text(
                 'Annuler',
                 style: GoogleFonts.roboto(
-                  color: Colors.white54,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                   fontSize: 16,
                 ),
               ),
@@ -151,7 +154,7 @@ class ContentSupplyHolder extends ConsumerWidget {
               Text(
                 "Modifier le nom",
                 style: GoogleFonts.robotoCondensed(
-                  color: Colors.white,
+                  color: Theme.of(sheetContext).colorScheme.onSurface,
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                 ),
@@ -248,7 +251,7 @@ class ContentSupplyHolder extends ConsumerWidget {
               onTap: () => _showRenameSupplyBottomSheet(context, supply),
               child: Text(
                 supply.name,
-                style: GoogleFonts.roboto(color: Colors.white70),
+                style: GoogleFonts.roboto(color: Theme.of(context).colorScheme.onSurfaceVariant),
               ),
             ),
           ),
@@ -304,7 +307,7 @@ class ContentSupplyHolder extends ConsumerWidget {
                   Text(
                     "Renommer la fourniture",
                     style: GoogleFonts.robotoCondensed(
-                      color: Colors.white,
+                      color: Theme.of(sheetContext).colorScheme.onSurface,
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
@@ -409,6 +412,7 @@ class ContentSupplyHolder extends ConsumerWidget {
 
   /// 📝 Widget générique pour un bouton d'action
   Widget _buildActionButton({
+    required BuildContext context,
     required IconData icon,
     required String label,
     required VoidCallback onPressed,
@@ -426,7 +430,7 @@ class ContentSupplyHolder extends ConsumerWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, color: Colors.white, size: 14),
+          Icon(icon, color: Theme.of(context).colorScheme.onSurface, size: 14),
           const SizedBox(width: 16),
           Text(label, style: const TextStyle(fontSize: 12)),
         ],
