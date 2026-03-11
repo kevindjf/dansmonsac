@@ -430,10 +430,14 @@ class PreferencesService {
     return prefs.getString(_keyThemeMode) ?? 'system';
   }
 
+  static const _validThemeModes = {'system', 'light', 'dark'};
+
   /// Set the theme mode preference
   /// Accepts 'system', 'light', or 'dark'
   static Future<void> setThemeMode(String mode) async {
+    assert(_validThemeModes.contains(mode), 'Invalid theme mode: $mode');
+    final safeMode = _validThemeModes.contains(mode) ? mode : 'system';
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_keyThemeMode, mode);
+    await prefs.setString(_keyThemeMode, safeMode);
   }
 }

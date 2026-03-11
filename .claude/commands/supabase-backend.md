@@ -1,3 +1,11 @@
+---
+name: supabase-backend
+description: Backend Supabase complet - auth, realtime, edge functions, storage, data layer. Utiliser quand on implémente de l'auth, du realtime, des edge functions, du storage, ou la couche data.
+target: clement
+stack: supabase
+keywords: auth, realtime, edge function, storage, bucket, channel, presence, broadcast, sign up, login, token, webhook
+---
+
 Implémente le backend Supabase en respectant ces règles :
 
 ## Auth

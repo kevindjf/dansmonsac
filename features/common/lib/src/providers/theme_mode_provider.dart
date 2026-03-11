@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:common/src/services.dart';
 
-/// Provider for managing the app's theme mode (system, light, dark)
-final themeModeProvider =
-    StateNotifierProvider<ThemeModeNotifier, ThemeMode>((ref) {
-  return ThemeModeNotifier();
-});
+part 'theme_mode_provider.g.dart';
 
-class ThemeModeNotifier extends StateNotifier<ThemeMode> {
-  ThemeModeNotifier() : super(ThemeMode.system) {
+@riverpod
+class ThemeModeController extends _$ThemeModeController {
+  @override
+  ThemeMode build() {
+    // Load persisted value asynchronously, default to system
     _loadThemeMode();
+    return ThemeMode.system;
   }
 
   Future<void> _loadThemeMode() async {
@@ -23,25 +23,19 @@ class ThemeModeNotifier extends StateNotifier<ThemeMode> {
     state = mode;
   }
 
-  static ThemeMode _themeModeFromString(String mode) {
-    switch (mode) {
-      case 'light':
-        return ThemeMode.light;
-      case 'dark':
-        return ThemeMode.dark;
-      default:
-        return ThemeMode.system;
-    }
+  static ThemeMode _themeModeFromString(String value) {
+    return switch (value) {
+      'light' => ThemeMode.light,
+      'dark' => ThemeMode.dark,
+      _ => ThemeMode.system,
+    };
   }
 
   static String _themeModeToString(ThemeMode mode) {
-    switch (mode) {
-      case ThemeMode.light:
-        return 'light';
-      case ThemeMode.dark:
-        return 'dark';
-      case ThemeMode.system:
-        return 'system';
-    }
+    return switch (mode) {
+      ThemeMode.light => 'light',
+      ThemeMode.dark => 'dark',
+      ThemeMode.system => 'system',
+    };
   }
 }

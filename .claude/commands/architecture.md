@@ -1,3 +1,11 @@
+---
+name: architecture
+description: Règles clean architecture Flutter 4 couches. Utiliser quand on planifie l'architecture d'une feature, crée la structure de fichiers, ou vérifie les dépendances entre couches.
+target: laurent, aurelien, clement
+stack: flutter, supabase
+keywords: architecture, clean archi, domain, entity, use case, repository, couche, layer, dependency inversion
+---
+
 Analyse et planifie l'architecture en respectant ces règles NON-NÉGOCIABLES :
 
 ## Avant de planifier
@@ -87,3 +95,25 @@ presentation → application → domain ← data
 - Provider manuel `final xProvider = ...` → @riverpod generator
 - God provider (plusieurs responsabilités) → split
 - Import Flutter dans domain/ → INTERDIT
+
+## Erreurs courantes
+
+### Import Flutter dans domain/
+- Symptôme : `import 'package:flutter/...';` dans un fichier sous `domain/`
+- Fix : Extraire en Dart pur, utiliser @freezed pour les entities, pas de Widget/Color/BuildContext
+
+### Provider appelle le repository directement
+- Symptôme : `ref.read(profileRepositoryProvider)` dans un provider
+- Fix : Créer un use case dans `application/usecases/`, le provider appelle le use case
+
+### Entity avec fromJson/toJson
+- Symptôme : `factory Entity.fromJson(Map<String, dynamic> json)` dans `domain/entities/`
+- Fix : Séparer en Model (data/models/) avec sérialisation + Entity (domain/entities/) pure @freezed
+
+### build() trop long (> 50 lignes)
+- Symptôme : Widget avec build() de 80+ lignes, méthodes _buildSection()
+- Fix : Extraire chaque section en widget séparé dans son propre fichier
+
+### God provider (plusieurs responsabilités)
+- Symptôme : Un provider qui gère auth + profil + settings
+- Fix : Split en 3 providers distincts, chacun avec son use case

@@ -1,3 +1,11 @@
+---
+name: supabase-table
+description: Création de tables Supabase avec RLS, migrations, modèle Dart. Utiliser quand on crée ou modifie une table, ajoute des colonnes, configure RLS, ou génère un modèle Dart.
+target: clement
+stack: supabase
+keywords: table, colonne, migration, RLS, policy, schema, modèle, model, foreign key, supabase
+---
+
 Crée ou modifie une table Supabase en respectant ces règles :
 
 ## Avant de coder
@@ -27,3 +35,17 @@ Crée ou modifie une table Supabase en respectant ces règles :
 ## Migration
 - Fichier SQL propre et réversible
 - Utiliser apply_migration via MCP
+
+## Erreurs courantes
+
+### Table sans RLS
+- Symptôme : Table créée mais `ALTER TABLE ... ENABLE ROW LEVEL SECURITY` oublié
+- Fix : Toujours ajouter RLS + policies dans la même migration
+
+### USING (true) sur INSERT/UPDATE
+- Symptôme : Policy permissive sans condition
+- Fix : Toujours `USING (auth.uid() = user_id)` ou condition restrictive
+
+### Modèle Dart dans domain/ au lieu de data/
+- Symptôme : `fromJson/toJson` dans un fichier sous `domain/entities/`
+- Fix : Model avec sérialisation dans `data/models/`, Entity pure dans `domain/entities/`

@@ -87,8 +87,8 @@ class AppTheme {
               .copyWith(color: AppColors.lightTextPrimary),
           bodyMedium: AppTextStyles.bodyText2
               .copyWith(color: AppColors.lightTextPrimary),
-          labelLarge: AppTextStyles.button
-              .copyWith(color: AppColors.lightTextPrimary),
+          labelLarge:
+              AppTextStyles.button.copyWith(color: AppColors.lightTextPrimary),
           bodySmall: AppTextStyles.caption
               .copyWith(color: AppColors.lightTextSecondary),
           labelSmall: AppTextStyles.overline

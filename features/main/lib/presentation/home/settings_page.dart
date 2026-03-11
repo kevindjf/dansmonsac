@@ -818,7 +818,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                     style: GoogleFonts.roboto(
                       color: isSelected ? Colors.white : Colors.white70,
                       fontSize: 16,
-                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                      fontWeight:
+                          isSelected ? FontWeight.w600 : FontWeight.w400,
                     ),
                   ),
                   const SizedBox(height: 2),
