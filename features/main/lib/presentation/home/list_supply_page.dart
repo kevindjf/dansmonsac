@@ -588,7 +588,8 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
                       margin: const EdgeInsets.symmetric(
                           horizontal: 16, vertical: 2),
                       decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.surfaceContainerHigh,
+                        color:
+                            Theme.of(context).colorScheme.surfaceContainerHigh,
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: ListTile(
