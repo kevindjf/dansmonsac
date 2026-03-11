@@ -1,3 +1,11 @@
+---
+name: flutter-animation
+description: Animations Flutter, transitions, micro-interactions, Rive. Utiliser quand on crée une animation, une transition entre écrans, ou un feedback tactile.
+target: aurelien
+stack: flutter
+keywords: animation, transition, animé, hero, rive, opacity, scale, micro-interaction, curve, tween
+---
+
 Crée une animation Flutter en choisissant la bonne approche :
 
 ## Quand utiliser quoi

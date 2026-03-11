@@ -1,3 +1,11 @@
+---
+name: flutter-provider
+description: Création de providers Riverpod avec @riverpod generator et clean architecture. Utiliser quand on crée un provider, un notifier, du state management, ou un appel async.
+target: aurelien, clement
+stack: flutter
+keywords: provider, riverpod, notifier, state, async, controller, state management, ref.watch, ref.read
+---
+
 Crée un provider Riverpod en respectant ces règles :
 
 ## Riverpod Generator OBLIGATOIRE
@@ -45,3 +53,21 @@ class ProfileController extends _$ProfileController {
 - AsyncValue.when(data:, loading:, error:) → TOUJOURS gérer les 3
 - Retry : exposer une méthode refresh() dans le Notifier
 - Catch les exceptions dans le Notifier, pas dans le widget
+
+## Erreurs courantes
+
+### Provider manuel au lieu de @riverpod
+- Symptôme : `final profileProvider = StateNotifierProvider<...>((ref) => ...);`
+- Fix : Utiliser `@riverpod` annotation + build_runner
+
+### Appel Supabase direct dans le provider
+- Symptôme : `await ref.read(supabaseProvider).from('profiles').select()`
+- Fix : Créer GetProfileUseCase → ProfileRepository → ProfileDatasource
+
+### Oubli de build_runner après ajout d'un provider
+- Symptôme : `xxx.g.dart` n'existe pas ou désynchronisé
+- Fix : `dart run build_runner build --delete-conflicting-outputs`
+
+### AsyncValue non géré complètement
+- Symptôme : `if (state is AsyncData)` sans gérer loading/error
+- Fix : `state.when(data: ..., loading: ..., error: ...)` — toujours les 3

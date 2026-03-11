@@ -1,3 +1,11 @@
+---
+name: flutter-design
+description: Design system Material 3, layout responsive, composants riches. Utiliser quand on crée un écran, une page, un composant visuel, ou du UI.
+target: aurelien
+stack: flutter
+keywords: design, UI, écran, page, layout, theme, couleur, responsive, material, ombre, gradient, composant visuel
+---
+
 Crée une UI Flutter belle et professionnelle en respectant ces règles :
 
 ## Design System (Material 3)

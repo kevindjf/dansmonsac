@@ -55,14 +55,15 @@ class MyApp extends ConsumerWidget {
     final AppRouteInformationParser routeInformationParser =
         AppRouteInformationParser();
 
-    // Watch accent color provider for reactive updates
+    // Watch accent color and theme mode providers for reactive updates
     final accentColor = ref.watch(accentColorProvider);
+    final themeMode = ref.watch(themeModeControllerProvider);
 
     return MaterialApp.router(
       title: 'Dans mon sac',
-      theme: AppTheme.lightTheme,
+      theme: AppTheme.lightThemeWithColor(accentColor),
       darkTheme: AppTheme.darkThemeWithColor(accentColor),
-      themeMode: ThemeMode.dark,
+      themeMode: themeMode,
       debugShowCheckedModeBanner: false,
       localizationsDelegates: const [
         GlobalMaterialLocalizations.delegate,

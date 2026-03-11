@@ -1,3 +1,11 @@
+---
+name: flutter-widget
+description: Règles de création de widgets Flutter. Utiliser quand on crée un widget, une page, un composant réutilisable, un formulaire, ou une liste.
+target: aurelien, clement
+stack: flutter
+keywords: widget, page, composant, écran, formulaire, liste, listview, card, bouton, scaffold
+---
+
 Crée un widget Flutter en respectant ces règles :
 
 ## Structure
@@ -31,3 +39,21 @@ Crée un widget Flutter en respectant ces règles :
 ## Placement
 - Widget spécifique à une feature → lib/features/{feature}/presentation/widgets/
 - Widget réutilisable cross-features → lib/core/widgets/
+
+## Erreurs courantes
+
+### _buildSection() au lieu d'un widget séparé
+- Symptôme : `Widget _buildHeader() { ... }` comme méthode privée dans le même fichier
+- Fix : Créer un fichier `header_widget.dart` avec un widget dédié
+
+### Column + map() pour une liste dynamique
+- Symptôme : `Column(children: items.map((e) => ItemCard(e)).toList())`
+- Fix : `ListView.builder(itemCount: items.length, itemBuilder: (_, i) => ItemCard(items[i]))`
+
+### Couleur/string en dur
+- Symptôme : `Color(0xFF2196F3)` ou `Text("Bonjour")`
+- Fix : `Theme.of(context).colorScheme.primary` et `context.l10n.greeting`
+
+### ref.read dans build()
+- Symptôme : `final value = ref.read(myProvider);` dans build()
+- Fix : `final value = ref.watch(myProvider);` — ref.read uniquement dans les callbacks

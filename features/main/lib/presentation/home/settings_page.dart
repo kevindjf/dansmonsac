@@ -154,6 +154,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                     ),
                   ),
 
+                  _buildThemeModeCard(context),
+
                   _buildSwitchCard(
                     icon: Icons.weekend_outlined,
                     title: 'Afficher le weekend',
@@ -666,6 +668,182 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     _showSnackBar(show
         ? 'Weekend affiché dans le calendrier'
         : 'Weekend masqué du calendrier');
+  }
+
+  Widget _buildThemeModeCard(BuildContext context) {
+    final accentColor = Theme.of(context).colorScheme.secondary;
+    final currentMode = ref.watch(themeModeControllerProvider);
+    final modeLabel = switch (currentMode) {
+      ThemeMode.system => 'Systeme',
+      ThemeMode.light => 'Clair',
+      ThemeMode.dark => 'Sombre',
+    };
+
+    return _buildSettingCard(
+      context: context,
+      icon: Icons.brightness_6_outlined,
+      title: 'Theme',
+      subtitle: 'Apparence de l\'application',
+      value: modeLabel,
+      onTap: () => _showThemeModeBottomSheet(context),
+    );
+  }
+
+  void _showThemeModeBottomSheet(BuildContext context) {
+    final accentColor = Theme.of(context).colorScheme.secondary;
+    final currentMode = ref.read(themeModeControllerProvider);
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return Container(
+          decoration: const BoxDecoration(
+            color: Color(0xFF303030),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewPadding.bottom + 16,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Handle bar
+              Center(
+                child: Container(
+                  margin: const EdgeInsets.symmetric(vertical: 12),
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.white24,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: accentColor.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Icon(
+                        Icons.brightness_6_outlined,
+                        color: accentColor,
+                        size: 24,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Text(
+                      'Choisir le theme',
+                      style: GoogleFonts.robotoCondensed(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              _buildThemeModeOption(
+                context: context,
+                icon: Icons.settings_suggest_outlined,
+                label: 'Systeme',
+                subtitle: 'Suit le reglage de votre appareil',
+                mode: ThemeMode.system,
+                currentMode: currentMode,
+                accentColor: accentColor,
+              ),
+              _buildThemeModeOption(
+                context: context,
+                icon: Icons.light_mode_outlined,
+                label: 'Clair',
+                subtitle: 'Theme lumineux',
+                mode: ThemeMode.light,
+                currentMode: currentMode,
+                accentColor: accentColor,
+              ),
+              _buildThemeModeOption(
+                context: context,
+                icon: Icons.dark_mode_outlined,
+                label: 'Sombre',
+                subtitle: 'Theme sombre',
+                mode: ThemeMode.dark,
+                currentMode: currentMode,
+                accentColor: accentColor,
+              ),
+              const SizedBox(height: 8),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildThemeModeOption({
+    required BuildContext context,
+    required IconData icon,
+    required String label,
+    required String subtitle,
+    required ThemeMode mode,
+    required ThemeMode currentMode,
+    required Color accentColor,
+  }) {
+    final isSelected = mode == currentMode;
+
+    return InkWell(
+      onTap: () {
+        ref.read(themeModeControllerProvider.notifier).updateThemeMode(mode);
+        Navigator.pop(context);
+      },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+        child: Row(
+          children: [
+            Icon(
+              icon,
+              color: isSelected ? accentColor : Colors.white54,
+              size: 24,
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label,
+                    style: GoogleFonts.roboto(
+                      color: isSelected ? Colors.white : Colors.white70,
+                      fontSize: 16,
+                      fontWeight:
+                          isSelected ? FontWeight.w600 : FontWeight.w400,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: GoogleFonts.roboto(
+                      color: Colors.white38,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w300,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (isSelected)
+              Icon(
+                Icons.check_circle,
+                color: accentColor,
+                size: 24,
+              ),
+          ],
+        ),
+      ),
+    );
   }
 
   Future<void> _selectAccentColor(BuildContext context) async {
