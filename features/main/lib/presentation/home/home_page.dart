@@ -6,7 +6,6 @@ import 'package:common/src/providers/database_provider.dart';
 import 'package:common/src/services/notification_service.dart';
 import 'package:common/src/services/preferences_service.dart';
 import 'package:common/src/services/rating_service.dart';
-import 'package:common/src/ui/ui.dart';
 import 'package:common/src/ui/widget/rating_popup.dart';
 import 'package:main/presentation/home/calendar_page.dart';
 import 'package:main/presentation/home/controller/home_controller.dart';
