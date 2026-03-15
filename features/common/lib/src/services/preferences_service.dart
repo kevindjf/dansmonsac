@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:common/src/providers/background_image_provider.dart';
 
 class PreferencesService {
   static const String _keyPackTimeHour = 'pack_time_hour';
@@ -26,6 +27,19 @@ class PreferencesService {
   static const String _keyVacationModeEnabled = 'vacation_mode_enabled';
   static const String _keyVacationModeEndDate = 'vacation_mode_end_date';
   static const String _keyMigrationV3Completed = 'migration_v3_completed';
+  static const String _keyBackgroundImagePath = 'background_image_path';
+  static const String _keyBackgroundImageOpacity = 'background_image_opacity';
+  static const String _keyBackgroundImagePathCalendar =
+      'background_image_path_calendar';
+  static const String _keyBackgroundImagePathSupply =
+      'background_image_path_supply';
+  static const String _keyBackgroundImageOpacityCalendar =
+      'background_image_opacity_calendar';
+  static const String _keyBackgroundImageOpacitySupply =
+      'background_image_opacity_supply';
+  static const String _keyBackgroundImageUseSame = 'background_image_use_same';
+  static const String _keyBackgroundImageMigrated =
+      'background_image_migrated_v2';
 
   static Future<void> setPackTime(TimeOfDay time) async {
     final prefs = await SharedPreferences.getInstance();
@@ -418,5 +432,84 @@ class PreferencesService {
   static Future<void> setMigrationV3Completed(bool completed) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_keyMigrationV3Completed, completed);
+  }
+
+  // ===== Background Image Methods =====
+
+  /// Migrate old single-image prefs to per-page format (called once).
+  static Future<void> _migrateBackgroundImageIfNeeded() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (prefs.getBool(_keyBackgroundImageMigrated) ?? false) return;
+
+    final oldPath = prefs.getString(_keyBackgroundImagePath);
+    final oldOpacity = prefs.getDouble(_keyBackgroundImageOpacity);
+
+    if (oldPath != null) {
+      await prefs.setString(_keyBackgroundImagePathCalendar, oldPath);
+    }
+    if (oldOpacity != null) {
+      await prefs.setDouble(_keyBackgroundImageOpacityCalendar, oldOpacity);
+    }
+    // Default to useSameImage=true so existing users keep the same behavior
+    await prefs.setBool(_keyBackgroundImageUseSame, true);
+    await prefs.setBool(_keyBackgroundImageMigrated, true);
+  }
+
+  /// Set background image path for a specific page.
+  static Future<void> setBackgroundImagePath(
+      BackgroundPageType page, String? path) async {
+    final prefs = await SharedPreferences.getInstance();
+    final key = page == BackgroundPageType.calendar
+        ? _keyBackgroundImagePathCalendar
+        : _keyBackgroundImagePathSupply;
+    if (path != null) {
+      await prefs.setString(key, path);
+    } else {
+      await prefs.remove(key);
+    }
+  }
+
+  /// Get background image path for a specific page.
+  static Future<String?> getBackgroundImagePath(BackgroundPageType page) async {
+    final prefs = await SharedPreferences.getInstance();
+    await _migrateBackgroundImageIfNeeded();
+    final key = page == BackgroundPageType.calendar
+        ? _keyBackgroundImagePathCalendar
+        : _keyBackgroundImagePathSupply;
+    return prefs.getString(key);
+  }
+
+  /// Set background image overlay opacity for a specific page (0.0 to 1.0).
+  static Future<void> setBackgroundImageOpacity(
+      BackgroundPageType page, double opacity) async {
+    final prefs = await SharedPreferences.getInstance();
+    final key = page == BackgroundPageType.calendar
+        ? _keyBackgroundImageOpacityCalendar
+        : _keyBackgroundImageOpacitySupply;
+    await prefs.setDouble(key, opacity);
+  }
+
+  /// Get background image overlay opacity for a specific page (default: 0.85).
+  static Future<double> getBackgroundImageOpacity(
+      BackgroundPageType page) async {
+    final prefs = await SharedPreferences.getInstance();
+    await _migrateBackgroundImageIfNeeded();
+    final key = page == BackgroundPageType.calendar
+        ? _keyBackgroundImageOpacityCalendar
+        : _keyBackgroundImageOpacitySupply;
+    return prefs.getDouble(key) ?? 0.85;
+  }
+
+  /// Set whether to use the same image for both pages.
+  static Future<void> setBackgroundImageUseSame(bool useSame) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_keyBackgroundImageUseSame, useSame);
+  }
+
+  /// Get whether to use the same image for both pages (default: true).
+  static Future<bool> getBackgroundImageUseSame() async {
+    final prefs = await SharedPreferences.getInstance();
+    await _migrateBackgroundImageIfNeeded();
+    return prefs.getBool(_keyBackgroundImageUseSame) ?? true;
   }
 }

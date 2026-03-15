@@ -255,7 +255,8 @@ class _SharePageState extends ConsumerState<SharePage> {
                       decoration: BoxDecoration(
                         color: Colors.black26,
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: accentColor.withOpacity(0.3)),
+                        border: Border.all(
+                            color: accentColor.withValues(alpha: 0.3)),
                       ),
                       child: Column(
                         children: [
@@ -291,10 +292,10 @@ class _SharePageState extends ConsumerState<SharePage> {
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: Colors.orange.withOpacity(0.15),
+                        color: Colors.orange.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(12),
-                        border:
-                            Border.all(color: Colors.orange.withOpacity(0.3)),
+                        border: Border.all(
+                            color: Colors.orange.withValues(alpha: 0.3)),
                       ),
                       child: Row(
                         children: [
