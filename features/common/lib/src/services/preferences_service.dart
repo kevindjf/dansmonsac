@@ -26,6 +26,8 @@ class PreferencesService {
   static const String _keyVacationModeEnabled = 'vacation_mode_enabled';
   static const String _keyVacationModeEndDate = 'vacation_mode_end_date';
   static const String _keyMigrationV3Completed = 'migration_v3_completed';
+  static const String _keyBackgroundImagePath = 'background_image_path';
+  static const String _keyBackgroundImageOpacity = 'background_image_opacity';
 
   static Future<void> setPackTime(TimeOfDay time) async {
     final prefs = await SharedPreferences.getInstance();
@@ -418,5 +420,35 @@ class PreferencesService {
   static Future<void> setMigrationV3Completed(bool completed) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_keyMigrationV3Completed, completed);
+  }
+
+  // ===== Background Image Methods =====
+
+  /// Set the background image path (stored in app documents directory)
+  static Future<void> setBackgroundImagePath(String? path) async {
+    final prefs = await SharedPreferences.getInstance();
+    if (path != null) {
+      await prefs.setString(_keyBackgroundImagePath, path);
+    } else {
+      await prefs.remove(_keyBackgroundImagePath);
+    }
+  }
+
+  /// Get the background image path
+  static Future<String?> getBackgroundImagePath() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_keyBackgroundImagePath);
+  }
+
+  /// Set the background image overlay opacity (0.0 to 1.0)
+  static Future<void> setBackgroundImageOpacity(double opacity) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble(_keyBackgroundImageOpacity, opacity);
+  }
+
+  /// Get the background image overlay opacity (default: 0.5)
+  static Future<double> getBackgroundImageOpacity() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getDouble(_keyBackgroundImageOpacity) ?? 0.5;
   }
 }

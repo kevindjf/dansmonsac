@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:common/src/services.dart';
+import 'package:common/src/ui/ui.dart';
 import 'package:common/src/utils/week_utils.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:main/presentation/home/controller/daily_check_controller.dart';
@@ -209,12 +210,12 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
   @override
   Widget build(BuildContext context) {
     if (_isVacationMode) {
-      return _buildVacationView();
+      return BackgroundImageWidget(child: _buildVacationView());
     }
 
     final tomorrowSuppliesState = ref.watch(tomorrowSupplyControllerProvider);
 
-    return FutureBuilder<TimeOfDay>(
+    return BackgroundImageWidget(child: FutureBuilder<TimeOfDay>(
       future: PreferencesService.getPackTime(),
       builder: (context, packTimeSnapshot) {
         final packTime =
@@ -303,7 +304,7 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
               _buildEmptyState(packTime, _EmptyReason.noCourses),
         );
       },
-    );
+    ));
   }
 
   String _formatVacationDate(DateTime date) {

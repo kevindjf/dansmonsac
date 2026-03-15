@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -5,6 +7,8 @@ import 'package:common/src/services.dart';
 import 'package:common/src/di/riverpod_di.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:common/src/providers.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:sharing/sharing.dart';
 import 'package:onboarding/onboarding.dart';
 import 'package:schedule/di/riverpod_di.dart';
@@ -161,6 +165,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                     value: _showWeekend,
                     onChanged: _toggleShowWeekend,
                   ),
+
+                  _buildBackgroundImageCard(context),
 
                   const SizedBox(height: 24),
 
@@ -787,6 +793,212 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
         ),
       ),
     );
+  }
+
+  Widget _buildBackgroundImageCard(BuildContext context) {
+    final accentColor = Theme.of(context).colorScheme.secondary;
+    final bgState = ref.watch(backgroundImageProvider);
+
+    return Card(
+      color: const Color(0xFF303030),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      margin: const EdgeInsets.only(bottom: 8.0),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header row
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: accentColor.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    Icons.wallpaper,
+                    color: accentColor,
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Image de fond',
+                        style: GoogleFonts.roboto(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Calendrier et Mon Sac',
+                        style: GoogleFonts.roboto(
+                          color: Colors.white38,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w300,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            // Image preview or pick button
+            if (bgState.hasImage) ...[
+              // Preview
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: Stack(
+                  children: [
+                    Image.file(
+                      File(bgState.imagePath!),
+                      height: 120,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          height: 120,
+                          color: Colors.white10,
+                          child: const Center(
+                            child: Icon(Icons.broken_image, color: Colors.white38),
+                          ),
+                        );
+                      },
+                    ),
+                    // Dark overlay preview
+                    Container(
+                      height: 120,
+                      color: Colors.black.withValues(alpha: bgState.opacity),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+              // Opacity slider
+              Row(
+                children: [
+                  Icon(Icons.opacity, color: Colors.white54, size: 20),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Opacité',
+                    style: GoogleFonts.roboto(
+                      color: Colors.white54,
+                      fontSize: 14,
+                    ),
+                  ),
+                  Expanded(
+                    child: Slider(
+                      value: bgState.opacity,
+                      min: 0.1,
+                      max: 0.9,
+                      activeColor: accentColor,
+                      inactiveColor: Colors.white12,
+                      onChanged: (value) {
+                        ref.read(backgroundImageProvider.notifier).setOpacity(value);
+                      },
+                    ),
+                  ),
+                  Text(
+                    '${(bgState.opacity * 100).round()}%',
+                    style: GoogleFonts.roboto(
+                      color: Colors.white54,
+                      fontSize: 13,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              // Action buttons
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () => _pickBackgroundImage(),
+                      icon: const Icon(Icons.image, size: 18),
+                      label: const Text('Changer'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: accentColor,
+                        side: BorderSide(color: accentColor.withValues(alpha: 0.5)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () => _removeBackgroundImage(),
+                      icon: const Icon(Icons.delete_outline, size: 18),
+                      label: const Text('Supprimer'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.red[300],
+                        side: BorderSide(color: Colors.red[300]!.withValues(alpha: 0.5)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ] else ...[
+              // Pick image button
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: () => _pickBackgroundImage(),
+                  icon: const Icon(Icons.add_photo_alternate_outlined),
+                  label: const Text('Choisir une image'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: accentColor,
+                    side: BorderSide(color: accentColor.withValues(alpha: 0.5)),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _pickBackgroundImage() async {
+    final picker = ImagePicker();
+    final picked = await picker.pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 1920,
+      maxHeight: 1920,
+      imageQuality: 85,
+    );
+    if (picked == null) return;
+
+    // Copy to app documents directory for persistence
+    final appDir = await getApplicationDocumentsDirectory();
+    final fileName = 'background_image.jpg';
+    final savedFile = await File(picked.path).copy('${appDir.path}/$fileName');
+
+    await ref.read(backgroundImageProvider.notifier).setImagePath(savedFile.path);
+    _showSnackBar('Image de fond mise à jour !');
+  }
+
+  Future<void> _removeBackgroundImage() async {
+    await ref.read(backgroundImageProvider.notifier).removeImage();
+    _showSnackBar('Image de fond supprimée');
   }
 
   Widget _buildVacationModeCard(BuildContext context) {
