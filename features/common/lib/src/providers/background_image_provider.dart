@@ -56,9 +56,8 @@ class BackgroundImageState {
       calendarImagePath: clearCalendarImage
           ? null
           : (calendarImagePath ?? this.calendarImagePath),
-      supplyImagePath: clearSupplyImage
-          ? null
-          : (supplyImagePath ?? this.supplyImagePath),
+      supplyImagePath:
+          clearSupplyImage ? null : (supplyImagePath ?? this.supplyImagePath),
       calendarOpacity: calendarOpacity ?? this.calendarOpacity,
       supplyOpacity: supplyOpacity ?? this.supplyOpacity,
       useSameImage: useSameImage ?? this.useSameImage,
@@ -77,14 +76,14 @@ class BackgroundImageNotifier extends StateNotifier<BackgroundImageState> {
   }
 
   Future<void> _load() async {
-    final calendarPath =
-        await PreferencesService.getBackgroundImagePath(BackgroundPageType.calendar);
-    final supplyPath =
-        await PreferencesService.getBackgroundImagePath(BackgroundPageType.supply);
-    final calendarOpacity =
-        await PreferencesService.getBackgroundImageOpacity(BackgroundPageType.calendar);
-    final supplyOpacity =
-        await PreferencesService.getBackgroundImageOpacity(BackgroundPageType.supply);
+    final calendarPath = await PreferencesService.getBackgroundImagePath(
+        BackgroundPageType.calendar);
+    final supplyPath = await PreferencesService.getBackgroundImagePath(
+        BackgroundPageType.supply);
+    final calendarOpacity = await PreferencesService.getBackgroundImageOpacity(
+        BackgroundPageType.calendar);
+    final supplyOpacity = await PreferencesService.getBackgroundImageOpacity(
+        BackgroundPageType.supply);
     final useSameImage = await PreferencesService.getBackgroundImageUseSame();
     state = BackgroundImageState(
       calendarImagePath: calendarPath,

@@ -957,8 +957,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                       height: 120,
                       color: Colors.white10,
                       child: const Center(
-                        child:
-                            Icon(Icons.broken_image, color: Colors.white38),
+                        child: Icon(Icons.broken_image, color: Colors.white38),
                       ),
                     );
                   },
@@ -1018,8 +1017,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                   label: const Text('Changer'),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: accentColor,
-                    side: BorderSide(
-                        color: accentColor.withValues(alpha: 0.5)),
+                    side: BorderSide(color: accentColor.withValues(alpha: 0.5)),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
@@ -1079,9 +1077,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
 
     // Copy to app documents directory for persistence
     final appDir = await getApplicationDocumentsDirectory();
-    final suffix = pageType == BackgroundPageType.calendar
-        ? 'calendar'
-        : 'supply';
+    final suffix =
+        pageType == BackgroundPageType.calendar ? 'calendar' : 'supply';
     final fileName = 'background_image_$suffix.jpg';
     final savedFile = await File(picked.path).copy('${appDir.path}/$fileName');
 

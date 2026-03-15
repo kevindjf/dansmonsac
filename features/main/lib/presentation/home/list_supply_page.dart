@@ -220,95 +220,96 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
     return BackgroundImageWidget(
         pageType: BackgroundPageType.supply,
         child: FutureBuilder<TimeOfDay>(
-      future: PreferencesService.getPackTime(),
-      builder: (context, packTimeSnapshot) {
-        final packTime =
-            packTimeSnapshot.data ?? const TimeOfDay(hour: 19, minute: 0);
+          future: PreferencesService.getPackTime(),
+          builder: (context, packTimeSnapshot) {
+            final packTime =
+                packTimeSnapshot.data ?? const TimeOfDay(hour: 19, minute: 0);
 
-        return tomorrowSuppliesState.when(
-          data: (coursesWithSupplies) {
-            // Build list items from courses and supplies
-            final List<ListItem> items = [];
-            int totalSupplies = 0;
-            int checkedSupplies = 0;
+            return tomorrowSuppliesState.when(
+              data: (coursesWithSupplies) {
+                // Build list items from courses and supplies
+                final List<ListItem> items = [];
+                int totalSupplies = 0;
+                int checkedSupplies = 0;
 
-            for (final course in coursesWithSupplies) {
-              // Collect supply IDs for this course
-              final supplyIds = course.supplies.map((s) => s.id).toList();
-              items.add(CourseTitleItem(
-                title: course.courseName,
-                courseId: course.courseId,
-                supplyIds: supplyIds,
-              ));
+                for (final course in coursesWithSupplies) {
+                  // Collect supply IDs for this course
+                  final supplyIds = course.supplies.map((s) => s.id).toList();
+                  items.add(CourseTitleItem(
+                    title: course.courseName,
+                    courseId: course.courseId,
+                    supplyIds: supplyIds,
+                  ));
 
-              for (final supply in course.supplies) {
-                totalSupplies++;
-                final isChecked = _checkedState[supply.id] ?? false;
-                if (isChecked) checkedSupplies++;
+                  for (final supply in course.supplies) {
+                    totalSupplies++;
+                    final isChecked = _checkedState[supply.id] ?? false;
+                    if (isChecked) checkedSupplies++;
 
-                items.add(SupplyItem(
-                  id: supply.id,
-                  courseId: course.courseId,
-                  name: supply.name,
-                  isChecked: isChecked,
-                ));
-              }
-            }
+                    items.add(SupplyItem(
+                      id: supply.id,
+                      courseId: course.courseId,
+                      name: supply.name,
+                      isChecked: isChecked,
+                    ));
+                  }
+                }
 
-            // Add standalone supplies section if there are any
-            if (_standaloneSupplies.isNotEmpty) {
-              // Add section title
-              final standaloneIds = _standaloneSupplies
-                  .map((name) => 'standalone_$name')
-                  .toList();
-              items.add(CourseTitleItem(
-                title: "Autres fournitures",
-                courseId: '',
-                supplyIds: standaloneIds,
-              ));
+                // Add standalone supplies section if there are any
+                if (_standaloneSupplies.isNotEmpty) {
+                  // Add section title
+                  final standaloneIds = _standaloneSupplies
+                      .map((name) => 'standalone_$name')
+                      .toList();
+                  items.add(CourseTitleItem(
+                    title: "Autres fournitures",
+                    courseId: '',
+                    supplyIds: standaloneIds,
+                  ));
 
-              // Add standalone supplies
-              for (final supplyName in _standaloneSupplies) {
-                final id = 'standalone_$supplyName';
-                totalSupplies++;
-                final isChecked = _checkedState[id] ?? false;
-                if (isChecked) checkedSupplies++;
+                  // Add standalone supplies
+                  for (final supplyName in _standaloneSupplies) {
+                    final id = 'standalone_$supplyName';
+                    totalSupplies++;
+                    final isChecked = _checkedState[id] ?? false;
+                    if (isChecked) checkedSupplies++;
 
-                items.add(SupplyItem(
-                  id: id,
-                  courseId: '', // Empty for standalone supplies
-                  name: supplyName,
-                  isChecked: isChecked,
-                ));
-              }
-            }
+                    items.add(SupplyItem(
+                      id: id,
+                      courseId: '', // Empty for standalone supplies
+                      name: supplyName,
+                      isChecked: isChecked,
+                    ));
+                  }
+                }
 
-            // If no courses at all and no standalone supplies, show empty state
-            if (coursesWithSupplies.isEmpty && _standaloneSupplies.isEmpty) {
-              return _buildEmptyState(packTime, _EmptyReason.noCourses);
-            }
+                // If no courses at all and no standalone supplies, show empty state
+                if (coursesWithSupplies.isEmpty &&
+                    _standaloneSupplies.isEmpty) {
+                  return _buildEmptyState(packTime, _EmptyReason.noCourses);
+                }
 
-            // If courses exist but 0 supplies total (no standalone either)
-            // Auto-validate bag completion (0/0 = ready) so streak counts
-            if (totalSupplies == 0) {
-              _totalSuppliesCount = 0;
-              // Defer async call to avoid setState during build
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                _checkAndMarkBagCompletion(0);
-              });
-              return _buildEmptyState(packTime, _EmptyReason.noSupplies);
-            }
+                // If courses exist but 0 supplies total (no standalone either)
+                // Auto-validate bag completion (0/0 = ready) so streak counts
+                if (totalSupplies == 0) {
+                  _totalSuppliesCount = 0;
+                  // Defer async call to avoid setState during build
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    _checkAndMarkBagCompletion(0);
+                  });
+                  return _buildEmptyState(packTime, _EmptyReason.noSupplies);
+                }
 
-            _totalSuppliesCount = totalSupplies;
-            return _buildSupplyList(
-                context, items, checkedSupplies, totalSupplies, packTime);
+                _totalSuppliesCount = totalSupplies;
+                return _buildSupplyList(
+                    context, items, checkedSupplies, totalSupplies, packTime);
+              },
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (error, stack) =>
+                  _buildEmptyState(packTime, _EmptyReason.noCourses),
+            );
           },
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, stack) =>
-              _buildEmptyState(packTime, _EmptyReason.noCourses),
-        );
-      },
-    ));
+        ));
   }
 
   String _formatVacationDate(DateTime date) {

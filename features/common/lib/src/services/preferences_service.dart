@@ -37,8 +37,7 @@ class PreferencesService {
       'background_image_opacity_calendar';
   static const String _keyBackgroundImageOpacitySupply =
       'background_image_opacity_supply';
-  static const String _keyBackgroundImageUseSame =
-      'background_image_use_same';
+  static const String _keyBackgroundImageUseSame = 'background_image_use_same';
   static const String _keyBackgroundImageMigrated =
       'background_image_migrated_v2';
 
@@ -471,8 +470,7 @@ class PreferencesService {
   }
 
   /// Get background image path for a specific page.
-  static Future<String?> getBackgroundImagePath(
-      BackgroundPageType page) async {
+  static Future<String?> getBackgroundImagePath(BackgroundPageType page) async {
     final prefs = await SharedPreferences.getInstance();
     await _migrateBackgroundImageIfNeeded();
     final key = page == BackgroundPageType.calendar
