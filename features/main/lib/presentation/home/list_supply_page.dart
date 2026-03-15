@@ -215,7 +215,8 @@ class _ListSupplyState extends ConsumerState<ListSupply> {
 
     final tomorrowSuppliesState = ref.watch(tomorrowSupplyControllerProvider);
 
-    return BackgroundImageWidget(child: FutureBuilder<TimeOfDay>(
+    return BackgroundImageWidget(
+        child: FutureBuilder<TimeOfDay>(
       future: PreferencesService.getPackTime(),
       builder: (context, packTimeSnapshot) {
         final packTime =

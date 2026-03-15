@@ -870,7 +870,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                           height: 120,
                           color: Colors.white10,
                           child: const Center(
-                            child: Icon(Icons.broken_image, color: Colors.white38),
+                            child:
+                                Icon(Icons.broken_image, color: Colors.white38),
                           ),
                         );
                       },
@@ -904,7 +905,9 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                       activeColor: accentColor,
                       inactiveColor: Colors.white12,
                       onChanged: (value) {
-                        ref.read(backgroundImageProvider.notifier).setOpacity(value);
+                        ref
+                            .read(backgroundImageProvider.notifier)
+                            .setOpacity(value);
                       },
                     ),
                   ),
@@ -928,7 +931,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                       label: const Text('Changer'),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: accentColor,
-                        side: BorderSide(color: accentColor.withValues(alpha: 0.5)),
+                        side: BorderSide(
+                            color: accentColor.withValues(alpha: 0.5)),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
@@ -943,7 +947,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                       label: const Text('Supprimer'),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: Colors.red[300],
-                        side: BorderSide(color: Colors.red[300]!.withValues(alpha: 0.5)),
+                        side: BorderSide(
+                            color: Colors.red[300]!.withValues(alpha: 0.5)),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
@@ -992,7 +997,9 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     final fileName = 'background_image.jpg';
     final savedFile = await File(picked.path).copy('${appDir.path}/$fileName');
 
-    await ref.read(backgroundImageProvider.notifier).setImagePath(savedFile.path);
+    await ref
+        .read(backgroundImageProvider.notifier)
+        .setImagePath(savedFile.path);
     _showSnackBar('Image de fond mise à jour !');
   }
 

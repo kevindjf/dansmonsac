@@ -11,7 +11,8 @@ class BackgroundImageState {
 
   bool get hasImage => imagePath != null && File(imagePath!).existsSync();
 
-  BackgroundImageState copyWith({String? imagePath, double? opacity, bool clearImage = false}) {
+  BackgroundImageState copyWith(
+      {String? imagePath, double? opacity, bool clearImage = false}) {
     return BackgroundImageState(
       imagePath: clearImage ? null : (imagePath ?? this.imagePath),
       opacity: opacity ?? this.opacity,
