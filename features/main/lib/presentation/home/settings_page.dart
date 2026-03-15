@@ -987,7 +987,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                 child: Slider(
                   value: opacity,
                   min: 0.0,
-                  max: 0.7,
+                  max: 0.9,
                   activeColor: accentColor,
                   inactiveColor: Colors.white12,
                   onChanged: (value) {

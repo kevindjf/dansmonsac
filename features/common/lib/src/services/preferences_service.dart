@@ -489,7 +489,7 @@ class PreferencesService {
     await prefs.setDouble(key, opacity);
   }
 
-  /// Get background image overlay opacity for a specific page (default: 0.3).
+  /// Get background image overlay opacity for a specific page (default: 0.85).
   static Future<double> getBackgroundImageOpacity(
       BackgroundPageType page) async {
     final prefs = await SharedPreferences.getInstance();
@@ -497,7 +497,7 @@ class PreferencesService {
     final key = page == BackgroundPageType.calendar
         ? _keyBackgroundImageOpacityCalendar
         : _keyBackgroundImageOpacitySupply;
-    return prefs.getDouble(key) ?? 0.3;
+    return prefs.getDouble(key) ?? 0.85;
   }
 
   /// Set whether to use the same image for both pages.

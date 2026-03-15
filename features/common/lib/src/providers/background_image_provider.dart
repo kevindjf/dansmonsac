@@ -16,8 +16,8 @@ class BackgroundImageState {
   const BackgroundImageState({
     this.calendarImagePath,
     this.supplyImagePath,
-    this.calendarOpacity = 0.3,
-    this.supplyOpacity = 0.3,
+    this.calendarOpacity = 0.85,
+    this.supplyOpacity = 0.85,
     this.useSameImage = true,
   });
 
