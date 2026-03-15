@@ -35,8 +35,13 @@ void main() async {
     return true;
   };
 
-  await dotenv.load(fileName: '.env');
-  await RepositoryHelper.initialize();
+  try {
+    await dotenv.load(fileName: '.env');
+    await RepositoryHelper.initialize();
+  } catch (e) {
+    // .env missing or Supabase init failed — app still works in local-first mode
+    LogService.w('Supabase init skipped: $e');
+  }
   await NotificationService.initialize();
 
   // Mark migration as completed so old users skip the migration screen
