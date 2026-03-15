@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:common/src/services.dart';
 import 'package:common/src/ui/ui.dart';
+import 'package:common/src/providers/background_image_provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:main/presentation/home/calendar_body_widget.dart';
 import 'package:schedule/presentation/add/add_calendar_course_page.dart';
@@ -47,6 +48,7 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
     final selectedWeekday = _selectedDate.weekday; // 1=Monday, 7=Sunday
 
     return BackgroundImageWidget(
+      pageType: BackgroundPageType.calendar,
       child: Stack(
         children: [
           Column(

@@ -840,7 +840,9 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Calendrier et Mon Sac',
+                        bgState.useSameImage
+                            ? 'Même image pour toutes les pages'
+                            : 'Images différentes par page',
                         style: GoogleFonts.roboto(
                           color: Colors.white38,
                           fontSize: 14,
@@ -853,127 +855,54 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
               ],
             ),
             const SizedBox(height: 16),
-            // Image preview or pick button
-            if (bgState.hasImage) ...[
-              // Preview
-              ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: Stack(
-                  children: [
-                    Image.file(
-                      File(bgState.imagePath!),
-                      height: 120,
-                      width: double.infinity,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          height: 120,
-                          color: Colors.white10,
-                          child: const Center(
-                            child:
-                                Icon(Icons.broken_image, color: Colors.white38),
-                          ),
-                        );
-                      },
-                    ),
-                    // Dark overlay preview
-                    Container(
-                      height: 120,
-                      color: Colors.black.withValues(alpha: bgState.opacity),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 12),
-              // Opacity slider
-              Row(
-                children: [
-                  Icon(Icons.opacity, color: Colors.white54, size: 20),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Opacité',
+            // Toggle: same image or different per page
+            Row(
+              children: [
+                Icon(Icons.copy_all, color: Colors.white54, size: 20),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Même image pour les deux pages',
                     style: GoogleFonts.roboto(
                       color: Colors.white54,
                       fontSize: 14,
                     ),
                   ),
-                  Expanded(
-                    child: Slider(
-                      value: bgState.opacity,
-                      min: 0.1,
-                      max: 0.9,
-                      activeColor: accentColor,
-                      inactiveColor: Colors.white12,
-                      onChanged: (value) {
-                        ref
-                            .read(backgroundImageProvider.notifier)
-                            .setOpacity(value);
-                      },
-                    ),
-                  ),
-                  Text(
-                    '${(bgState.opacity * 100).round()}%',
-                    style: GoogleFonts.roboto(
-                      color: Colors.white54,
-                      fontSize: 13,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              // Action buttons
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: () => _pickBackgroundImage(),
-                      icon: const Icon(Icons.image, size: 18),
-                      label: const Text('Changer'),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: accentColor,
-                        side: BorderSide(
-                            color: accentColor.withValues(alpha: 0.5)),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: () => _removeBackgroundImage(),
-                      icon: const Icon(Icons.delete_outline, size: 18),
-                      label: const Text('Supprimer'),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: Colors.red[300],
-                        side: BorderSide(
-                            color: Colors.red[300]!.withValues(alpha: 0.5)),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+                ),
+                Switch(
+                  value: bgState.useSameImage,
+                  activeColor: accentColor,
+                  onChanged: (value) {
+                    ref
+                        .read(backgroundImageProvider.notifier)
+                        .setUseSameImage(value);
+                  },
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            if (bgState.useSameImage) ...[
+              // Single image for both pages
+              _buildImageSection(
+                context: context,
+                label: 'Calendrier & Mon Sac',
+                pageType: BackgroundPageType.calendar,
+                bgState: bgState,
               ),
             ] else ...[
-              // Pick image button
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton.icon(
-                  onPressed: () => _pickBackgroundImage(),
-                  icon: const Icon(Icons.add_photo_alternate_outlined),
-                  label: const Text('Choisir une image'),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: accentColor,
-                    side: BorderSide(color: accentColor.withValues(alpha: 0.5)),
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                ),
+              // Separate images per page
+              _buildImageSection(
+                context: context,
+                label: 'Calendrier',
+                pageType: BackgroundPageType.calendar,
+                bgState: bgState,
+              ),
+              const SizedBox(height: 16),
+              _buildImageSection(
+                context: context,
+                label: 'Mon Sac',
+                pageType: BackgroundPageType.supply,
+                bgState: bgState,
               ),
             ],
           ],
@@ -982,7 +911,163 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     );
   }
 
-  Future<void> _pickBackgroundImage() async {
+  Widget _buildImageSection({
+    required BuildContext context,
+    required String label,
+    required BackgroundPageType pageType,
+    required BackgroundImageState bgState,
+  }) {
+    final accentColor = Theme.of(context).colorScheme.secondary;
+    final imagePath = pageType == BackgroundPageType.calendar
+        ? bgState.calendarImagePath
+        : bgState.supplyImagePath;
+    final hasImage = imagePath != null && File(imagePath).existsSync();
+    final opacity = pageType == BackgroundPageType.calendar
+        ? bgState.calendarOpacity
+        : bgState.supplyOpacity;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (!bgState.useSameImage)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8.0),
+            child: Text(
+              label,
+              style: GoogleFonts.roboto(
+                color: Colors.white70,
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        if (hasImage) ...[
+          // Preview
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: Stack(
+              children: [
+                Image.file(
+                  File(imagePath),
+                  height: 120,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                      height: 120,
+                      color: Colors.white10,
+                      child: const Center(
+                        child:
+                            Icon(Icons.broken_image, color: Colors.white38),
+                      ),
+                    );
+                  },
+                ),
+                // Dark overlay preview
+                Container(
+                  height: 120,
+                  color: Colors.black.withValues(alpha: opacity),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+          // Opacity slider
+          Row(
+            children: [
+              Icon(Icons.opacity, color: Colors.white54, size: 20),
+              const SizedBox(width: 8),
+              Text(
+                'Opacité',
+                style: GoogleFonts.roboto(
+                  color: Colors.white54,
+                  fontSize: 14,
+                ),
+              ),
+              Expanded(
+                child: Slider(
+                  value: opacity,
+                  min: 0.0,
+                  max: 0.7,
+                  activeColor: accentColor,
+                  inactiveColor: Colors.white12,
+                  onChanged: (value) {
+                    ref
+                        .read(backgroundImageProvider.notifier)
+                        .setOpacity(pageType, value);
+                  },
+                ),
+              ),
+              Text(
+                '${(opacity * 100).round()}%',
+                style: GoogleFonts.roboto(
+                  color: Colors.white54,
+                  fontSize: 13,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          // Action buttons
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: () => _pickBackgroundImage(pageType),
+                  icon: const Icon(Icons.image, size: 18),
+                  label: const Text('Changer'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: accentColor,
+                    side: BorderSide(
+                        color: accentColor.withValues(alpha: 0.5)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: () => _removeBackgroundImage(pageType),
+                  icon: const Icon(Icons.delete_outline, size: 18),
+                  label: const Text('Supprimer'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.red[300],
+                    side: BorderSide(
+                        color: Colors.red[300]!.withValues(alpha: 0.5)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ] else ...[
+          // Pick image button
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: () => _pickBackgroundImage(pageType),
+              icon: const Icon(Icons.add_photo_alternate_outlined),
+              label: const Text('Choisir une image'),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: accentColor,
+                side: BorderSide(color: accentColor.withValues(alpha: 0.5)),
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  Future<void> _pickBackgroundImage(BackgroundPageType pageType) async {
     final picker = ImagePicker();
     final picked = await picker.pickImage(
       source: ImageSource.gallery,
@@ -994,17 +1079,20 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
 
     // Copy to app documents directory for persistence
     final appDir = await getApplicationDocumentsDirectory();
-    final fileName = 'background_image.jpg';
+    final suffix = pageType == BackgroundPageType.calendar
+        ? 'calendar'
+        : 'supply';
+    final fileName = 'background_image_$suffix.jpg';
     final savedFile = await File(picked.path).copy('${appDir.path}/$fileName');
 
     await ref
         .read(backgroundImageProvider.notifier)
-        .setImagePath(savedFile.path);
+        .setImagePath(pageType, savedFile.path);
     _showSnackBar('Image de fond mise à jour !');
   }
 
-  Future<void> _removeBackgroundImage() async {
-    await ref.read(backgroundImageProvider.notifier).removeImage();
+  Future<void> _removeBackgroundImage(BackgroundPageType pageType) async {
+    await ref.read(backgroundImageProvider.notifier).removeImage(pageType);
     _showSnackBar('Image de fond supprimée');
   }
 
